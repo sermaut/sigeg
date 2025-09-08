@@ -1,0 +1,485 @@
+import { useState, useRef, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Camera, Upload } from "lucide-react";
+
+const memberSchema = z.object({
+  name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
+  group_id: z.string().min(1, "Grupo é obrigatório"),
+  neighborhood: z.string().optional(),
+  birth_province: z.string().optional(),
+  birth_municipality: z.string().optional(),
+  birth_date: z.string().optional(),
+  phone: z.string().optional(),
+  profession: z.string().optional(),
+  education_level: z.string().optional(),
+  marital_status: z.enum(["solteiro", "casado", "divorciado", "viuvo"], {
+    required_error: "Estado civil é obrigatório",
+  }).default("solteiro"),
+  role: z.enum(["presidente", "vice_presidente", "secretario", "tesoureiro", "membro", "coordenador"], {
+    required_error: "Função é obrigatória",
+  }).default("membro"),
+  partition: z.enum(["soprano", "contralto", "tenor", "baixo", "instrumental"], {
+    required_error: "Partição é obrigatória",
+  }).optional(),
+  member_code: z.string().optional(),
+});
+
+type MemberFormData = z.infer<typeof memberSchema>;
+
+interface MemberFormProps {
+  memberId?: string;
+  groupId?: string;
+  initialData?: any;
+  isEditing?: boolean;
+  onSuccess?: () => void;
+}
+
+export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSuccess }: MemberFormProps) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [profileImageUrl, setProfileImageUrl] = useState<string>("");
+  const [memberLimitInfo, setMemberLimitInfo] = useState<{
+    currentCount: number;
+    limit: number;
+    planName: string;
+  } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get groupId from URL params if not provided
+  const urlParams = new URLSearchParams(location.search);
+  const urlGroupId = urlParams.get('groupId');
+  const effectiveGroupId = groupId || urlGroupId;
+  
+  const form = useForm<MemberFormData>({
+    resolver: zodResolver(memberSchema),
+    defaultValues: initialData || {
+      name: "",
+      group_id: effectiveGroupId || "",
+      marital_status: "solteiro",
+      role: "membro",
+    },
+  });
+
+  useEffect(() => {
+    if (initialData?.profile_image_url) {
+      setProfileImageUrl(initialData.profile_image_url);
+    }
+  }, [initialData]);
+
+  // Check member limit when component mounts or groupId changes
+  useEffect(() => {
+    const checkMemberLimit = async () => {
+      if (!effectiveGroupId) return;
+
+      try {
+        const [membersResponse, groupResponse] = await Promise.all([
+          supabase
+            .from('members')
+            .select('id')
+            .eq('group_id', effectiveGroupId)
+            .eq('is_active', true),
+          supabase
+            .from('groups')
+            .select(`
+              monthly_plans (
+                name,
+                max_members
+              )
+            `)
+            .eq('id', effectiveGroupId)
+            .maybeSingle()
+        ]);
+
+        if (membersResponse.data && groupResponse.data?.monthly_plans) {
+          setMemberLimitInfo({
+            currentCount: membersResponse.data.length,
+            limit: groupResponse.data.monthly_plans.max_members,
+            planName: groupResponse.data.monthly_plans.name
+          });
+        }
+      } catch (error) {
+        console.error('Erro ao verificar limite de membros:', error);
+      }
+    };
+
+    checkMemberLimit();
+  }, [effectiveGroupId]);
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setProfileImageUrl(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const onSubmit = async (data: MemberFormData) => {
+    setIsLoading(true);
+    
+    // Check member limit before submitting (only for new members)
+    if (!isEditing && memberLimitInfo) {
+      if (memberLimitInfo.currentCount >= memberLimitInfo.limit) {
+        toast({
+          title: "Limite de membros excedido",
+          description: `O plano ${memberLimitInfo.planName} permite apenas ${memberLimitInfo.limit} membros. O grupo já tem ${memberLimitInfo.currentCount} membros ativos.`,
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+    }
+
+    try {
+      const memberData = {
+        ...data,
+        profile_image_url: profileImageUrl || null,
+        birth_date: data.birth_date ? new Date(data.birth_date).toISOString().split('T')[0] : null,
+      };
+
+      if (isEditing && memberId) {
+        const { error } = await supabase
+          .from("members")
+          .update(memberData)
+          .eq("id", memberId);
+        
+        if (error) throw error;
+        toast({ title: "Membro atualizado com sucesso!" });
+      } else {
+        const { error } = await supabase
+          .from("members")
+          .insert([memberData as any]);
+        
+        if (error) throw error;
+        toast({ title: "Membro criado com sucesso!" });
+      }
+      
+      onSuccess?.();
+      if (effectiveGroupId) {
+        navigate(`/groups/${effectiveGroupId}`);
+      } else {
+        navigate("/groups");
+      }
+    } catch (error: any) {
+      console.error("Erro ao salvar membro:", error);
+      
+      // Handle specific database errors
+      let errorMessage = "Verifique os dados e tente novamente";
+      if (error?.message?.includes("Limite de membros excedido")) {
+        errorMessage = error.message;
+      }
+      
+      toast({
+        title: "Erro ao salvar membro",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <Card className="w-full max-w-2xl mx-auto">
+      <CardContent className="pt-6">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {/* Photo Upload Section */}
+            <div className="flex flex-col items-center space-y-4">
+              <Avatar className="w-32 h-32">
+                <AvatarImage src={profileImageUrl} />
+                <AvatarFallback className="text-lg">
+                  <Camera className="w-8 h-8" />
+                </AvatarFallback>
+              </Avatar>
+              
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageUpload}
+                accept="image/*"
+                className="hidden"
+              />
+              
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center gap-2"
+              >
+                <Upload className="w-4 h-4" />
+                Carregar Foto
+              </Button>
+            </div>
+
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nome Completo</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Digite o nome completo" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="birth_date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Data de Nascimento</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Telefone</FormLabel>
+                    <FormControl>
+                      <Input placeholder="+244 xxx xxx xxx" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="neighborhood"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Bairro</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Digite o bairro" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="birth_province"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Província de Nascimento</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Digite a província" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="birth_municipality"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Município de Nascimento</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Digite o município" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="profession"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Profissão</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Digite a profissão" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="education_level"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nível de Escolaridade</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Digite o nível de escolaridade" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <FormField
+                control={form.control}
+                name="marital_status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Estado Civil</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="solteiro">Solteiro</SelectItem>
+                        <SelectItem value="casado">Casado</SelectItem>
+                        <SelectItem value="divorciado">Divorciado</SelectItem>
+                        <SelectItem value="viuvo">Viúvo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="role"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Função</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="membro">Membro</SelectItem>
+                        <SelectItem value="coordenador">Coordenador</SelectItem>
+                        <SelectItem value="tesoureiro">Tesoureiro</SelectItem>
+                        <SelectItem value="secretario">Secretário</SelectItem>
+                        <SelectItem value="vice_presidente">Vice-Presidente</SelectItem>
+                        <SelectItem value="presidente">Presidente</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="partition"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Partição</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="soprano">Soprano</SelectItem>
+                        <SelectItem value="contralto">Contralto</SelectItem>
+                        <SelectItem value="tenor">Tenor</SelectItem>
+                        <SelectItem value="baixo">Baixo</SelectItem>
+                        <SelectItem value="instrumental">Instrumental</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="member_code"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Código de Membro</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Digite o código de membro" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Member limit warning */}
+            {!isEditing && memberLimitInfo && memberLimitInfo.currentCount >= memberLimitInfo.limit && (
+              <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+                <div className="flex items-center space-x-2">
+                  <div className="text-destructive font-medium">
+                    ⚠️ Limite de membros atingido
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  O plano {memberLimitInfo.planName} permite apenas {memberLimitInfo.limit} membros. 
+                  Este grupo já tem {memberLimitInfo.currentCount} membros ativos.
+                </p>
+              </div>
+            )}
+
+            {/* Member limit info */}
+            {!isEditing && memberLimitInfo && memberLimitInfo.currentCount < memberLimitInfo.limit && (
+              <div className="bg-muted/50 border border-muted rounded-lg p-3">
+                <div className="text-sm text-muted-foreground">
+                  <strong>Plano {memberLimitInfo.planName}:</strong> {memberLimitInfo.currentCount} de {memberLimitInfo.limit} membros utilizados
+                </div>
+              </div>
+            )}
+
+            <div className="flex gap-4 pt-6">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate(-1)}
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={isLoading || (!isEditing && memberLimitInfo && memberLimitInfo.currentCount >= memberLimitInfo.limit)} 
+                className="flex-1"
+              >
+                {isLoading ? "Salvando..." : memberId ? "Atualizar" : "Criar Membro"}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
+  );
+};
