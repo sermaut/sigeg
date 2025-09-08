@@ -18,7 +18,6 @@ export function PaymentEventDialog({ open, onOpenChange, groupId, onEventAdded }
   const [formData, setFormData] = useState({
     title: "",
     amount_to_pay: "",
-    created_by: "",
   });
   const { toast } = useToast();
 
@@ -34,7 +33,7 @@ export function PaymentEventDialog({ open, onOpenChange, groupId, onEventAdded }
           group_id: groupId,
           title: formData.title,
           amount_to_pay: parseFloat(formData.amount_to_pay),
-          created_by: formData.created_by || null,
+          // created_by field removed - should reference member UUID, not name
         })
         .select()
         .single();
@@ -74,7 +73,6 @@ export function PaymentEventDialog({ open, onOpenChange, groupId, onEventAdded }
       setFormData({
         title: "",
         amount_to_pay: "",
-        created_by: "",
       });
 
       onEventAdded();
@@ -126,15 +124,6 @@ export function PaymentEventDialog({ open, onOpenChange, groupId, onEventAdded }
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="created_by">Criado por (opcional)</Label>
-            <Input
-              id="created_by"
-              value={formData.created_by}
-              onChange={(e) => setFormData({...formData, created_by: e.target.value})}
-              placeholder="Nome de quem está criando o evento"
-            />
-          </div>
 
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
