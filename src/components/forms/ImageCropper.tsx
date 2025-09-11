@@ -27,25 +27,28 @@ export function ImageCropper({ open, onOpenChange, imageSrc, onCrop }: ImageCrop
 
     const img = new Image();
     img.onload = () => {
-      // Set canvas size to crop area
-      canvas.width = cropArea.size;
-      canvas.height = cropArea.size;
+      // Set canvas size to 400x400 for high quality output
+      const outputSize = 400;
+      canvas.width = outputSize;
+      canvas.height = outputSize;
 
-      // Calculate scale
-      const scaleX = img.width / 400; // assuming preview width of 400px
-      const scaleY = img.height / 400;
+      // Calculate scale based on preview dimensions
+      const previewWidth = 300;
+      const previewHeight = 300;
+      const scaleX = img.width / previewWidth;
+      const scaleY = img.height / previewHeight;
 
-      // Draw cropped image
+      // Draw cropped image scaled to full canvas size
       ctx.drawImage(
         img,
-        cropArea.x * scaleX,
-        cropArea.y * scaleY,
+        (cropArea.x - cropArea.size/2) * scaleX,
+        (cropArea.y - cropArea.size/2) * scaleY,
         cropArea.size * scaleX,
         cropArea.size * scaleY,
         0,
         0,
-        cropArea.size,
-        cropArea.size
+        outputSize,
+        outputSize
       );
 
       // Convert to blob and callback
@@ -58,7 +61,7 @@ export function ImageCropper({ open, onOpenChange, imageSrc, onCrop }: ImageCrop
           };
           reader.readAsDataURL(blob);
         }
-      }, 'image/jpeg', 0.9);
+      }, 'image/jpeg', 0.95);
     };
     img.src = imageSrc;
   }, [imageSrc, cropArea, onCrop, onOpenChange]);
@@ -82,7 +85,7 @@ export function ImageCropper({ open, onOpenChange, imageSrc, onCrop }: ImageCrop
               className="w-full h-full object-cover rounded-lg"
             />
             <div
-              className="absolute border-2 border-primary bg-primary/20 rounded-full cursor-move"
+              className="absolute border-2 border-blue-500 bg-blue-500/20 rounded-full cursor-move select-none"
               style={{
                 left: `${cropArea.x}px`,
                 top: `${cropArea.y}px`,
@@ -91,12 +94,15 @@ export function ImageCropper({ open, onOpenChange, imageSrc, onCrop }: ImageCrop
                 transform: 'translate(-50%, -50%)'
               }}
               onMouseDown={(e) => {
-                const startX = e.clientX - cropArea.x;
-                const startY = e.clientY - cropArea.y;
+                e.preventDefault();
+                const rect = e.currentTarget.parentElement!.getBoundingClientRect();
+                const startX = e.clientX - rect.left - cropArea.x;
+                const startY = e.clientY - rect.top - cropArea.y;
 
                 const handleMouseMove = (e: MouseEvent) => {
-                  const newX = Math.max(cropArea.size/2, Math.min(300 - cropArea.size/2, e.clientX - startX));
-                  const newY = Math.max(cropArea.size/2, Math.min(300 - cropArea.size/2, e.clientY - startY));
+                  const parentRect = e.currentTarget ? (e.currentTarget as HTMLElement).getBoundingClientRect() : rect;
+                  const newX = Math.max(cropArea.size/2, Math.min(300 - cropArea.size/2, e.clientX - rect.left - startX));
+                  const newY = Math.max(cropArea.size/2, Math.min(300 - cropArea.size/2, e.clientY - rect.top - startY));
                   setCropArea(prev => ({ ...prev, x: newX, y: newY }));
                 };
 

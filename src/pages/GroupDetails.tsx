@@ -227,15 +227,15 @@ export default function GroupDetails() {
               <Building className="w-6 h-6 md:w-8 md:h-8 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <h1 className="text-lg md:text-2xl font-bold text-foreground mb-1 truncate">{group.name}</h1>
-              <div className="flex flex-col md:flex-row md:items-center md:space-x-4 text-muted-foreground">
-                <div className="flex items-center space-x-1">
-                  <MapPin className="w-3 h-3 md:w-4 md:h-4" />
-                  <span className="text-sm truncate">{group.municipality}, {group.province}</span>
-                </div>
-                <Badge variant={group.is_active ? "default" : "secondary"} className="w-fit mt-1 md:mt-0">
+              <div className="flex items-center justify-between">
+                <h1 className="text-lg md:text-2xl font-bold text-foreground mb-1 truncate">{group.name}</h1>
+                <Badge variant={group.is_active ? "default" : "secondary"} className="w-fit">
                   {group.is_active ? "Ativo" : "Inativo"}
                 </Badge>
+              </div>
+              <div className="flex items-center space-x-1 text-muted-foreground">
+                <MapPin className="w-3 h-3 md:w-4 md:h-4" />
+                <span className="text-sm truncate">{group.municipality}, {group.province}</span>
               </div>
             </div>
           </div>
@@ -273,7 +273,7 @@ export default function GroupDetails() {
 
         {/* Tabs */}
         <Tabs defaultValue="info" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="info" className="flex items-center space-x-2">
               <FileText className="w-4 h-4" />
               <span>Informações</span>
@@ -285,6 +285,10 @@ export default function GroupDetails() {
             <TabsTrigger value="financial" className="flex items-center space-x-2">
               <Activity className="w-4 h-4" />
               <span>Finanças</span>
+            </TabsTrigger>
+            <TabsTrigger value="technical" className="flex items-center space-x-2">
+              <Shield className="w-4 h-4" />
+              <span>Área Técnica</span>
             </TabsTrigger>
           </TabsList>
 
@@ -414,6 +418,64 @@ export default function GroupDetails() {
 
           <TabsContent value="financial" className="space-y-6">
             <FinancialDashboard groupId={id!} />
+          </TabsContent>
+
+          <TabsContent value="technical" className="space-y-6">
+            <Tabs defaultValue="program" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="program" className="flex items-center space-x-2">
+                  <FileText className="w-4 h-4" />
+                  <span>Programa Semanal</span>
+                </TabsTrigger>
+                <TabsTrigger value="rehearsals" className="flex items-center space-x-2">
+                  <Users className="w-4 h-4" />
+                  <span>Participação nos Ensaios</span>
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="program" className="space-y-4">
+                <Card className="card-elevated">
+                  <div className="p-6">
+                    <h3 className="text-lg font-semibold text-foreground mb-4">
+                      Programa Semanal
+                    </h3>
+                    <div className="space-y-4">
+                      <Button className="w-full" variant="outline">
+                        <FileText className="w-4 h-4 mr-2" />
+                        Adicionar Programa
+                      </Button>
+                      <p className="text-muted-foreground text-sm text-center">
+                        Upload de imagens (máx. 2MB) e áudio (máx. 2MB)
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="rehearsals" className="space-y-4">
+                <Card className="card-elevated">
+                  <div className="p-6">
+                    <h3 className="text-lg font-semibold text-foreground mb-4">
+                      Participação nos Ensaios
+                    </h3>
+                    <div className="space-y-4">
+                      <p className="text-muted-foreground text-sm">
+                        Selecione os membros que participaram nos ensaios por partição
+                      </p>
+                      <div className="grid gap-4">
+                        {/* Placeholder for rehearsal participation */}
+                        <div className="p-4 border border-border rounded-lg">
+                          <h4 className="font-medium mb-2">Soprano</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Funcionalidade em desenvolvimento
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </TabsContent>
         </Tabs>
       </div>

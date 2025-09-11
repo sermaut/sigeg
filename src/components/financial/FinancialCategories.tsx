@@ -6,6 +6,7 @@ import { Plus, Wallet, TrendingUp, TrendingDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { TransactionDialog } from "./TransactionDialog";
 import { TransactionsList } from "./TransactionsList";
+import { FinancialCategoryCard } from "./FinancialCategoryCard";
 import { useToast } from "@/hooks/use-toast";
 
 interface FinancialCategoriesProps {
@@ -58,31 +59,14 @@ export function FinancialCategories({ groupId, categories, onCategoriesUpdate }:
   return (
     <div className="space-y-6">
       {/* Categories Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {categories.map((category) => (
-          <Card 
-            key={category.id} 
-            className="cursor-pointer hover:shadow-md transition-shadow"
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {categories.map((category, index) => (
+          <FinancialCategoryCard
+            key={category.id}
+            category={category}
+            index={index}
             onClick={() => handleCategoryClick(category)}
-          >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{category.name}</CardTitle>
-              <Wallet className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className={`text-lg font-bold ${
-                Number(category.total_balance) >= 0 ? 'text-green-600' : 'text-red-600'
-              }`}>
-                {Number(category.total_balance).toLocaleString('pt-AO', { 
-                  style: 'currency', 
-                  currency: 'AOA' 
-                })}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {category.description}
-              </p>
-            </CardContent>
-          </Card>
+          />
         ))}
       </div>
 
