@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { Bell, Search, User, LogOut, Shield, Users, Menu, Eye, EyeOff } from "lucide-react";
+import { LanguageSelector } from "@/components/common/LanguageSelector";
+import { useTranslation } from 'react-i18next';
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -10,6 +12,7 @@ interface HeaderProps {
 
 export function Header({ onMenuClick }: HeaderProps) {
   const { user, logout, isAdmin, isMember } = useAuth();
+  const { t } = useTranslation();
   const [showCode, setShowCode] = useState(false);
 
   useEffect(() => {
@@ -69,6 +72,8 @@ export function Header({ onMenuClick }: HeaderProps) {
 
         {/* User info and actions */}
         <div className="flex items-center space-x-2 md:space-x-3">
+          <LanguageSelector />
+          
           <Button variant="ghost" size="icon" className="relative hidden md:flex">
             <Bell className="w-5 h-5" />
             <span className="absolute -top-1 -right-1 w-3 h-3 bg-accent rounded-full flex items-center justify-center">
