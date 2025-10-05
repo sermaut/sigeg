@@ -132,13 +132,13 @@ export const OptimizedMembersTable = memo(({
       <table className="w-full">
         <thead>
           <tr className="border-b border-border bg-muted/50">
-            <th className="px-4 py-3 text-center text-sm font-medium text-muted-foreground w-16 border-r border-border/50">
+            <th className="px-4 py-1.5 text-center text-sm font-medium text-muted-foreground w-16 border-r border-border/50">
               Nº.
             </th>
-            <th className="px-4 py-3 text-center text-sm font-medium text-muted-foreground w-20 border-r border-border/50">
+            <th className="px-4 py-1.5 text-center text-sm font-medium text-muted-foreground w-20 border-r border-border/50">
               Foto
             </th>
-            <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+            <th className="px-4 py-1.5 text-left text-sm font-medium text-muted-foreground">
               Nome Completo
             </th>
           </tr>
@@ -146,12 +146,12 @@ export const OptimizedMembersTable = memo(({
         <tbody>
           {memoizedMembers.map((member, index) => (
             <tr key={member.id} className="border-b border-border hover:bg-muted/50 transition-smooth">
-              <td className="px-4 py-3 text-center text-sm text-muted-foreground border-r border-border/50">
+              <td className="px-4 py-2 text-center text-sm text-muted-foreground border-r border-border/50">
                 {index + 1}
               </td>
-              <td className="px-4 py-3 text-center border-r border-border/50">
+              <td className="px-4 py-2 text-center border-r border-border/50">
                 <Avatar 
-                  className="w-12 h-12 mx-auto cursor-pointer hover:scale-105 transition-transform"
+                  className="w-10 h-10 mx-auto cursor-pointer hover:scale-105 transition-transform"
                   onClick={() => {
                     if (member.profile_image_url) {
                       const img = new Image();
@@ -181,7 +181,7 @@ export const OptimizedMembersTable = memo(({
                   </AvatarFallback>
                 </Avatar>
               </td>
-              <td className="px-4 py-3">
+              <td className="px-4 py-2">
                 <button
                   className="text-left hover:text-primary transition-colors font-medium"
                   onClick={() => onMemberView(member.id)}
