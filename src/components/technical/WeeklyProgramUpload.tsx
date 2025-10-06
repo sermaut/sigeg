@@ -51,11 +51,11 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check file size (max 2MB)
-    if (file.size > 2 * 1024 * 1024) {
+    // Check file size (max 12MB)
+    if (file.size > 12 * 1024 * 1024) {
       toast({
         title: "Erro",
-        description: "O áudio deve ter no máximo 2MB",
+        description: "O áudio deve ter no máximo 12MB",
         variant: "destructive",
       });
       return;
@@ -221,7 +221,7 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
 
       <div>
         <label className="text-sm font-medium text-foreground mb-2 block">
-          Áudio (opcional, máx. 2MB)
+          Áudio (opcional, máx. 12MB)
         </label>
         <div className="space-y-2">
           <Button
