@@ -4,6 +4,7 @@ import { StatsCard } from "./StatsCard";
 import { RecentGroups } from "./OptimizedDashboard";
 import { Button } from "@/components/ui/button";
 import { Users, Building, UserPlus, Activity, Plus } from "lucide-react";
+import { useToast } from '@/hooks/use-toast';
 
 interface DashboardStats {
   totalGroups: number;
@@ -13,6 +14,7 @@ interface DashboardStats {
 }
 
 export function Dashboard() {
+  const { toast } = useToast();
   const [stats, setStats] = useState<DashboardStats>({
     totalGroups: 0,
     totalMembers: 0,
@@ -28,25 +30,46 @@ export function Dashboard() {
 
   async function loadDashboardData() {
     try {
-      // Otimizar consultas carregando apenas campos necessários
-      const [groupsResponse, membersResponse] = await Promise.all([
-        supabase
-          .from('groups')
-          .select('id, name, municipality, province, is_active, created_at')
-          .order('created_at', { ascending: false })
-          .limit(10), // Limitar para melhor performance
-        supabase
-          .from('members')
-          .select('id, group_id, is_active')
-          .eq('is_active', true) // Apenas membros ativos
-      ]);
+      setLoading(true);
 
-      const groupsData = groupsResponse.data || [];
-      const membersData = membersResponse.data || [];
+      // Fetch groups data with error handling
+      const { data: groupsData, error: groupsError } = await supabase
+        .from('groups')
+        .select('id, name, municipality, province, is_active, created_at')
+        .order('created_at', { ascending: false })
+        .limit(10);
 
-      const totalGroups = groupsData.length;
-      const activeGroups = groupsData.filter(g => g.is_active).length;
-      const totalMembers = membersData.length;
+      if (groupsError) {
+        console.error('Error loading groups:', groupsError);
+        toast({
+          title: "Erro ao carregar grupos",
+          description: "Não foi possível carregar os dados dos grupos.",
+          variant: "destructive",
+        });
+        setStats({ totalGroups: 0, totalMembers: 0, activeGroups: 0, recentActivity: 0 });
+        setGroups([]);
+        return;
+      }
+
+      // Fetch members data with error handling
+      const { data: membersData, error: membersError } = await supabase
+        .from('members')
+        .select('id, group_id, is_active')
+        .eq('is_active', true);
+
+      if (membersError) {
+        console.error('Error loading members:', membersError);
+        toast({
+          title: "Erro ao carregar membros",
+          description: "Não foi possível carregar os dados dos membros.",
+          variant: "destructive",
+        });
+      }
+
+      // Calculate statistics with safe defaults
+      const totalGroups = groupsData?.length || 0;
+      const totalMembers = membersData?.length || 0;
+      const activeGroups = groupsData?.filter(g => g.is_active).length || 0;
 
       setStats({
         totalGroups,
@@ -55,9 +78,16 @@ export function Dashboard() {
         recentActivity: totalGroups
       });
 
-      setGroups(groupsData);
+      setGroups(groupsData || []);
     } catch (error) {
-      console.error('Erro ao carregar dados do dashboard:', error);
+      console.error('Error loading dashboard data:', error);
+      toast({
+        title: "Erro inesperado",
+        description: "Ocorreu um erro ao carregar o painel.",
+        variant: "destructive",
+      });
+      setStats({ totalGroups: 0, totalMembers: 0, activeGroups: 0, recentActivity: 0 });
+      setGroups([]);
     } finally {
       setLoading(false);
     }

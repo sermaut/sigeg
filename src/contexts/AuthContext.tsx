@@ -94,10 +94,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .select('*')
           .eq('access_code', code)
           .eq('is_active', true)
-          .single();
+          .maybeSingle();
 
-        if (error || !data) {
+        if (error) {
+          console.error('Admin login error:', error);
+          return { success: false, error: 'Erro ao verificar código de administrador' };
+        }
+
+        if (!data) {
           return { success: false, error: 'Código de administrador inválido ou inativo' };
+        }
+
+        // Validate required fields
+        if (!data.id || !data.name || !data.email || !data.permission_level) {
+          console.error('Invalid admin data structure:', data);
+          return { success: false, error: 'Dados de administrador incompletos' };
         }
 
         const permissions = PERMISSION_MAP[PERMISSION_LEVELS[data.permission_level as keyof typeof PERMISSION_LEVELS]];
@@ -112,28 +123,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: true };
 
       } else {
-        const { data, error } = await supabase
+        // First, get the member data
+        const { data: memberData, error: memberError } = await supabase
           .from('members')
-          .select(`
-            *,
-            groups!inner(
-              id,
-              name,
-              is_active
-            )
-          `)
+          .select('*')
           .eq('member_code', code)
           .eq('is_active', true)
-          .single();
+          .maybeSingle();
 
-        if (error || !data) {
+        if (memberError) {
+          console.error('Member login error:', memberError);
+          return { success: false, error: 'Erro ao verificar código de membro' };
+        }
+
+        if (!memberData) {
           return { success: false, error: 'Código de membro inválido ou inativo' };
         }
 
-        const permissions = PERMISSION_MAP[PERMISSION_LEVELS[data.role as keyof typeof PERMISSION_LEVELS]];
+        // Validate required member fields
+        if (!memberData.id || !memberData.name || !memberData.group_id || !memberData.role) {
+          console.error('Invalid member data structure:', memberData);
+          return { success: false, error: 'Dados de membro incompletos' };
+        }
+
+        // Verify group is active (separate query)
+        const { data: groupData, error: groupError } = await supabase
+          .from('groups')
+          .select('id, name, is_active')
+          .eq('id', memberData.group_id)
+          .maybeSingle();
+
+        if (groupError) {
+          console.error('Group verification error:', groupError);
+          return { success: false, error: 'Erro ao verificar grupo' };
+        }
+
+        if (!groupData || !groupData.is_active) {
+          return { success: false, error: 'Grupo inativo ou não encontrado' };
+        }
+
+        const permissions = PERMISSION_MAP[PERMISSION_LEVELS[memberData.role as keyof typeof PERMISSION_LEVELS]];
         const authUser: AuthUser = {
           type: 'member',
-          data: data as Member,
+          data: memberData as Member,
           permissions
         };
 

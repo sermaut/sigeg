@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +20,19 @@ export default function Auth() {
   const location = useLocation();
   
   const from = location.state?.from?.pathname || '/';
+
+  // Clear any corrupted session data on mount
+  useEffect(() => {
+    try {
+      const storedUser = sessionStorage.getItem('sigeg_user');
+      if (storedUser) {
+        JSON.parse(storedUser); // Validate it's valid JSON
+      }
+    } catch (error) {
+      console.error('Corrupted session data detected, clearing...', error);
+      sessionStorage.removeItem('sigeg_user');
+    }
+  }, []);
 
   // Redirect if already authenticated
   if (user) {

@@ -13,17 +13,29 @@ interface ErrorFallbackProps {
 function ErrorFallback({ error, resetErrorBoundary }: ErrorFallbackProps) {
   const { t } = useTranslation();
   
+  const clearCacheAndRetry = () => {
+    try {
+      sessionStorage.clear();
+      localStorage.clear();
+      console.log('Cache limpo com sucesso');
+      window.location.href = '/auth';
+    } catch (err) {
+      console.error('Erro ao limpar cache:', err);
+      window.location.reload();
+    }
+  };
+
   return (
     <div className="min-h-[400px] flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-4">
         <Alert variant="destructive" className="border-destructive/50">
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle className="text-lg font-semibold">
-            {t('common.error')}
+            Erro na Aplicação
           </AlertTitle>
           <AlertDescription className="mt-2 space-y-2">
             <p className="text-sm text-muted-foreground">
-              {t('messages.errorGeneral')}
+              Ocorreu um erro ao carregar a aplicação. Isso pode ser devido a dados em cache corrompidos.
             </p>
             {process.env.NODE_ENV === 'development' && (
               <details className="mt-2">
@@ -41,19 +53,19 @@ function ErrorFallback({ error, resetErrorBoundary }: ErrorFallbackProps) {
         
         <div className="flex space-x-2">
           <Button
+            onClick={clearCacheAndRetry}
+            variant="default"
+            className="flex-1"
+          >
+            Limpar cache e voltar ao login
+          </Button>
+          <Button
             onClick={resetErrorBoundary}
             variant="outline"
             className="flex-1"
           >
             <RefreshCw className="w-4 h-4 mr-2" />
             Tentar novamente
-          </Button>
-          <Button
-            onClick={() => window.location.reload()}
-            variant="default"
-            className="flex-1"
-          >
-            Recarregar página
           </Button>
         </div>
       </div>
