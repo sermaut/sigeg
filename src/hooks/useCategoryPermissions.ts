@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export interface CategoryPermission {
   canView: boolean;
+  canViewBalance: boolean;
   canEdit: boolean;
   role?: 'presidente' | 'secretario' | 'auxiliar';
   isGroupLeader: boolean;
@@ -15,6 +16,7 @@ export function useCategoryPermissions(
 ) {
   const [permissions, setPermissions] = useState<CategoryPermission>({
     canView: true,
+    canViewBalance: false,
     canEdit: false,
     isGroupLeader: false,
   });
@@ -59,9 +61,11 @@ export function useCategoryPermissions(
 
         const isLocked = categoryData?.is_locked ?? false;
         const hasRole = !!roleData;
+        const canViewBalance = isGroupLeader || hasRole;
 
         setPermissions({
           canView: true,
+          canViewBalance,
           canEdit: !isLocked || hasRole || isGroupLeader,
           role: roleData?.role,
           isGroupLeader,

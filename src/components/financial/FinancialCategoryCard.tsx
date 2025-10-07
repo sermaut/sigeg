@@ -142,14 +142,6 @@ export function FinancialCategoryCard({
           </div>
           
           <div className="space-y-2">
-            <div className={`text-xl font-bold ${getBalanceColor()}`}>
-              {balance.toLocaleString('pt-AO', {
-                style: 'currency',
-                currency: 'AOA',
-                minimumFractionDigits: 2
-              })}
-            </div>
-            
             {category.description && (
               <p className={`text-xs ${colorScheme.text} opacity-80`}>
                 {category.description}

@@ -32,7 +32,7 @@ export function FinancialCategories({
   const [loadingTransactions, setLoadingTransactions] = useState(false);
   const { toast } = useToast();
   
-  const { canEdit, loading: permissionsLoading } = useCategoryPermissions(
+  const { canViewBalance, canEdit, loading: permissionsLoading } = useCategoryPermissions(
     selectedCategory?.id,
     currentMemberId,
     groupId
@@ -111,10 +111,14 @@ export function FinancialCategories({
                       <span className={`ml-2 font-bold text-lg ${
                         Number(selectedCategory.total_balance) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                       }`}>
-                        {Number(selectedCategory.total_balance).toLocaleString('pt-AO', { 
-                          style: 'currency', 
-                          currency: 'AOA' 
-                        })}
+                        {canViewBalance ? (
+                          Number(selectedCategory.total_balance).toLocaleString('pt-AO', { 
+                            style: 'currency', 
+                            currency: 'AOA' 
+                          })
+                        ) : (
+                          "****** AOA"
+                        )}
                       </span>
                     </div>
                   </div>
@@ -144,11 +148,20 @@ export function FinancialCategories({
                 </div>
               )}
               
-              <TransactionsList 
-                transactions={transactions}
-                loading={loadingTransactions}
-                onTransactionDeleted={handleTransactionAdded}
-              />
+              {canViewBalance ? (
+                <TransactionsList 
+                  transactions={transactions}
+                  loading={loadingTransactions}
+                  onTransactionDeleted={handleTransactionAdded}
+                />
+              ) : (
+                <div className="bg-muted/50 p-8 rounded-lg text-center">
+                  <Lock className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">
+                    Apenas líderes do grupo ou desta categoria podem visualizar as transações.
+                  </p>
+                </div>
+              )}
             </div>
           </DialogContent>
         </Dialog>
