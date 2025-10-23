@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2, Calendar, Music } from "lucide-react";
+import { Trash2, Calendar, Music, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { CustomAudioPlayer } from "./CustomAudioPlayer";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -122,15 +123,18 @@ export function WeeklyProgramList({ groupId, refreshTrigger }: WeeklyProgramList
           const daysRemaining = getDaysRemaining(program.expires_at);
           
           return (
-            <Card key={program.id} className="overflow-hidden">
-              <div className="p-4 space-y-3">
+            <Card key={program.id} className="overflow-hidden border-primary/10 shadow-md hover:shadow-lg transition-shadow duration-300">
+              <div className="p-4 space-y-3 bg-gradient-to-br from-background to-accent/5">
                 <div className="flex items-start justify-between">
-                  <h3 className="font-semibold text-foreground">{program.title}</h3>
+                  <h3 className="font-bold text-lg text-foreground flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-primary" />
+                    {program.title}
+                  </h3>
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => setDeleteId(program.id)}
-                    className="text-destructive hover:text-destructive"
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
@@ -143,25 +147,22 @@ export function WeeklyProgramList({ groupId, refreshTrigger }: WeeklyProgramList
                   <img
                     src={program.image_url}
                     alt={program.title}
-                    className="w-full h-64 object-cover rounded-lg transition-transform group-hover:scale-105"
+                    className="w-full h-64 object-cover rounded-lg border-2 border-primary/20 shadow-md transition-transform group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded-lg" />
                 </div>
 
                 {program.audio_url && (
                   <div className="space-y-2">
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <Music className="w-4 h-4 mr-2" />
-                      Áudio
+                    <div className="flex items-center text-sm font-medium text-foreground">
+                      <Music className="w-4 h-4 mr-2 text-primary" />
+                      Áudio do Programa
                     </div>
-                    <audio controls className="w-full">
-                      <source src={program.audio_url} type="audio/mpeg" />
-                      Seu navegador não suporta o elemento de áudio.
-                    </audio>
+                    <CustomAudioPlayer audioUrl={program.audio_url} />
                   </div>
                 )}
 
-                <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
+                <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-primary/10">
                   <div className="flex items-center">
                     <Calendar className="w-3 h-3 mr-1" />
                     Expira em {daysRemaining} {daysRemaining === 1 ? 'dia' : 'dias'}

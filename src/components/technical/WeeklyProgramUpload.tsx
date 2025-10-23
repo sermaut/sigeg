@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Upload, X, Image as ImageIcon, Music, Loader2 } from "lucide-react";
+import { Upload, X, Image as ImageIcon, Music, Loader2, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface WeeklyProgramUploadProps {
@@ -159,30 +159,50 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
   };
 
   return (
-    <Card className="p-6 space-y-4">
-      <div>
-        <label className="text-sm font-medium text-foreground mb-2 block">
-          Título
-        </label>
+    <Card className="p-6 space-y-4 bg-gradient-to-br from-primary/5 via-background to-accent/5 border-2 border-primary/10 shadow-lg">
+      {/* Header */}
+      <div className="flex items-center gap-3 pb-4 border-b border-primary/20">
+        <div className="p-3 bg-primary/10 rounded-lg">
+          <Upload className="w-6 h-6 text-primary" />
+        </div>
+        <div>
+          <h3 className="text-lg font-semibold text-foreground">Adicionar Programa Semanal</h3>
+          <p className="text-sm text-muted-foreground">Faça upload de imagem e áudio</p>
+        </div>
+      </div>
+
+      {/* Título */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <FileText className="w-4 h-4 text-primary" />
+          <label className="text-sm font-semibold text-foreground">
+            Título
+          </label>
+        </div>
         <Input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Digite o título do programa"
           disabled={uploading}
+          className="border-primary/20 focus:border-primary"
         />
       </div>
 
-      <div>
-        <label className="text-sm font-medium text-foreground mb-2 block">
-          Imagem (máx. 2MB)
-        </label>
+      {/* Imagem */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <ImageIcon className="w-4 h-4 text-primary" />
+          <label className="text-sm font-semibold text-foreground">
+            Imagem (máx. 2MB)
+          </label>
+        </div>
         <div className="space-y-2">
           <Button
             type="button"
             variant="outline"
             onClick={() => imageInputRef.current?.click()}
             disabled={uploading}
-            className="w-full"
+            className="w-full border-primary/20 hover:border-primary hover:bg-primary/5"
           >
             <ImageIcon className="w-4 h-4 mr-2" />
             {imageFile ? imageFile.name : "Selecionar Imagem"}
@@ -195,17 +215,18 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
             className="hidden"
           />
           {imagePreview && (
-            <div className="relative">
+            <div className="relative group">
               <img
                 src={imagePreview}
                 alt="Preview"
-                className="w-full h-48 object-cover rounded-lg"
+                className="w-full h-48 object-cover rounded-lg border-2 border-primary/20 shadow-md transition-transform duration-300 group-hover:scale-[1.02]"
               />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors rounded-lg" />
               <Button
                 type="button"
                 variant="destructive"
                 size="icon"
-                className="absolute top-2 right-2"
+                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
                 onClick={() => {
                   setImageFile(null);
                   setImagePreview(null);
@@ -219,17 +240,21 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
         </div>
       </div>
 
-      <div>
-        <label className="text-sm font-medium text-foreground mb-2 block">
-          Áudio (opcional, máx. 12MB)
-        </label>
+      {/* Áudio */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Music className="w-4 h-4 text-primary" />
+          <label className="text-sm font-semibold text-foreground">
+            Áudio (opcional, máx. 12MB)
+          </label>
+        </div>
         <div className="space-y-2">
           <Button
             type="button"
             variant="outline"
             onClick={() => audioInputRef.current?.click()}
             disabled={uploading}
-            className="w-full"
+            className="w-full border-primary/20 hover:border-primary hover:bg-primary/5"
           >
             <Music className="w-4 h-4 mr-2" />
             {audioFile ? audioFile.name : "Selecionar Áudio"}
@@ -242,12 +267,13 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
             className="hidden"
           />
           {audioFile && (
-            <div className="flex items-center justify-between p-2 bg-muted rounded-lg">
-              <span className="text-sm truncate">{audioFile.name}</span>
+            <div className="flex items-center justify-between p-3 bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg border border-primary/10">
+              <span className="text-sm truncate font-medium">{audioFile.name}</span>
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
+                className="hover:bg-destructive/10"
                 onClick={() => {
                   setAudioFile(null);
                   if (audioInputRef.current) audioInputRef.current.value = "";
@@ -260,10 +286,11 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
         </div>
       </div>
 
+      {/* Botão de Upload */}
       <Button
         onClick={handleUpload}
         disabled={uploading || !title.trim() || !imageFile}
-        className="w-full"
+        className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md transition-all duration-300"
       >
         {uploading ? (
           <>
@@ -278,7 +305,7 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
         )}
       </Button>
 
-      <p className="text-xs text-muted-foreground text-center">
+      <p className="text-xs text-muted-foreground text-center pt-2 border-t border-primary/10">
         O conteúdo será automaticamente removido após 6 dias
       </p>
     </Card>
