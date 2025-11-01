@@ -219,50 +219,69 @@ export default function GroupDetails() {
 
   return (
     <MainLayout>
-      <div className="space-y-6 min-h-screen bg-gradient-subtle">
-        {/* Header with breadcrumb */}
-        <div className="flex items-center space-x-2 md:space-x-4 mb-4 md:mb-6">
+      <div className="min-h-screen bg-gradient-to-br from-background via-primary/3 to-accent/3">
+        {/* Breadcrumb com hover effects */}
+        <div className="flex items-center space-x-2 mb-6 animate-fade-in">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate('/groups')}
-            className="text-muted-foreground hover:text-foreground"
+            className="text-muted-foreground hover:text-primary hover:bg-primary/5 
+                       transition-all hover:scale-105"
           >
-            <ArrowLeft className="w-3 h-3 md:w-4 md:h-4" />
-            <span className="hidden md:inline">Voltar</span>
+            <ArrowLeft className="w-4 h-4" />
+            Voltar
           </Button>
-          <span className="text-muted-foreground text-sm">/</span>
-          <span className="text-xs md:text-sm text-muted-foreground">Grupos</span>
-          <span className="text-muted-foreground text-sm">/</span>
-          <span className="text-xs md:text-sm font-medium text-foreground truncate">{group.name}</span>
+          <span className="text-muted-foreground">/</span>
+          <span className="text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer">
+            Grupos
+          </span>
+          <span className="text-muted-foreground">/</span>
+          <span className="text-sm font-semibold text-primary">{group.name}</span>
         </div>
 
-        {/* Group Header */}
-        <div className="space-y-4">
-          <div className="flex items-center space-x-3 md:space-x-4">
-            <div className="w-12 h-12 md:w-16 md:h-16 gradient-primary rounded-xl md:rounded-2xl flex items-center justify-center">
-              <Building className="w-6 h-6 md:w-8 md:h-8 text-white" />
+        {/* Header do grupo com gradiente */}
+        <div className="space-y-4 mb-6 animate-scale-in">
+          <div className="flex items-center space-x-4">
+            <div className="relative group">
+              <div className="absolute inset-0 gradient-primary rounded-2xl blur-xl opacity-50 
+                              group-hover:opacity-100 transition-opacity" />
+              <div className="relative w-20 h-20 gradient-primary rounded-2xl flex items-center 
+                              justify-center shadow-strong group-hover:scale-110 
+                              transition-transform duration-500">
+                <Building className="w-10 h-10 text-white" />
+              </div>
+              {group.is_active && (
+                <div className="absolute -top-2 -right-2 w-6 h-6 bg-success rounded-full 
+                                border-4 border-white animate-pulse shadow-glow-accent" />
+              )}
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <h1 className="text-lg md:text-2xl font-bold text-foreground mb-1 truncate">{group.name}</h1>
-                <Badge variant={group.is_active ? "default" : "secondary"} className="w-fit">
+            
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-primary 
+                               bg-clip-text text-transparent">
+                  {group.name}
+                </h1>
+                <Badge variant={group.is_active ? "success" : "secondary"} 
+                       className="text-sm px-3 py-1">
                   {group.is_active ? "Ativo" : "Inativo"}
                 </Badge>
               </div>
-              <div className="flex items-center space-x-1 text-muted-foreground">
-                <MapPin className="w-3 h-3 md:w-4 md:h-4" />
-                <span className="text-sm truncate">{group.municipality}, {group.province}</span>
+              <div className="flex items-center space-x-2 text-muted-foreground">
+                <MapPin className="w-5 h-5" />
+                <span className="text-lg">{group.municipality}, {group.province}</span>
               </div>
             </div>
           </div>
           
-          {/* Action buttons below title */}
-          <div className="flex flex-col sm:flex-row gap-2 sm:space-x-3">
+          {/* Botões de ação com gradientes */}
+          <div className="flex flex-wrap gap-3">
             <Button
               variant="outline"
               onClick={() => navigate(`/groups/${id}/edit`)}
-              className="w-full sm:w-auto"
+              className="hover:border-primary hover:text-primary hover:bg-primary/5 
+                         transition-all hover:scale-105"
             >
               <Edit className="w-4 h-4" />
               Editar Grupo
@@ -270,7 +289,7 @@ export default function GroupDetails() {
             <Button
               variant="gradient"
               onClick={() => navigate(`/members/new?groupId=${id}`)}
-              className="w-full sm:w-auto"
+              className="hover:shadow-glow"
             >
               <UserPlus className="w-4 h-4" />
               Adicionar Membro
@@ -278,7 +297,8 @@ export default function GroupDetails() {
             <Button
               variant="outline"
               onClick={() => navigate(`/plans/${id}`)}
-              className="w-full sm:w-auto"
+              className="hover:border-accent hover:text-accent hover:bg-accent/5 
+                         transition-all hover:scale-105"
             >
               <CreditCard className="w-4 h-4" />
               Gerenciar Plano
@@ -288,19 +308,32 @@ export default function GroupDetails() {
 
         {/* Stats Cards - removed as requested */}
 
-        {/* Tabs */}
+        {/* Tabs modernizadas */}
         <Tabs defaultValue="info" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="info">
+          <TabsList className="grid w-full grid-cols-4 p-1 bg-gradient-to-r from-muted/50 to-muted/30 
+                               rounded-xl border-2 border-primary/10 shadow-soft">
+            <TabsTrigger value="info"
+                         className="rounded-lg data-[state=active]:gradient-primary 
+                                   data-[state=active]:text-white data-[state=active]:shadow-soft
+                                   transition-all duration-300 hover:scale-105">
               Informações
             </TabsTrigger>
-            <TabsTrigger value="members">
+            <TabsTrigger value="members"
+                         className="rounded-lg data-[state=active]:gradient-primary 
+                                   data-[state=active]:text-white data-[state=active]:shadow-soft
+                                   transition-all duration-300 hover:scale-105">
               Membros
             </TabsTrigger>
-            <TabsTrigger value="financial">
+            <TabsTrigger value="financial"
+                         className="rounded-lg data-[state=active]:gradient-primary 
+                                   data-[state=active]:text-white data-[state=active]:shadow-soft
+                                   transition-all duration-300 hover:scale-105">
               Finanças
             </TabsTrigger>
-            <TabsTrigger value="technical">
+            <TabsTrigger value="technical"
+                         className="rounded-lg data-[state=active]:gradient-primary 
+                                   data-[state=active]:text-white data-[state=active]:shadow-soft
+                                   transition-all duration-300 hover:scale-105">
               Área Técnica
             </TabsTrigger>
           </TabsList>
@@ -439,11 +472,18 @@ export default function GroupDetails() {
 
           <TabsContent value="technical" className="space-y-6">
             <Tabs defaultValue="program" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="program">
+              <TabsList className="grid w-full grid-cols-2 p-1 bg-gradient-to-r from-muted/50 to-muted/30 
+                                   rounded-xl border-2 border-primary/10 shadow-soft">
+                <TabsTrigger value="program"
+                             className="rounded-lg data-[state=active]:gradient-primary 
+                                       data-[state=active]:text-white data-[state=active]:shadow-soft
+                                       transition-all duration-300">
                   Programa Semanal
                 </TabsTrigger>
-                <TabsTrigger value="rehearsals">
+                <TabsTrigger value="rehearsals"
+                             className="rounded-lg data-[state=active]:gradient-primary 
+                                       data-[state=active]:text-white data-[state=active]:shadow-soft
+                                       transition-all duration-300">
                   Participação nos Ensaios
                 </TabsTrigger>
               </TabsList>

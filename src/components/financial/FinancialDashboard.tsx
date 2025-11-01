@@ -59,9 +59,20 @@ export function FinancialDashboard({ groupId, currentMemberId, isGroupLeader }: 
     <div className="space-y-6">
 
       <Tabs defaultValue="categories" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="categories">Registros Financeiros</TabsTrigger>
-          <TabsTrigger value="payments">Controlo de Pagamentos</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 p-1 bg-gradient-to-r from-muted/50 to-muted/30 
+                             rounded-xl border-2 border-primary/10 shadow-soft">
+          <TabsTrigger value="categories"
+                       className="rounded-lg data-[state=active]:gradient-primary 
+                                 data-[state=active]:text-white data-[state=active]:shadow-soft
+                                 transition-all duration-300">
+            Registros Financeiros
+          </TabsTrigger>
+          <TabsTrigger value="payments"
+                       className="rounded-lg data-[state=active]:gradient-primary 
+                                 data-[state=active]:text-white data-[state=active]:shadow-soft
+                                 transition-all duration-300">
+            Controlo de Pagamentos
+          </TabsTrigger>
         </TabsList>
         
         <TabsContent value="categories" className="space-y-4">
