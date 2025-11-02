@@ -136,7 +136,8 @@ export default function Auth() {
                   onClick={() => handleLogin(memberCode, 'member')}
                   disabled={loading}
                   variant="gradient"
-                  className="w-full h-12 text-base font-semibold"
+                  size="lg"
+                  className="w-full"
                 >
                   {loading ? (
                     <Loader2 className="w-5 h-5 animate-spin mr-2" />
@@ -162,8 +163,9 @@ export default function Auth() {
                 <Button
                   onClick={() => handleLogin(adminCode, 'admin')}
                   disabled={loading}
-                  variant="secondary"
-                  className="w-full h-12 text-base font-semibold hover:scale-105"
+                  variant="gradient-accent"
+                  size="lg"
+                  className="w-full"
                 >
                   {loading ? (
                     <Loader2 className="w-5 h-5 animate-spin mr-2" />
