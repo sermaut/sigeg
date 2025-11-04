@@ -62,7 +62,7 @@ export function Header({ onMenuClick }: HeaderProps) {
           variant="ghost" 
           size="icon"
           onClick={onMenuClick}
-          className="lg:hidden hover:bg-cyan-600/20 text-white w-11 h-11"
+          className="lg:hidden bg-cyan-700/30 hover:bg-cyan-600/40 text-white w-11 h-11 border-2 border-cyan-400/50 hover:border-cyan-300 transition-all duration-300"
         >
           <Menu className="w-6 h-6" />
         </Button>
