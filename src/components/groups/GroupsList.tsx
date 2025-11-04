@@ -4,13 +4,25 @@ import { GroupCard } from "./GroupCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Plus, Search, Filter } from "lucide-react";
+import { Plus, Search, Filter, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export function GroupsList() {
   const [groups, setGroups] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [groupToDelete, setGroupToDelete] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -55,30 +67,37 @@ export function GroupsList() {
     window.location.href = `/groups/${id}/edit`;
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm('Tem certeza que deseja excluir este grupo?')) {
-      try {
-        const { error } = await supabase
-          .from('groups')
-          .delete()
-          .eq('id', id);
-        
-        if (error) throw error;
-        
-        toast({
-          title: "Grupo excluído com sucesso!",
-        });
-        
-        // Reload groups
-        loadGroups();
-      } catch (error) {
-        console.error('Erro ao excluir grupo:', error);
-        toast({
-          title: "Erro",
-          description: "Falha ao excluir grupo",
-          variant: "destructive",
-        });
-      }
+  const handleDelete = (id: string) => {
+    setGroupToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!groupToDelete) return;
+    
+    try {
+      const { error } = await supabase
+        .from('groups')
+        .delete()
+        .eq('id', groupToDelete);
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Grupo excluído com sucesso!",
+      });
+      
+      loadGroups();
+    } catch (error) {
+      console.error('Erro ao excluir grupo:', error);
+      toast({
+        title: "Erro",
+        description: "Falha ao excluir grupo",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleteDialogOpen(false);
+      setGroupToDelete(null);
     }
   };
 
@@ -164,6 +183,36 @@ export function GroupsList() {
           Novo Grupo
         </Button>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
+                <Trash2 className="w-6 h-6 text-destructive" />
+              </div>
+              <AlertDialogTitle>
+                Excluir Grupo
+              </AlertDialogTitle>
+            </div>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este grupo? Esta ação não pode ser desfeita e todos os dados relacionados ao grupo serão removidos permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteDialogOpen(false)}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
