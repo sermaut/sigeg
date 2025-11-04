@@ -123,9 +123,23 @@ export function CategoryLeadersDialog({
 
       if (error) throw error;
 
+      // Criar notificação para o membro atribuído
+      const { error: notificationError } = await supabase
+        .from("category_role_notifications")
+        .insert({
+          member_id: selectedMember,
+          category_id: categoryId,
+          role: selectedRole,
+          is_read: false,
+        });
+
+      if (notificationError) {
+        console.error("Erro ao criar notificação:", notificationError);
+      }
+
       toast({
         title: "Líder adicionado",
-        description: "O membro foi atribuído à categoria com sucesso.",
+        description: "O membro foi atribuído à categoria com sucesso e será notificado.",
       });
 
       setSelectedMember("");

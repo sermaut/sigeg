@@ -20,6 +20,8 @@ interface FinancialCategoryCardProps {
   onClick?: () => void;
   isGroupLeader?: boolean;
   currentMemberId?: string;
+  userType?: 'admin' | 'member';
+  permissionLevel?: string;
 }
 
 interface CategoryLeader {
@@ -89,15 +91,43 @@ export function FinancialCategoryCard({
   index, 
   onClick, 
   isGroupLeader = false,
-  currentMemberId 
+  currentMemberId,
+  userType,
+  permissionLevel
 }: FinancialCategoryCardProps) {
   const colorScheme = categoryColors[index % categoryColors.length];
   const [showLeadersDialog, setShowLeadersDialog] = useState(false);
   const [leaders, setLeaders] = useState<CategoryLeader[]>([]);
+  const [hasAccess, setHasAccess] = useState(true);
 
   useEffect(() => {
     loadLeaders();
-  }, [category.id]);
+    checkAccess();
+  }, [category.id, currentMemberId, userType, permissionLevel]);
+
+  const checkAccess = async () => {
+    // Admins principais têm acesso a tudo
+    if (userType === 'admin' && 
+        (permissionLevel === 'super_admin' || permissionLevel === 'admin_principal')) {
+      setHasAccess(true);
+      return;
+    }
+
+    // Se não está bloqueada, todos têm acesso
+    if (!category.is_locked) {
+      setHasAccess(true);
+      return;
+    }
+
+    // Se está bloqueada, verificar se é líder
+    if (!currentMemberId) {
+      setHasAccess(false);
+      return;
+    }
+
+    const isLeader = leaders.some(l => l.member_id === currentMemberId);
+    setHasAccess(isLeader || isGroupLeader);
+  };
 
   const loadLeaders = async () => {
     try {
@@ -155,38 +185,42 @@ export function FinancialCategoryCard({
   };
 
   const handleCardClick = () => {
-    if (!isLocked || leaders.some(l => l.member_id === currentMemberId) || isGroupLeader) {
-      onClick?.();
-    }
+    onClick?.();
   };
 
   return (
     <>
       <Card 
         className={`group cursor-pointer transition-all duration-500 border-2 ${colorScheme.border} 
-                    hover:-translate-y-1 hover:shadow-elevated ${colorScheme.shadow} backdrop-blur-sm relative overflow-hidden`}
+                    hover:-translate-y-2 hover:shadow-2xl ${colorScheme.shadow} backdrop-blur-sm relative overflow-hidden
+                    ${!hasAccess && isLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
         onClick={handleCardClick}
       >
-        <div className={`absolute inset-0 bg-gradient-to-br ${colorScheme.gradient} opacity-5 
-                        group-hover:opacity-10 transition-opacity`} />
+        <div className={`absolute inset-0 bg-gradient-to-br ${colorScheme.gradient} 
+                        ${!hasAccess && isLocked ? 'opacity-3' : 'opacity-5 group-hover:opacity-10'} 
+                        transition-opacity`} />
         
-        <div className="relative p-5">
-          <div className="flex items-start justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${colorScheme.icon}
-                              transition-all duration-500 group-hover:scale-110 group-hover:rotate-3`}>
-                {getBalanceIcon()}
+        <div className="relative p-6">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center gap-3 flex-1">
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${colorScheme.icon}
+                              transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 shadow-sm`}>
+                {!hasAccess && isLocked ? (
+                  <Lock className="w-6 h-6" />
+                ) : (
+                  getBalanceIcon()
+                )}
               </div>
-              <div>
-                <h3 className="font-bold text-base text-foreground group-hover:text-primary transition-colors">
+              <div className="flex-1">
+                <h3 className="font-bold text-lg text-foreground group-hover:text-primary transition-colors line-clamp-1">
                   {category.name}
                 </h3>
                 {category.description && (
-                  <p className="text-xs text-muted-foreground mt-1">{category.description}</p>
+                  <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2">{category.description}</p>
                 )}
               </div>
             </div>
-            {isLocked && <Lock className="w-5 h-5 text-muted-foreground" />}
+            {isLocked && hasAccess && <Lock className="w-5 h-5 text-muted-foreground flex-shrink-0" />}
           </div>
           
           <div className="space-y-3">

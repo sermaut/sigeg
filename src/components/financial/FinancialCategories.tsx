@@ -17,6 +17,8 @@ interface FinancialCategoriesProps {
   onCategoriesUpdate: () => void;
   currentMemberId?: string;
   isGroupLeader?: boolean;
+  userType?: 'admin' | 'member';
+  permissionLevel?: string;
 }
 
 export function FinancialCategories({ 
@@ -24,7 +26,9 @@ export function FinancialCategories({
   categories, 
   onCategoriesUpdate,
   currentMemberId,
-  isGroupLeader = false 
+  isGroupLeader = false,
+  userType,
+  permissionLevel
 }: FinancialCategoriesProps) {
   const [selectedCategory, setSelectedCategory] = useState<any>(null);
   const [showTransactionDialog, setShowTransactionDialog] = useState(false);
@@ -35,7 +39,9 @@ export function FinancialCategories({
   const { canViewBalance, canEdit, loading: permissionsLoading } = useCategoryPermissions(
     selectedCategory?.id,
     currentMemberId,
-    groupId
+    groupId,
+    userType,
+    permissionLevel
   );
 
   const loadTransactions = async (categoryId: string) => {
@@ -60,7 +66,45 @@ export function FinancialCategories({
     }
   };
 
-  const handleCategoryClick = (category: any) => {
+  const handleCategoryClick = async (category: any) => {
+    // Verificar se é admin principal/super admin
+    const isSuperAdmin = userType === 'admin' && 
+      (permissionLevel === 'super_admin' || permissionLevel === 'admin_principal');
+    
+    // Verificar se tem acesso à categoria
+    if (!isSuperAdmin && currentMemberId && category.is_locked) {
+      // Verificar se é líder da categoria
+      const { data: roleData } = await supabase
+        .from("category_roles")
+        .select("role")
+        .eq("category_id", category.id)
+        .eq("member_id", currentMemberId)
+        .eq("is_active", true)
+        .maybeSingle();
+      
+      // Verificar se é líder do grupo
+      const { data: groupData } = await supabase
+        .from("groups")
+        .select("president_id, vice_president_1_id, vice_president_2_id")
+        .eq("id", groupId)
+        .single();
+      
+      const isGroupLeaderCheck = groupData ? (
+        groupData.president_id === currentMemberId ||
+        groupData.vice_president_1_id === currentMemberId ||
+        groupData.vice_president_2_id === currentMemberId
+      ) : false;
+      
+      if (!roleData && !isGroupLeaderCheck) {
+        toast({
+          title: "Acesso Negado",
+          description: "Você não tem permissão para acessar este registro financeiro. Entre em contato com um líder do grupo para solicitar acesso.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+    
     setSelectedCategory(category);
     loadTransactions(category.id);
   };
@@ -75,7 +119,7 @@ export function FinancialCategories({
   return (
     <div className="space-y-6">
       {/* Categories Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {categories.map((category, index) => (
           <FinancialCategoryCard
             key={category.id}
@@ -84,6 +128,8 @@ export function FinancialCategories({
             onClick={() => handleCategoryClick(category)}
             isGroupLeader={isGroupLeader}
             currentMemberId={currentMemberId}
+            userType={userType}
+            permissionLevel={permissionLevel}
           />
         ))}
       </div>

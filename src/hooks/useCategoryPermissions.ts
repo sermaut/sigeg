@@ -12,7 +12,9 @@ export interface CategoryPermission {
 export function useCategoryPermissions(
   categoryId: string | undefined,
   memberId: string | undefined,
-  groupId: string | undefined
+  groupId: string | undefined,
+  userType?: 'admin' | 'member',
+  permissionLevel?: string
 ) {
   const [permissions, setPermissions] = useState<CategoryPermission>({
     canView: true,
@@ -24,12 +26,31 @@ export function useCategoryPermissions(
 
   useEffect(() => {
     async function checkPermissions() {
-      if (!categoryId || !memberId || !groupId) {
+      if (!categoryId || !groupId) {
         setLoading(false);
         return;
       }
 
       try {
+        // Verificar se é super admin ou admin principal
+        if (userType === 'admin' && 
+            (permissionLevel === 'super_admin' || permissionLevel === 'admin_principal')) {
+          setPermissions({
+            canView: true,
+            canViewBalance: true,
+            canEdit: true,
+            isGroupLeader: false,
+            role: undefined,
+          });
+          setLoading(false);
+          return;
+        }
+
+        // Para membros ou quando memberId não está disponível
+        if (!memberId) {
+          setLoading(false);
+          return;
+        }
         // Verificar se é líder do grupo
         const { data: groupData } = await supabase
           .from("groups")
@@ -78,7 +99,7 @@ export function useCategoryPermissions(
     }
 
     checkPermissions();
-  }, [categoryId, memberId, groupId]);
+  }, [categoryId, memberId, groupId, userType, permissionLevel]);
 
   return { ...permissions, loading };
 }

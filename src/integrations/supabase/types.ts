@@ -56,6 +56,58 @@ export type Database = {
           },
         ]
       }
+      category_role_notifications: {
+        Row: {
+          assigned_by: string | null
+          category_id: string
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          member_id: string
+          role: string
+        }
+        Insert: {
+          assigned_by?: string | null
+          category_id: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          member_id: string
+          role: string
+        }
+        Update: {
+          assigned_by?: string | null
+          category_id?: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          member_id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_role_notifications_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_role_notifications_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "financial_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_role_notifications_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       category_roles: {
         Row: {
           assigned_at: string
@@ -625,18 +677,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_access_financial_category: {
+        Args: { p_category_id: string; p_member_id: string }
+        Returns: boolean
+      }
       can_manage_category: {
         Args: { p_category_id: string; p_member_id: string }
         Returns: boolean
       }
-      generate_admin_code: {
-        Args: { prefix?: string }
-        Returns: string
-      }
-      soft_delete_expired_weekly_programs: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      generate_admin_code: { Args: { prefix?: string }; Returns: string }
+      soft_delete_expired_weekly_programs: { Args: never; Returns: undefined }
     }
     Enums: {
       category_role: "presidente" | "secretario" | "auxiliar"

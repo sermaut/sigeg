@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 export interface SystemAdmin {
   id: string;
@@ -170,6 +171,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         setUser(authUser);
         localStorage.setItem('sigeg_user', JSON.stringify(authUser));
+
+        // Verificar notificações de atribuições pendentes
+        setTimeout(async () => {
+          const { data: notifications } = await supabase
+            .from('category_role_notifications')
+            .select(`
+              id,
+              role,
+              is_read,
+              financial_categories (
+                name
+              )
+            `)
+            .eq('member_id', memberData.id)
+            .eq('is_read', false)
+            .order('created_at', { ascending: false })
+            .limit(3);
+
+          if (notifications && notifications.length > 0) {
+            const roleLabels: Record<string, string> = {
+              'presidente': 'Presidente',
+              'secretario': 'Secretário',
+              'auxiliar': 'Auxiliar'
+            };
+
+            notifications.forEach((notification: any) => {
+              const categoryName = notification.financial_categories?.name || 'N/A';
+              const roleLabel = roleLabels[notification.role] || notification.role;
+              
+              toast({
+                title: "Nova Atribuição de Liderança! 🎉",
+                description: `Você foi designado como ${roleLabel} da categoria "${categoryName}".`,
+                duration: 8000,
+              });
+            });
+          }
+        }, 1000);
+
         return { success: true };
       }
     } catch (error) {

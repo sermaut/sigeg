@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { Bell, Search, User, LogOut, Shield, Users, Menu, Eye, EyeOff, Music } from "lucide-react";
 import { LanguageSelector } from "@/components/common/LanguageSelector";
+import { RoleNotificationBadge } from "@/components/common/RoleNotificationBadge";
 import { useTranslation } from 'react-i18next';
 
 interface HeaderProps {
@@ -103,19 +104,8 @@ export function Header({ onMenuClick }: HeaderProps) {
         <div className="flex items-center space-x-2 md:space-x-3">
           <LanguageSelector />
           
-          {/* Notificação melhorada */}
-          <Button variant="ghost" size="icon" 
-                  className="relative hidden md:flex group hover:bg-primary/10">
-            <Bell className="w-5 h-5 group-hover:text-primary transition-colors" />
-            <span className="absolute -top-1 -right-1 
-                           w-5 h-5 rounded-full flex items-center justify-center
-                           bg-gradient-to-br from-red-500 to-red-600
-                           text-white text-xs font-bold
-                           shadow-[0_0_10px_rgba(239,68,68,0.5)]
-                           animate-pulse ring-2 ring-white">
-              3
-            </span>
-          </Button>
+          {/* Notificação de atribuições */}
+          <RoleNotificationBadge />
           
           {/* Separador elegante */}
           <div className="h-8 w-px bg-gradient-to-b from-transparent via-border to-transparent 
