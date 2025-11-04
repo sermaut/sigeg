@@ -98,15 +98,6 @@ export function WeeklyProgramEditDialog({ program, onClose, onUpdate }: WeeklyPr
       return;
     }
 
-    if (file.size > 4 * 1024 * 1024) {
-      toast({
-        title: "Erro",
-        description: "A imagem deve ter no máximo 4MB",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setImageFile(file);
     
     const reader = new FileReader();
@@ -153,15 +144,6 @@ export function WeeklyProgramEditDialog({ program, onClose, onUpdate }: WeeklyPr
       toast({
         title: "Erro",
         description: "Apenas imagens PNG ou JPG são permitidas",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (file.size > 4 * 1024 * 1024) {
-      toast({
-        title: "Erro",
-        description: "A imagem deve ter no máximo 4MB",
         variant: "destructive",
       });
       return;
@@ -286,9 +268,9 @@ export function WeeklyProgramEditDialog({ program, onClose, onUpdate }: WeeklyPr
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <ImageIcon className="w-4 h-4 text-primary" />
-              <label className="text-sm font-semibold text-foreground">
-                Imagem (máx. 4MB)
-              </label>
+            <label className="text-sm font-semibold text-foreground">
+              Imagem
+            </label>
             </div>
             <div className="space-y-2">
               <div className="grid grid-cols-2 gap-2">

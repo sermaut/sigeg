@@ -100,15 +100,6 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
       }
     }
 
-    if (finalFile.size > 4 * 1024 * 1024) {
-      toast({
-        title: "Erro",
-        description: "A imagem deve ter no máximo 4MB mesmo após compressão",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setImageFile(finalFile);
     
     const reader = new FileReader();
@@ -159,15 +150,6 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
       toast({
         title: "Erro",
         description: "Apenas imagens PNG ou JPG são permitidas",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (file.size > 4 * 1024 * 1024) {
-      toast({
-        title: "Erro",
-        description: "A imagem deve ter no máximo 4MB",
         variant: "destructive",
       });
       return;
@@ -388,9 +370,9 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <ImageIcon className="w-4 h-4 text-primary" />
-          <label className="text-sm font-semibold text-foreground">
-            Imagem (máx. 4MB)
-          </label>
+            <label className="text-sm font-semibold text-foreground">
+              Imagem
+            </label>
         </div>
         <div className="space-y-2">
           <div className="grid grid-cols-2 gap-2">
