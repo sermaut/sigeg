@@ -53,20 +53,20 @@ export function Sidebar({ className, isOpen, onOpenChange }: SidebarProps) {
       )}
       
       <div className={cn(
-        "fixed lg:relative inset-y-0 left-0 z-50 flex flex-col h-full bg-gradient-to-b from-teal-900/90 to-cyan-950/90 backdrop-blur-md border-r border-teal-700/30 shadow-soft transition-all duration-300",
+        "fixed lg:relative inset-y-0 left-0 z-50 flex flex-col h-full bg-gradient-to-b from-purple-900/92 via-violet-950/92 to-purple-950/92 backdrop-blur-md border-r border-purple-400/25 shadow-soft transition-all duration-300",
         "w-64",
         isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         className
       )}>
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-teal-600/30">
+        <div className="flex items-center justify-between p-4 border-b border-purple-400/30 bg-purple-900/40">
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center">
               <Music className="w-5 h-5 text-white" />
             </div>
             <div className="flex flex-col">
               <span className="font-bold text-lg text-white">SIGEG</span>
-              <span className="text-xs text-teal-100">Sistema de Gestão</span>
+              <span className="text-xs text-purple-100">Sistema de Gestão</span>
             </div>
           </div>
           <Button
@@ -86,8 +86,8 @@ export function Sidebar({ className, isOpen, onOpenChange }: SidebarProps) {
               key={item.href}
               variant={location.pathname === item.href ? "secondary" : "ghost"}
               className={cn(
-                "w-full justify-start transition-smooth hover:bg-teal-700/50 px-4 text-white",
-                location.pathname === item.href && "bg-teal-700/60 text-white"
+                "w-full justify-start transition-smooth hover:bg-purple-600/30 px-4 text-white",
+                location.pathname === item.href && "bg-purple-600/45 text-white font-medium animate-pulse"
               )}
               onClick={() => {
                 navigate(item.href);
@@ -101,7 +101,7 @@ export function Sidebar({ className, isOpen, onOpenChange }: SidebarProps) {
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-teal-600/30">
+        <div className="p-4 border-t border-purple-400/30">
           <Button
             variant="ghost"
             onClick={logout}

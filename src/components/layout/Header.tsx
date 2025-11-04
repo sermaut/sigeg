@@ -48,10 +48,13 @@ export function Header({ onMenuClick }: HeaderProps) {
   const { name, code, icon: UserIcon } = getDisplayInfo();
 
   return (
-    <header className="relative h-16 border-b border-primary/10 
-                       bg-gradient-to-r from-emerald-700/80 via-green-700/75 to-emerald-800/80 
-                       backdrop-blur-xl shadow-medium sticky top-0 z-50
+    <header className="relative h-16 border-b border-fuchsia-400/20 
+                       bg-gradient-to-r from-purple-700/90 via-violet-700/90 to-purple-800/90 
+                       backdrop-blur-xl shadow-lg shadow-purple-500/20 sticky top-0 z-50
                        supports-[backdrop-filter]:bg-background/95">
+      
+      {/* Linha decorativa superior */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-fuchsia-500/80 via-purple-400/80 to-fuchsia-500/80" />
       
       {/* Linha decorativa superior */}
       <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r 
