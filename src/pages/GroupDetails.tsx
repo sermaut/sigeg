@@ -441,7 +441,7 @@ export default function GroupDetails() {
             <Card className="border-2 border-primary/10 shadow-lg">
               <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <CardTitle className="text-foreground">Membros do Grupo</CardTitle>
+                  <CardTitle className="text-foreground text-center">Membros do Grupo</CardTitle>
                   <div className="relative w-full sm:w-64">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
@@ -453,7 +453,7 @@ export default function GroupDetails() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="p-6">
+              <CardContent className="p-0">
                 <OptimizedMembersTable
                   members={filteredMembers}
                   onMemberView={handleMemberView}

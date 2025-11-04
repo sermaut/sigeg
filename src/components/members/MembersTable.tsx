@@ -26,7 +26,7 @@ export function MembersTable({ members, onMemberView }: MembersTableProps) {
   };
 
   return (
-    <div className="rounded-xl overflow-hidden border border-primary/10 shadow-soft">
+    <div className="rounded-xl overflow-hidden border-[1.3px] border-primary/20 shadow-soft">
       <Table>
         <TableHeader>
           <TableRow className="bg-gradient-to-r from-cyan-500/90 to-teal-500/90 hover:from-cyan-500 hover:to-teal-500 border-0">
