@@ -84,12 +84,27 @@ export function CategoryLeadersDialog({
         .from("members")
         .select("id, name, profile_image_url")
         .eq("group_id", groupId)
-        .eq("is_active", true);
+        .eq("is_active", true)
+        .order("name", { ascending: true });
 
-      if (error) throw error;
-      setMembers(data);
+      if (error) {
+        console.error("Erro ao carregar membros:", error);
+        toast({
+          title: "Erro ao carregar membros",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      console.log("Membros carregados:", data?.length || 0, "para o grupo:", groupId);
+      setMembers(data || []);
     } catch (error) {
       console.error("Erro ao carregar membros:", error);
+      toast({
+        title: "Erro ao carregar membros",
+        variant: "destructive",
+      });
     }
   };
 
