@@ -62,9 +62,9 @@ export function Header({ onMenuClick }: HeaderProps) {
           variant="ghost" 
           size="icon"
           onClick={onMenuClick}
-          className="lg:hidden hover:bg-primary/10"
+          className="lg:hidden hover:bg-cyan-600/20 text-white w-11 h-11"
         >
-          <Menu className="w-5 h-5" />
+          <Menu className="w-6 h-6" />
         </Button>
 
         {/* Logo SIGEG (Desktop only) */}
@@ -83,8 +83,8 @@ export function Header({ onMenuClick }: HeaderProps) {
         <div className="hidden md:flex items-center space-x-4 flex-1 max-w-md">
           <div className="relative flex-1 group">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 
-                              text-muted-foreground/70 w-4 h-4 
-                              group-focus-within:text-primary transition-colors z-10" />
+                              text-white/70 w-4 h-4 
+                              group-focus-within:text-cyan-300 transition-colors z-10" />
             <Input
               placeholder="Buscar grupos, membros..."
               className="pl-10 h-10 
@@ -94,7 +94,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                          focus:ring-4 focus:ring-primary/10 
                          transition-all duration-300 
                          hover:border-primary/40 hover:bg-white/80
-                         placeholder:text-muted-foreground/70"
+                         placeholder:text-slate-500"
             />
           </div>
         </div>
