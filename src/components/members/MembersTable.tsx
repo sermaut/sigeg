@@ -26,31 +26,31 @@ export function MembersTable({ members, onMemberView }: MembersTableProps) {
   };
 
   return (
-    <div className="rounded-md border-0">
+    <div className="rounded-xl overflow-hidden border border-primary/10 shadow-soft">
       <Table>
         <TableHeader>
-          <TableRow className="border-b">
-            <TableHead className="w-16 text-center text-xs border-r">Nº</TableHead>
-            <TableHead className="w-20 text-center text-xs border-r">FOTO</TableHead>
-            <TableHead className="text-xs font-semibold">NOME</TableHead>
+          <TableRow className="bg-gradient-to-r from-cyan-500/90 to-teal-500/90 hover:from-cyan-500 hover:to-teal-500 border-0">
+            <TableHead className="w-16 text-center text-sm font-semibold text-white border-r border-white/20">Nº</TableHead>
+            <TableHead className="w-24 text-center text-sm font-semibold text-white border-r border-white/20">FOTO</TableHead>
+            <TableHead className="text-sm font-semibold text-white">NOME COMPLETO</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {members.map((member, index) => (
-            <TableRow key={member.id} className="h-12 border-b">
-              <TableCell className="text-center font-medium text-xs py-2 border-r">
+            <TableRow key={member.id} className="h-16 border-b border-primary/5 hover:bg-primary/5 transition-colors">
+              <TableCell className="text-center font-semibold text-sm py-3 border-r border-primary/10 text-foreground">
                 {index + 1}
               </TableCell>
-              <TableCell className="text-center py-2 border-r">
+              <TableCell className="text-center py-3 border-r border-primary/10">
                 <Dialog>
                   <DialogTrigger asChild>
-                    <div className="cursor-pointer hover:opacity-80 transition-opacity">
-                      <Avatar className="w-8 h-8 mx-auto">
+                    <div className="cursor-pointer hover:scale-110 transition-transform">
+                      <Avatar className="w-10 h-10 mx-auto ring-2 ring-primary/20 hover:ring-primary/40 transition-all">
                         <AvatarImage 
                           src={member.profile_image_url} 
                           alt={member.name}
                         />
-                        <AvatarFallback className="gradient-primary text-white text-xs">
+                        <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-teal-500 text-white text-sm font-semibold">
                           {getInitials(member.name)}
                         </AvatarFallback>
                       </Avatar>
@@ -75,20 +75,20 @@ export function MembersTable({ members, onMemberView }: MembersTableProps) {
                   </DialogContent>
                 </Dialog>
               </TableCell>
-              <TableCell className="py-2">
+              <TableCell className="py-3">
                 <Button
                   variant="ghost"
                   onClick={() => onMemberView(member.id)}
-                  className="h-auto p-0 text-left justify-start hover:bg-transparent hover:text-primary"
+                  className="h-auto p-2 text-left justify-start hover:bg-primary/10 rounded-lg transition-colors"
                 >
-                  <span className="font-medium text-xs truncate max-w-[200px]">{member.name}</span>
+                  <span className="font-medium text-sm truncate max-w-[300px] text-foreground">{member.name}</span>
                 </Button>
               </TableCell>
             </TableRow>
           ))}
           {members.length === 0 && (
             <TableRow>
-              <TableCell colSpan={3} className="text-center py-8 text-muted-foreground text-xs">
+              <TableCell colSpan={3} className="text-center py-12 text-muted-foreground text-sm">
                 Nenhum membro cadastrado neste grupo
               </TableCell>
             </TableRow>
