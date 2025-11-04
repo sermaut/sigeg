@@ -5,7 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar as CalendarIcon, Users, Save, Music } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { Calendar as CalendarIcon, Users, Save, Music, Crown, Shield, ChevronDown } from "lucide-react";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
@@ -18,15 +20,25 @@ interface Member {
   is_active: boolean;
 }
 
+interface GroupLeaders {
+  president_id?: string;
+  vice_president_1_id?: string;
+  vice_president_2_id?: string;
+  secretary_1_id?: string;
+  secretary_2_id?: string;
+}
+
 interface RehearsalAttendanceProps {
   groupId: string;
   members: Member[];
+  groupLeaders?: GroupLeaders;
 }
 
-export function RehearsalAttendance({ groupId, members }: RehearsalAttendanceProps) {
+export function RehearsalAttendance({ groupId, members, groupLeaders }: RehearsalAttendanceProps) {
   const [date, setDate] = useState<Date>();
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
+  const [expandedPartitions, setExpandedPartitions] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
   // Filter only active members
@@ -87,6 +99,16 @@ export function RehearsalAttendance({ groupId, members }: RehearsalAttendancePro
     setSelectedMembers(newSelected);
   };
 
+  const togglePartitionExpansion = (partition: string) => {
+    const newExpanded = new Set(expandedPartitions);
+    if (newExpanded.has(partition)) {
+      newExpanded.delete(partition);
+    } else {
+      newExpanded.add(partition);
+    }
+    setExpandedPartitions(newExpanded);
+  };
+
   const togglePartition = (partition: string) => {
     const partitionMembers = membersByPartition[partition];
     const allSelected = partitionMembers.every(m => selectedMembers.has(m.id));
@@ -100,6 +122,22 @@ export function RehearsalAttendance({ groupId, members }: RehearsalAttendancePro
       }
     });
     setSelectedMembers(newSelected);
+  };
+
+  const getPartitionLeaders = (partition: string) => {
+    if (!groupLeaders) return [];
+    
+    const leaderIds = [
+      groupLeaders.president_id,
+      groupLeaders.vice_president_1_id,
+      groupLeaders.vice_president_2_id,
+      groupLeaders.secretary_1_id,
+      groupLeaders.secretary_2_id,
+    ].filter(Boolean);
+    
+    return members.filter(m => 
+      leaderIds.includes(m.id) && m.partition === partition
+    );
   };
 
   const handleSave = async () => {
@@ -189,50 +227,103 @@ export function RehearsalAttendance({ groupId, members }: RehearsalAttendancePro
               const partitionMembers = membersByPartition[partition];
               const allSelected = partitionMembers.every(m => selectedMembers.has(m.id));
               const someSelected = partitionMembers.some(m => selectedMembers.has(m.id));
+              const isExpanded = expandedPartitions.has(partition);
+              const partitionLeaders = getPartitionLeaders(partition);
+
+              // Ordenar membros: selecionados primeiro, depois por nome
+              const sortedMembers = [...partitionMembers].sort((a, b) => {
+                const aSelected = selectedMembers.has(a.id);
+                const bSelected = selectedMembers.has(b.id);
+                if (aSelected && !bSelected) return -1;
+                if (!aSelected && bSelected) return 1;
+                return a.name.localeCompare(b.name);
+              });
 
               return (
-                <div key={partition} className="space-y-3">
-                  <div className="flex items-center justify-between p-3 bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg border border-primary/10">
-                    <div className="flex items-center gap-3">
-                      <Checkbox
-                        checked={allSelected}
-                        onCheckedChange={() => togglePartition(partition)}
-                        className="border-primary/30"
-                      />
-                      <h3 className="font-semibold text-foreground">
-                        {getPartitionLabel(partition)}
-                      </h3>
-                      <Badge variant="outline" className="border-primary/20 text-primary">
-                        {partitionMembers.length} {partitionMembers.length === 1 ? "membro" : "membros"}
-                      </Badge>
-                    </div>
-                    {someSelected && !allSelected && (
-                      <Badge variant="secondary" className="bg-primary/10 text-primary">
-                        Parcial
-                      </Badge>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pl-4">
-                    {partitionMembers.map((member) => (
-                      <div
-                        key={member.id}
-                        className="flex items-center gap-3 p-3 bg-card rounded-lg border border-border hover:border-primary/30 transition-colors cursor-pointer"
-                        onClick={() => toggleMember(member.id)}
-                      >
-                        <Checkbox
-                          checked={selectedMembers.has(member.id)}
-                          onCheckedChange={() => toggleMember(member.id)}
-                          className="border-primary/30"
-                        />
-                        <div className="flex items-center gap-2 flex-1">
-                          <Users className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm text-foreground">{member.name}</span>
+                <Collapsible
+                  key={partition}
+                  open={isExpanded}
+                  onOpenChange={() => togglePartitionExpansion(partition)}
+                >
+                  <div className="space-y-3">
+                    <CollapsibleTrigger asChild>
+                      <div className="flex items-center justify-between p-3 bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg border border-primary/10 cursor-pointer hover:border-primary/20 transition-colors">
+                        <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+                          <Checkbox
+                            checked={allSelected}
+                            onCheckedChange={() => togglePartition(partition)}
+                            className="border-primary/30"
+                          />
+                          <h3 className="font-semibold text-foreground">
+                            {getPartitionLabel(partition)}
+                          </h3>
+                          <Badge variant="outline" className="border-primary/20 text-primary">
+                            {partitionMembers.length} {partitionMembers.length === 1 ? "membro" : "membros"}
+                          </Badge>
+                          {someSelected && !allSelected && (
+                            <Badge variant="secondary" className="bg-primary/10 text-primary">
+                              Parcial
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {partitionLeaders.length > 0 && (
+                            <HoverCard>
+                              <HoverCardTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="h-8 w-8"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <Crown className="w-4 h-4 text-amber-500" />
+                                </Button>
+                              </HoverCardTrigger>
+                              <HoverCardContent className="w-64">
+                                <div className="space-y-2">
+                                  <h4 className="font-semibold text-sm">Chefes desta partição:</h4>
+                                  <ul className="text-sm space-y-1">
+                                    {partitionLeaders.map(leader => (
+                                      <li key={leader.id} className="flex items-center gap-2">
+                                        <Shield className="w-3 h-3 text-primary" />
+                                        {leader.name}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              </HoverCardContent>
+                            </HoverCard>
+                          )}
+                          <ChevronDown 
+                            className={`w-5 h-5 text-primary transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                          />
                         </div>
                       </div>
-                    ))}
+                    </CollapsibleTrigger>
+
+                    <CollapsibleContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pl-4 mt-3">
+                        {sortedMembers.map((member) => (
+                          <div
+                            key={member.id}
+                            className="flex items-center gap-3 p-3 bg-card rounded-lg border border-border hover:border-primary/30 transition-colors cursor-pointer"
+                            onClick={() => toggleMember(member.id)}
+                          >
+                            <Checkbox
+                              checked={selectedMembers.has(member.id)}
+                              onCheckedChange={() => toggleMember(member.id)}
+                              className="border-primary/30"
+                            />
+                            <div className="flex items-center gap-2 flex-1">
+                              <Users className="w-4 h-4 text-muted-foreground" />
+                              <span className="text-sm text-foreground">{member.name}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CollapsibleContent>
                   </div>
-                </div>
+                </Collapsible>
               );
             })}
           </div>

@@ -286,26 +286,26 @@ export default function GroupDetails() {
               variant="outline"
               onClick={() => navigate(`/groups/${id}/edit`)}
               className="hover:border-primary hover:text-primary hover:bg-primary/5 
-                         transition-all hover:scale-105"
+                         transition-all hover:scale-105 text-sm"
             >
-              <Edit className="w-4 h-4" />
+              <Edit className="w-3.5 h-3.5" />
               Editar Grupo
             </Button>
             <Button
               variant="gradient"
               onClick={() => navigate(`/members/new?groupId=${id}`)}
-              className="hover:shadow-glow"
+              className="hover:shadow-glow text-sm"
             >
-              <UserPlus className="w-4 h-4" />
+              <UserPlus className="w-3.5 h-3.5" />
               Adicionar Membro
             </Button>
             <Button
               variant="outline"
               onClick={() => navigate(`/plans/${id}`)}
               className="hover:border-accent hover:text-accent hover:bg-accent/5 
-                         transition-all hover:scale-105"
+                         transition-all hover:scale-105 text-sm"
             >
-              <CreditCard className="w-4 h-4" />
+              <CreditCard className="w-3.5 h-3.5" />
               Gerenciar Plano
             </Button>
           </div>
@@ -315,7 +315,7 @@ export default function GroupDetails() {
 
         {/* Tabs modernizadas */}
         <Tabs defaultValue="info" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 h-12 bg-gradient-to-r from-muted/50 to-muted/30 
+          <TabsList className="grid w-full grid-cols-4 h-10 bg-gradient-to-r from-muted/50 to-muted/30 
                                rounded-xl border-2 border-primary/10 shadow-soft">
             <TabsTrigger value="info"
                          className="rounded-lg data-[state=active]:gradient-primary 
@@ -495,10 +495,10 @@ export default function GroupDetails() {
           <TabsContent value="technical">
             <Tabs defaultValue="programa" className="w-full">
               <TabsList className="w-full bg-gradient-to-r from-muted/50 to-accent/10 border-2 border-primary/10 shadow-soft p-1">
-                <TabsTrigger value="programa" className="flex-1 data-[state=active]:bg-gradient-primary data-[state=active]:text-white data-[state=active]:shadow-soft">
+                <TabsTrigger value="programa" className="flex-1 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 transition-all duration-300">
                   Programa Semanal
                 </TabsTrigger>
-                <TabsTrigger value="ensaios" className="flex-1 data-[state=active]:bg-gradient-primary data-[state=active]:text-white data-[state=active]:shadow-soft">
+                <TabsTrigger value="ensaios" className="flex-1 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 transition-all duration-300">
                   Participação nos Ensaios
                 </TabsTrigger>
               </TabsList>
@@ -514,7 +514,17 @@ export default function GroupDetails() {
               </TabsContent>
 
               <TabsContent value="ensaios" className="space-y-6 mt-6">
-                <RehearsalAttendance groupId={id!} members={members} />
+                <RehearsalAttendance 
+                  groupId={id!} 
+                  members={members}
+                  groupLeaders={{
+                    president_id: group?.president_id,
+                    vice_president_1_id: group?.vice_president_1_id,
+                    vice_president_2_id: group?.vice_president_2_id,
+                    secretary_1_id: group?.secretary_1_id,
+                    secretary_2_id: group?.secretary_2_id,
+                  }}
+                />
               </TabsContent>
             </Tabs>
           </TabsContent>

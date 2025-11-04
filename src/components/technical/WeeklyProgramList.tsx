@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2, Calendar, Music, FileText } from "lucide-react";
+import { Trash2, Calendar, Music, FileText, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { WeeklyProgramEditDialog } from "./WeeklyProgramEditDialog";
 import { CustomAudioPlayer } from "./CustomAudioPlayer";
 import {
   AlertDialog,
@@ -35,6 +36,7 @@ export function WeeklyProgramList({ groupId, refreshTrigger }: WeeklyProgramList
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
+  const [editProgram, setEditProgram] = useState<WeeklyProgram | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -130,14 +132,24 @@ export function WeeklyProgramList({ groupId, refreshTrigger }: WeeklyProgramList
                     <FileText className="w-5 h-5 text-primary" />
                     {program.title}
                   </h3>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setDeleteId(program.id)}
-                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setEditProgram(program)}
+                      className="text-primary hover:text-primary hover:bg-primary/10"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setDeleteId(program.id)}
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
 
                 <div
@@ -218,6 +230,14 @@ export function WeeklyProgramList({ groupId, refreshTrigger }: WeeklyProgramList
             </Button>
           </div>
         </div>
+      )}
+
+      {editProgram && (
+        <WeeklyProgramEditDialog
+          program={editProgram}
+          onClose={() => setEditProgram(null)}
+          onUpdate={loadPrograms}
+        />
       )}
     </>
   );

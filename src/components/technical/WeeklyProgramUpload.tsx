@@ -33,6 +33,17 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Validar tipo de arquivo
+    const validImageTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+    if (!validImageTypes.includes(file.type)) {
+      toast({
+        title: "Erro",
+        description: "Apenas imagens PNG ou JPG são permitidas",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Check file size (max 4MB)
     if (file.size > 4 * 1024 * 1024) {
       toast({
@@ -57,6 +68,17 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Validar tipo de arquivo
+    const validAudioTypes = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-m4a', 'audio/m4a'];
+    if (!validAudioTypes.includes(file.type)) {
+      toast({
+        title: "Erro",
+        description: "Apenas áudios MP3, WAV ou M4A são permitidos",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (file.size > 12 * 1024 * 1024) {
       toast({
         title: "Erro",
@@ -67,11 +89,26 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
     }
 
     setAudioFile(file);
+    
+    // Create audio preview URL
+    const audioUrl = URL.createObjectURL(file);
+    setAudioPreview(audioUrl);
   };
 
   const handleCameraCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Validar tipo de arquivo
+    const validImageTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+    if (!validImageTypes.includes(file.type)) {
+      toast({
+        title: "Erro",
+        description: "Apenas imagens PNG ou JPG são permitidas",
+        variant: "destructive",
+      });
+      return;
+    }
 
     if (file.size > 4 * 1024 * 1024) {
       toast({
@@ -98,8 +135,8 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
 
       recorder.ondataavailable = (e) => chunks.push(e.data);
       recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: 'audio/webm' });
-        const file = new File([blob], `recording_${Date.now()}.webm`, { type: 'audio/webm' });
+        const blob = new Blob(chunks, { type: 'audio/mp3' });
+        const file = new File([blob], `recording_${Date.now()}.mp3`, { type: 'audio/mp3' });
         setAudioFile(file);
         
         // Create audio preview URL
@@ -164,11 +201,16 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
       const imageExt = imageFile.name.split('.').pop();
       const imagePath = `${groupId}/${Date.now()}_image.${imageExt}`;
       
+      console.log('Iniciando upload de imagem:', imagePath);
+      
       const { error: imageError } = await supabase.storage
         .from('weekly-programs')
         .upload(imagePath, imageFile);
 
-      if (imageError) throw imageError;
+      if (imageError) {
+        console.error('Erro detalhado no upload de imagem:', imageError);
+        throw new Error(`Erro ao enviar imagem: ${imageError.message}`);
+      }
 
       const { data: imageUrlData } = supabase.storage
         .from('weekly-programs')
@@ -181,11 +223,16 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
         const audioExt = audioFile.name.split('.').pop();
         const audioPath = `${groupId}/${Date.now()}_audio.${audioExt}`;
         
+        console.log('Iniciando upload de áudio:', audioPath);
+        
         const { error: audioError } = await supabase.storage
           .from('weekly-programs')
           .upload(audioPath, audioFile);
 
-        if (audioError) throw audioError;
+        if (audioError) {
+          console.error('Erro detalhado no upload de áudio:', audioError);
+          throw new Error(`Erro ao enviar áudio: ${audioError.message}`);
+        }
 
         const { data: audioUrlData } = supabase.storage
           .from('weekly-programs')
@@ -222,11 +269,11 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
       setIsOpen(false);
 
       onUploadComplete();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao fazer upload:', error);
       toast({
         title: "Erro",
-        description: "Falha ao fazer upload. Tente novamente.",
+        description: error.message || "Falha ao fazer upload. Tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -306,14 +353,14 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
           <input
             ref={imageInputRef}
             type="file"
-            accept="image/*"
+            accept="image/png,image/jpeg,image/jpg"
             onChange={handleImageChange}
             className="hidden"
           />
           <input
             ref={cameraInputRef}
             type="file"
-            accept="image/*"
+            accept="image/png,image/jpeg,image/jpg"
             capture="environment"
             onChange={handleCameraCapture}
             className="hidden"
@@ -389,7 +436,7 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
           <input
             ref={audioInputRef}
             type="file"
-            accept="audio/*"
+            accept="audio/mpeg,audio/mp3,audio/wav,audio/x-m4a,audio/m4a"
             onChange={handleAudioChange}
             className="hidden"
           />
