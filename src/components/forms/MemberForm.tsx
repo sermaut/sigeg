@@ -25,10 +25,34 @@ const memberSchema = z.object({
   marital_status: z.enum(["solteiro", "casado", "divorciado", "viuvo"], {
     required_error: "Estado civil é obrigatório",
   }).default("solteiro"),
-  role: z.enum(["presidente", "vice_presidente", "secretario", "tesoureiro", "membro", "coordenador"], {
+  role: z.enum([
+    // Nível 1
+    "presidente", "vice_presidente_1", "vice_presidente_2", "secretario_1", "secretario_2",
+    // Nível 2
+    "inspector", "inspector_adj", "coordenador", "coordenador_adj",
+    // Nível 3
+    "dirigente_tecnico",
+    // Nível 4
+    "chefe_particao", "chefe_categoria",
+    // Nível 5
+    "protocolo", "relacao_publica", "evangelista", "conselheiro", "disciplinador",
+    // Nível 6
+    "financeiro",
+    // Nível 7
+    "membro_simples"
+  ], {
     required_error: "Função é obrigatória",
-  }).default("membro"),
-  partition: z.enum(["soprano", "contralto", "tenor", "baixo", "instrumental"], {
+  }).default("membro_simples"),
+  partition: z.enum([
+    // Vozes
+    "soprano", "alto", "tenor", "base", "baryton",
+    // Metais
+    "trompete", "trombones", "tubas",
+    // Madeiras
+    "clarinetes", "saxofone",
+    // Percussão
+    "caixa_1", "caixa_2", "caixa_3", "percussao"
+  ], {
     required_error: "Partição é obrigatória",
   }).optional(),
   member_code: z.string().optional(),
@@ -70,7 +94,8 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
       name: "",
       group_id: effectiveGroupId || "",
       marital_status: "solteiro",
-      role: "membro",
+      role: "membro_simples",
+      partition: undefined,
     },
   });
 
@@ -181,7 +206,8 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
         name: "",
         group_id: effectiveGroupId || "",
         marital_status: "solteiro",
-        role: "membro",
+        role: "membro_simples",
+        partition: undefined,
       });
       setProfileImageUrl("");
     } catch (error: any) {
@@ -362,13 +388,60 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
                           <SelectValue placeholder="Selecione" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="membro">Membro</SelectItem>
-                        <SelectItem value="coordenador">Coordenador</SelectItem>
-                        <SelectItem value="tesoureiro">Tesoureiro</SelectItem>
-                        <SelectItem value="secretario">Secretário</SelectItem>
-                        <SelectItem value="vice_presidente">Vice-Presidente</SelectItem>
+                      <SelectContent className="max-h-[400px]">
+                        {/* Nível 1 - Liderança Executiva */}
+                        <div className="px-2 py-1.5 text-xs font-semibold text-primary bg-primary/5">
+                          Nível 1 - Liderança Executiva
+                        </div>
                         <SelectItem value="presidente">Presidente</SelectItem>
+                        <SelectItem value="vice_presidente_1">Vice-presidente 1</SelectItem>
+                        <SelectItem value="vice_presidente_2">Vice-presidente 2</SelectItem>
+                        <SelectItem value="secretario_1">Secretário 1</SelectItem>
+                        <SelectItem value="secretario_2">Secretário 2</SelectItem>
+                        
+                        {/* Nível 2 - Coordenação */}
+                        <div className="px-2 py-1.5 text-xs font-semibold text-primary bg-primary/5 mt-1">
+                          Nível 2 - Coordenação
+                        </div>
+                        <SelectItem value="inspector">Inspector</SelectItem>
+                        <SelectItem value="inspector_adj">Inspector Adj.</SelectItem>
+                        <SelectItem value="coordenador">Coordenador</SelectItem>
+                        <SelectItem value="coordenador_adj">Coordenador Adj.</SelectItem>
+                        
+                        {/* Nível 3 - Direção Técnica */}
+                        <div className="px-2 py-1.5 text-xs font-semibold text-primary bg-primary/5 mt-1">
+                          Nível 3 - Direção Técnica
+                        </div>
+                        <SelectItem value="dirigente_tecnico">Dirigente Técnico</SelectItem>
+                        
+                        {/* Nível 4 - Liderança Setorial */}
+                        <div className="px-2 py-1.5 text-xs font-semibold text-primary bg-primary/5 mt-1">
+                          Nível 4 - Liderança Setorial
+                        </div>
+                        <SelectItem value="chefe_particao">Chefe de Partição</SelectItem>
+                        <SelectItem value="chefe_categoria">Chefe de Categoria</SelectItem>
+                        
+                        {/* Nível 5 - Serviços Especiais */}
+                        <div className="px-2 py-1.5 text-xs font-semibold text-primary bg-primary/5 mt-1">
+                          Nível 5 - Serviços Especiais
+                        </div>
+                        <SelectItem value="protocolo">Protocolo</SelectItem>
+                        <SelectItem value="relacao_publica">Relação Pública</SelectItem>
+                        <SelectItem value="evangelista">Evangelista</SelectItem>
+                        <SelectItem value="conselheiro">Conselheiro</SelectItem>
+                        <SelectItem value="disciplinador">Disciplinador</SelectItem>
+                        
+                        {/* Nível 6 - Gestão Financeira */}
+                        <div className="px-2 py-1.5 text-xs font-semibold text-primary bg-primary/5 mt-1">
+                          Nível 6 - Gestão Financeira
+                        </div>
+                        <SelectItem value="financeiro">Financeiro</SelectItem>
+                        
+                        {/* Nível 7 - Membros */}
+                        <div className="px-2 py-1.5 text-xs font-semibold text-primary bg-primary/5 mt-1">
+                          Nível 7 - Membros
+                        </div>
+                        <SelectItem value="membro_simples">Membro Simples</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -388,12 +461,40 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
                           <SelectValue placeholder="Selecione" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="max-h-[400px]">
+                        {/* Vozes */}
+                        <div className="px-2 py-1.5 text-xs font-semibold text-primary bg-primary/5">
+                          Vozes
+                        </div>
                         <SelectItem value="soprano">Soprano</SelectItem>
-                        <SelectItem value="contralto">Contralto</SelectItem>
+                        <SelectItem value="alto">Alto</SelectItem>
                         <SelectItem value="tenor">Tenor</SelectItem>
-                        <SelectItem value="baixo">Baixo</SelectItem>
-                        <SelectItem value="instrumental">Instrumental</SelectItem>
+                        <SelectItem value="base">Base</SelectItem>
+                        <SelectItem value="baryton">Baryton</SelectItem>
+                        
+                        {/* Metais */}
+                        <div className="px-2 py-1.5 text-xs font-semibold text-primary bg-primary/5 mt-1">
+                          Metais
+                        </div>
+                        <SelectItem value="trompete">Trompete</SelectItem>
+                        <SelectItem value="trombones">Trombones</SelectItem>
+                        <SelectItem value="tubas">Tubas</SelectItem>
+                        
+                        {/* Madeiras */}
+                        <div className="px-2 py-1.5 text-xs font-semibold text-primary bg-primary/5 mt-1">
+                          Madeiras
+                        </div>
+                        <SelectItem value="clarinetes">Clarinetes</SelectItem>
+                        <SelectItem value="saxofone">Saxofone</SelectItem>
+                        
+                        {/* Percussão */}
+                        <div className="px-2 py-1.5 text-xs font-semibold text-primary bg-primary/5 mt-1">
+                          Percussão
+                        </div>
+                        <SelectItem value="caixa_1">1ª Caixa</SelectItem>
+                        <SelectItem value="caixa_2">2ª Caixa</SelectItem>
+                        <SelectItem value="caixa_3">3ª Caixa</SelectItem>
+                        <SelectItem value="percussao">Percussão</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
