@@ -150,19 +150,29 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
     try {
       const currentMonth = format(new Date(), 'yyyy-MM');
       
-      const { data, error } = await supabase
+      // 1. Buscar registros de presença sem JOIN para evitar problemas com RLS
+      const { data: attendanceData, error: attendanceError } = await supabase
         .from('rehearsal_attendance')
-        .select(`
-          *,
-          member:members(name, partition)
-        `)
+        .select('*')
         .eq('group_id', groupId)
         .eq('month_year', currentMonth)
         .order('rehearsal_date', { ascending: false });
 
-      if (error) throw error;
+      if (attendanceError) throw attendanceError;
       
-      const groupedByDate = data.reduce((acc: any, record: any) => {
+      // 2. Criar mapa de member_id -> member data usando os dados já disponíveis
+      const memberMap = new Map(
+        members.map(m => [m.id, { name: m.name, partition: m.partition }])
+      );
+      
+      // 3. Enriquecer dados de presença com informações dos membros
+      const enrichedData = attendanceData.map(record => ({
+        ...record,
+        member: memberMap.get(record.member_id) || { name: 'Desconhecido', partition: null }
+      }));
+      
+      // 4. Agrupar por data
+      const groupedByDate = enrichedData.reduce((acc: any, record: any) => {
         const dateKey = record.rehearsal_date;
         if (!acc[dateKey]) {
           acc[dateKey] = [];
@@ -316,6 +326,9 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
                 return a.name.localeCompare(b.name);
               });
 
+              // Contar quantos membros estão selecionados nesta partição
+              const selectedInPartition = partitionMembers.filter(m => selectedMembers.has(m.id)).length;
+
               return (
                 <Collapsible
                   key={partition}
@@ -335,7 +348,7 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
                             {getPartitionLabel(partition)}
                           </h3>
                           <Badge variant="outline" className="border-primary/20 text-primary">
-                            {partitionMembers.length} {partitionMembers.length === 1 ? "membro" : "membros"}
+                            {selectedInPartition} {selectedInPartition === 1 ? "membro" : "membros"}
                           </Badge>
                           {someSelected && !allSelected && (
                             <Badge variant="secondary" className="bg-primary/10 text-primary">
