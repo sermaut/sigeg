@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { getRoleLevel } from '@/lib/memberHelpers';
 
 export interface SystemAdmin {
   id: string;
@@ -20,7 +21,7 @@ export interface Member {
   name: string;
   member_code: string;
   group_id: string;
-  role: 'membro' | 'presidente' | 'vice_presidente' | 'secretario' | 'tesoureiro' | 'conselheiro';
+  role: string; // Aceita qualquer role do sistema
   is_active: boolean;
   profile_image_url?: string;
 }
@@ -44,27 +45,22 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const PERMISSION_LEVELS = {
-  'super_admin': 1,        // Dono do Sistema (MB_0608)
-  'admin_principal': 2,    // Administrador Principal
-  'admin_adjunto': 3,      // Administrador Adjunto
-  'admin_supervisor': 4,   // Administrador Supervisor
-  'presidente': 5,         // Líderes de Grupo
-  'vice_presidente': 5,
-  'secretario': 5,
-  'tesoureiro': 5,
-  'conselheiro': 6,        // Segunda Classe
-  'membro': 7              // Terceira/Quarta Classe
+const ADMIN_PERMISSION_LEVELS: Record<string, number> = {
+  'super_admin': 0,
+  'admin_principal': 0,
+  'admin_adjunto': 0,
+  'admin_supervisor': 0,
 };
 
-const PERMISSION_MAP = {
-  1: ['*'], // Super Admin - Acesso completo
-  2: ['manage_system', 'manage_admins', 'manage_groups', 'manage_members', 'view_statistics', 'manage_permissions'], // Admin Principal
-  3: ['manage_groups', 'manage_members', 'view_statistics', 'limited_admin_functions'], // Admin Adjunto
-  4: ['view_groups', 'view_members', 'view_statistics', 'supervisor_access'], // Admin Supervisor
-  5: ['manage_group_members', 'update_group_info', 'view_group_data'], // Líderes de Grupo
-  6: ['view_group_data', 'limited_access'], // Conselheiros
-  7: ['view_basic_info', 'view_group_info'] // Membros
+const PERMISSION_MAP: Record<number, string[]> = {
+  0: ['*'], // Admins - acesso total
+  1: ['manage_group_members', 'update_group_info', 'view_group_data', 'manage_finances', 'manage_technical'], // Dirigentes
+  2: ['view_group_data', 'manage_technical'], // Inspector/Coordenador
+  3: ['view_group_data', 'manage_technical'], // Dirigente Técnico
+  4: ['view_group_data'], // Chefe Partição/Categoria
+  5: ['view_group_data'], // Protocolo, etc
+  6: ['view_group_data', 'manage_category_finances'], // Financeiro (Líder Categoria)
+  7: ['view_group_data'], // Membro Simples
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -126,7 +122,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return { success: false, error: 'Dados de administrador incompletos' };
         }
 
-        const permissions = PERMISSION_MAP[PERMISSION_LEVELS[data.permission_level as keyof typeof PERMISSION_LEVELS]];
+        const adminLevel = ADMIN_PERMISSION_LEVELS[data.permission_level] ?? 0;
+        const permissions = PERMISSION_MAP[adminLevel] || PERMISSION_MAP[0];
         const authUser: AuthUser = {
           type: 'admin',
           data: data as SystemAdmin,
@@ -171,9 +168,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log('Membro encontrado:', memberData.name);
 
         // Validate required member fields
-        if (!memberData.id || !memberData.name || !memberData.group_id || !memberData.role) {
+        if (!memberData.id || !memberData.name || !memberData.group_id) {
           console.error('Invalid member data structure:', memberData);
           return { success: false, error: 'Dados de membro incompletos' };
+        }
+
+        // Validar role
+        if (!memberData.role) {
+          console.error('Member without role:', memberData);
+          return { success: false, error: 'Dados de membro incompletos: função não definida' };
         }
 
         // Verify group is active (separate query)
@@ -192,7 +195,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return { success: false, error: 'Grupo inativo ou não encontrado' };
         }
 
-        const permissions = PERMISSION_MAP[PERMISSION_LEVELS[memberData.role as keyof typeof PERMISSION_LEVELS]];
+        // Obter nível baseado na função usando getRoleLevel
+        const roleLevel = getRoleLevel(memberData.role);
+        const permissions = PERMISSION_MAP[roleLevel] || PERMISSION_MAP[7];
+
+        console.log(`Membro ${memberData.name} - Role: ${memberData.role}, Level: ${roleLevel}`);
+
         const authUser: AuthUser = {
           type: 'member',
           data: memberData as Member,
@@ -266,9 +274,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) return 999;
     
     if (user.type === 'admin') {
-      return PERMISSION_LEVELS[(user.data as SystemAdmin).permission_level];
+      return 0; // Todos admins têm nível 0
     } else {
-      return PERMISSION_LEVELS[(user.data as Member).role];
+      const memberData = user.data as Member;
+      return getRoleLevel(memberData.role);
     }
   };
 
