@@ -40,18 +40,25 @@ export interface Member {
 }
 
 // Groups Query Hooks
-export function useGroups() {
+export function useGroups(limit?: number) {
   return useQuery({
-    queryKey: ['groups'],
+    queryKey: ['groups', limit],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('groups')
         .select('*')
         .order('created_at', { ascending: false });
       
+      if (limit) {
+        query = query.limit(limit);
+      }
+      
+      const { data, error } = await query;
+      
       if (error) throw error;
       return data as Group[];
     },
+    staleTime: 15 * 60 * 1000, // 15 minutes - dados de grupos mudam pouco
   });
 }
 
@@ -73,9 +80,9 @@ export function useGroup(id: string) {
 }
 
 // Members Query Hooks
-export function useMembers(groupId?: string) {
+export function useMembers(groupId?: string, limit?: number) {
   return useQuery({
-    queryKey: ['members', groupId],
+    queryKey: ['members', groupId, limit],
     queryFn: async () => {
       let query = supabase
         .from('members')
@@ -86,11 +93,16 @@ export function useMembers(groupId?: string) {
         query = query.eq('group_id', groupId);
       }
       
+      if (limit) {
+        query = query.limit(limit);
+      }
+      
       const { data, error } = await query;
       
       if (error) throw error;
       return data as Member[];
     },
+    staleTime: 10 * 60 * 1000, // 10 minutes
   });
 }
 

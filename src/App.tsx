@@ -31,12 +31,12 @@ const NotFound = lazy(() => import('@/pages/NotFound'));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 10 * 60 * 1000, // 10 minutes
+      staleTime: 10 * 60 * 1000, // 10 minutes (otimizado)
+      gcTime: 30 * 60 * 1000, // 30 minutes (otimizado)
       retry: (failureCount, error) => {
         // Don't retry on 4xx errors
         if (error?.message?.includes('4')) return false;
-        return failureCount < 3;
+        return failureCount < 2;
       },
       refetchOnWindowFocus: false,
       refetchOnReconnect: true,

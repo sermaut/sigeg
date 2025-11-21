@@ -53,8 +53,8 @@ const ADMIN_PERMISSION_LEVELS: Record<string, number> = {
 };
 
 const PERMISSION_MAP: Record<number, string[]> = {
-  0: ['*'], // Admins - acesso total
-  1: ['manage_group_members', 'update_group_info', 'view_group_data', 'manage_finances', 'manage_technical'], // Dirigentes
+  0: ['*'], // Admins - acesso total (manage_groups, manage_admins, etc)
+  1: ['manage_group_members', 'update_group_info', 'view_group_data', 'manage_finances', 'manage_technical', 'manage_groups'], // Dirigentes
   2: ['view_group_data', 'manage_technical'], // Inspector/Coordenador
   3: ['view_group_data', 'manage_technical'], // Dirigente Técnico
   4: ['view_group_data'], // Chefe Partição/Categoria
