@@ -262,9 +262,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('sigeg_user');
   };
 
-  const hasPermission = (permission: string) => {
-    if (!user) return false;
-    return user.permissions.includes('*') || user.permissions.includes(permission);
+  const hasPermission = (permission: string): boolean => {
+    if (!user || !user.permissions) return false;
+    // Admins têm acesso completo
+    if (user.permissions.includes('*')) return true;
+    // Verificar se a permissão existe
+    if (!permission) return true;
+    return user.permissions.includes(permission);
   };
 
   const isAdmin = () => user?.type === 'admin';
