@@ -158,6 +158,13 @@ export type Database = {
             foreignKeyName: "category_roles_group_id_fkey"
             columns: ["group_id"]
             isOneToOne: false
+            referencedRelation: "group_statistics"
+            referencedColumns: ["group_id"]
+          },
+          {
+            foreignKeyName: "category_roles_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
             referencedRelation: "groups"
             referencedColumns: ["id"]
           },
@@ -202,6 +209,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "financial_categories_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "group_statistics"
+            referencedColumns: ["group_id"]
+          },
           {
             foreignKeyName: "financial_categories_group_id_fkey"
             columns: ["group_id"]
@@ -427,6 +441,13 @@ export type Database = {
             foreignKeyName: "member_permissions_group_id_fkey"
             columns: ["group_id"]
             isOneToOne: false
+            referencedRelation: "group_statistics"
+            referencedColumns: ["group_id"]
+          },
+          {
+            foreignKeyName: "member_permissions_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
             referencedRelation: "groups"
             referencedColumns: ["id"]
           },
@@ -501,6 +522,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "group_statistics"
+            referencedColumns: ["group_id"]
+          },
           {
             foreignKeyName: "members_group_id_fkey"
             columns: ["group_id"]
@@ -593,6 +621,13 @@ export type Database = {
             foreignKeyName: "payment_events_group_id_fkey"
             columns: ["group_id"]
             isOneToOne: false
+            referencedRelation: "group_statistics"
+            referencedColumns: ["group_id"]
+          },
+          {
+            foreignKeyName: "payment_events_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
             referencedRelation: "groups"
             referencedColumns: ["id"]
           },
@@ -633,6 +668,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "members"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rehearsal_attendance_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "group_statistics"
+            referencedColumns: ["group_id"]
           },
           {
             foreignKeyName: "rehearsal_attendance_group_id_fkey"
@@ -749,6 +791,13 @@ export type Database = {
             foreignKeyName: "weekly_program_content_group_id_fkey"
             columns: ["group_id"]
             isOneToOne: false
+            referencedRelation: "group_statistics"
+            referencedColumns: ["group_id"]
+          },
+          {
+            foreignKeyName: "weekly_program_content_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
             referencedRelation: "groups"
             referencedColumns: ["id"]
           },
@@ -756,7 +805,21 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      group_statistics: {
+        Row: {
+          active_members: number | null
+          group_id: string | null
+          group_name: string | null
+          is_active: boolean | null
+          last_member_added: string | null
+          leaders_count: number | null
+          monthly_revenue: number | null
+          municipality: string | null
+          province: string | null
+          total_members: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       can_access_financial_category: {
