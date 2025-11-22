@@ -180,27 +180,67 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const password = normalizedCode;
 
         // Tentar login primeiro
+        console.log('🔐 Tentando signInWithPassword para:', email);
         let authResult = await supabase.auth.signInWithPassword({
           email,
           password
         });
 
+        console.log('📊 Resultado signInWithPassword:', {
+          hasUser: !!authResult.data.user,
+          hasSession: !!authResult.data.session,
+          error: authResult.error?.message
+        });
+
         // Se falhar, criar nova conta
         if (authResult.error) {
+          console.log('⚠️ Login falhou, tentando signUp...');
+          console.log('📧 Email:', email);
+          console.log('🔑 Password length:', password.length);
+          
           authResult = await supabase.auth.signUp({
             email,
             password,
             options: {
               data: {
                 sigeg_user: authUser
-              }
+              },
+              emailRedirectTo: undefined
             }
           });
+          
+          console.log('📊 Resultado signUp:', {
+            hasUser: !!authResult.data.user,
+            hasSession: !!authResult.data.session,
+            error: authResult.error?.message,
+            errorDetails: authResult.error
+          });
+
+          // Confirmar email automaticamente se a conta foi criada
+          if (authResult.data.user && !authResult.error) {
+            console.log('✅ Conta criada, confirmando email...');
+            
+            try {
+              const confirmResult = await supabase.functions.invoke('confirm-auth-user', {
+                body: { userId: authResult.data.user.id }
+              });
+              
+              if (confirmResult.error) {
+                console.warn('⚠️ Falha ao confirmar email:', confirmResult.error);
+              } else {
+                console.log('✅ Email confirmado com sucesso');
+              }
+            } catch (confirmError) {
+              console.warn('⚠️ Exceção ao confirmar email:', confirmError);
+              // Não bloqueamos o login por causa disso
+            }
+          }
         }
 
         if (authResult.error && authResult.error.message !== 'User already registered') {
-          console.error('Supabase auth error:', authResult.error);
-          return { success: false, error: 'Erro ao criar sessão' };
+          console.error('❌ Erro crítico de autenticação:', authResult.error);
+          console.error('📝 Detalhes completos:', JSON.stringify(authResult.error, null, 2));
+          return { success: false, error: `Erro ao criar sessão: ${authResult.error.message}` };
         }
 
         // Atualizar metadata se necessário
@@ -293,27 +333,62 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const password = normalizedCode;
 
         // Tentar login primeiro
+        console.log('🔐 Tentando signInWithPassword para:', email);
         let authResult = await supabase.auth.signInWithPassword({
           email,
           password
         });
 
+        console.log('📊 Resultado signInWithPassword:', {
+          hasUser: !!authResult.data.user,
+          hasSession: !!authResult.data.session,
+          error: authResult.error?.message
+        });
+
         // Se falhar, criar nova conta
         if (authResult.error) {
+          console.log('⚠️ Login falhou, tentando signUp...');
+          
           authResult = await supabase.auth.signUp({
             email,
             password,
             options: {
               data: {
                 sigeg_user: authUser
-              }
+              },
+              emailRedirectTo: undefined
             }
           });
+          
+          console.log('📊 Resultado signUp:', {
+            hasUser: !!authResult.data.user,
+            hasSession: !!authResult.data.session,
+            error: authResult.error?.message
+          });
+
+          // Confirmar email automaticamente se a conta foi criada
+          if (authResult.data.user && !authResult.error) {
+            console.log('✅ Conta criada, confirmando email...');
+            
+            try {
+              const confirmResult = await supabase.functions.invoke('confirm-auth-user', {
+                body: { userId: authResult.data.user.id }
+              });
+              
+              if (confirmResult.error) {
+                console.warn('⚠️ Falha ao confirmar email:', confirmResult.error);
+              } else {
+                console.log('✅ Email confirmado com sucesso');
+              }
+            } catch (confirmError) {
+              console.warn('⚠️ Exceção ao confirmar email:', confirmError);
+            }
+          }
         }
 
         if (authResult.error && authResult.error.message !== 'User already registered') {
-          console.error('Supabase auth error:', authResult.error);
-          return { success: false, error: 'Erro ao criar sessão' };
+          console.error('❌ Erro crítico de autenticação:', authResult.error);
+          return { success: false, error: `Erro ao criar sessão: ${authResult.error.message}` };
         }
 
         // Atualizar metadata se necessário

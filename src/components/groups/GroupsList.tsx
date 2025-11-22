@@ -37,11 +37,13 @@ export function GroupsList() {
       setLoading(true);
       
       // 🔍 DEBUG: Verificar sessão antes da query
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
       console.log('🔐 Sessão atual:', {
         userId: session?.user?.id,
         email: session?.user?.email,
-        isAuthenticated: !!session
+        isAuthenticated: !!session,
+        sessionError: sessionError?.message
       });
       
       // Carregar grupos com TODOS os campos necessários
@@ -56,20 +58,42 @@ export function GroupsList() {
           message: error.message,
           details: error.details,
           hint: error.hint,
-          code: error.code
+          code: error.code,
+          statusCode: error.code
         });
-        throw error;
+        
+        // Mensagem mais específica baseada no erro
+        let errorMessage = 'Falha ao carregar grupos';
+        
+        if (error.message.includes('permission') || error.message.includes('policy')) {
+          errorMessage = 'Você não tem permissão para visualizar grupos. Faça login novamente.';
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = 'Erro de conexão. Verifique sua internet e tente novamente.';
+        } else {
+          errorMessage = `Erro ao carregar grupos: ${error.message}`;
+        }
+        
+        throw new Error(errorMessage);
       }
       
       console.log('✅ Grupos carregados:', data?.length || 0);
       console.log('📊 Primeiro grupo:', data?.[0]);
       
+      if (!data || data.length === 0) {
+        console.log('⚠️ Nenhum grupo encontrado no banco de dados');
+      }
+      
       setGroups(data || []);
     } catch (error) {
       console.error('💥 Erro ao carregar grupos:', error);
+      
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "Não foi possível carregar os dados dos grupos.";
+      
       toast({
-        title: "Erro",
-        description: error instanceof Error ? error.message : "Falha ao carregar grupos",
+        title: "Erro ao carregar grupos",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
