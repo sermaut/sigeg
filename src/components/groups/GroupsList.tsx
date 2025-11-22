@@ -44,11 +44,12 @@ export function GroupsList() {
 
       if (error) throw error;
       setGroups(data || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao carregar grupos:', error);
+      console.error('Detalhes do erro:', error?.message, error?.details, error?.hint);
       toast({
-        title: "Erro",
-        description: "Falha ao carregar grupos",
+        title: "Erro ao carregar grupos",
+        description: error?.message || "Falha ao carregar grupos",
         variant: "destructive",
       });
     } finally {
