@@ -506,17 +506,26 @@ export default function GroupDetails() {
           </TabsContent>
 
           <TabsContent value="technical">
-            <Tabs defaultValue="programa" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 h-12 bg-muted rounded-lg p-1">
+            <Tabs defaultValue="programa" className="w-full mt-4">
+              <TabsList className="grid w-full grid-cols-2 h-9 p-0.5 bg-gradient-to-r from-muted/60 to-muted/40 
+                                   rounded-lg border border-primary/10 shadow-sm backdrop-blur-sm">
                 <TabsTrigger 
                   value="programa"
-                  className="rounded-md data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 transition-all duration-300"
+                  className="rounded-md h-8 text-xs data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary 
+                             data-[state=active]:to-primary/90 data-[state=active]:text-white 
+                             data-[state=active]:shadow-sm
+                             transition-all duration-200 font-medium
+                             hover:bg-primary/5 flex items-center justify-center gap-1.5"
                 >
                   Programa Semanal
                 </TabsTrigger>
                 <TabsTrigger 
                   value="ensaios"
-                  className="rounded-md data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 transition-all duration-300"
+                  className="rounded-md h-8 text-xs data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary 
+                             data-[state=active]:to-primary/90 data-[state=active]:text-white 
+                             data-[state=active]:shadow-sm
+                             transition-all duration-200 font-medium
+                             hover:bg-primary/5 flex items-center justify-center gap-1.5"
                 >
                   Participação nos Ensaios
                 </TabsTrigger>
