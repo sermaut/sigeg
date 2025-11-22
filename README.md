@@ -4,6 +4,14 @@
 
 **URL**: https://lovable.dev/projects/17a7840a-c2cf-47f0-a644-de9e03b44677
 
+## 🔄 Atualização após Deploy
+
+Após publicar alterações no Lovable, use **Hard Refresh** no navegador para ver a versão mais recente:
+- **Windows/Linux:** `Ctrl + Shift + R` ou `Ctrl + F5`
+- **Mac:** `Cmd + Shift + R`
+
+Isso limpa o cache e garante que você está vendo as atualizações mais recentes sem precisar usar abas anônimas.
+
 ## How can I edit this code?
 
 There are several ways of editing your application.

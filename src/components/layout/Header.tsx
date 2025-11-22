@@ -6,6 +6,11 @@ import { Bell, Search, User, LogOut, Shield, Users, Menu, Eye, EyeOff, Music } f
 import { LanguageSelector } from "@/components/common/LanguageSelector";
 import { RoleNotificationBadge } from "@/components/common/RoleNotificationBadge";
 import { useTranslation } from 'react-i18next';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -118,8 +123,8 @@ export function Header({ onMenuClick }: HeaderProps) {
                           hidden md:block" />
           
           <div className="flex items-center space-x-2 md:space-x-3">
-            {/* User info */}
-            <div className="text-right hidden sm:block">
+            {/* User info - Desktop */}
+            <div className="text-right hidden md:block">
               <p className="text-xs md:text-sm font-semibold text-white leading-tight">
                 {name}
               </p>
@@ -141,19 +146,63 @@ export function Header({ onMenuClick }: HeaderProps) {
               </div>
             </div>
             
-            {/* Avatar com gradiente */}
+            {/* Avatar com Popover - Mobile e Desktop */}
             <div className="relative group">
               <div className="absolute inset-0 gradient-primary rounded-full blur opacity-0 
                               group-hover:opacity-75 transition-opacity duration-500" />
-              <Button variant="outline" size="icon" 
-                      className="relative rounded-full w-8 h-8 md:w-10 md:h-10 border-2 
-                                 border-primary/20 hover:border-primary hover:scale-110 
-                                 transition-all duration-300 gradient-primary shadow-soft">
-                <UserIcon className="w-3 h-3 md:w-4 md:h-4 text-white" />
-              </Button>
+              
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="icon" 
+                          className="relative rounded-full w-8 h-8 md:w-10 md:h-10 border-2 
+                                     border-primary/20 hover:border-primary hover:scale-110 
+                                     transition-all duration-300 gradient-primary shadow-soft">
+                    <UserIcon className="w-3 h-3 md:w-4 md:h-4 text-white" />
+                  </Button>
+                </PopoverTrigger>
+                
+                <PopoverContent className="w-64 md:hidden" align="end">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full gradient-primary flex items-center justify-center border-2 border-primary/20">
+                        <UserIcon className="w-4 h-4 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-foreground leading-tight">{name}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg">
+                      <span className="text-xs text-muted-foreground flex-1">
+                        Código: {showCode ? code : "••••••"}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowCode(!showCode);
+                        }}
+                        className="h-6 w-6 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {showCode ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                      </Button>
+                    </div>
+
+                    <Button
+                      onClick={logout}
+                      variant="destructive"
+                      className="w-full flex items-center justify-center gap-2"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span className="text-sm font-medium">Sair</span>
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
             
-            {/* Botão logout */}
+            {/* Botão logout - Desktop */}
             <Button 
               variant="ghost" 
               size="icon"
