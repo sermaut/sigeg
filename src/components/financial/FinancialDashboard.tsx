@@ -60,30 +60,30 @@ export function FinancialDashboard({ groupId, currentMemberId, isGroupLeader }: 
   return (
     <div className="space-y-6">
 
-      <Tabs defaultValue="categories" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 h-11 p-1 bg-gradient-to-r from-muted/60 to-muted/40 
-                             rounded-xl border-2 border-primary/15 shadow-sm backdrop-blur-sm">
+      <Tabs defaultValue="categories" className="w-full mt-4">
+        <TabsList className="grid w-full grid-cols-2 h-9 p-0.5 bg-gradient-to-r from-muted/60 to-muted/40 
+                             rounded-lg border border-primary/10 shadow-sm backdrop-blur-sm">
           <TabsTrigger 
             value="categories"
-            className="rounded-lg h-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary 
+            className="rounded-md h-8 text-xs data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary 
                        data-[state=active]:to-primary/90 data-[state=active]:text-white 
-                       data-[state=active]:shadow-md data-[state=active]:shadow-primary/20
-                       transition-all duration-300 font-medium text-xs
-                       hover:bg-primary/5 flex items-center justify-center gap-1.5 px-2"
+                       data-[state=active]:shadow-sm
+                       transition-all duration-200 font-medium
+                       hover:bg-primary/5 flex items-center justify-center gap-1.5 px-3"
           >
-            <Wallet className="h-3.5 w-3.5" />
+            <Wallet className="h-3 w-3" />
             <span className="hidden sm:inline">Registros Financeiros</span>
             <span className="sm:hidden">Registros</span>
           </TabsTrigger>
           <TabsTrigger 
             value="payments"
-            className="rounded-lg h-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary 
+            className="rounded-md h-8 text-xs data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary 
                        data-[state=active]:to-primary/90 data-[state=active]:text-white 
-                       data-[state=active]:shadow-md data-[state=active]:shadow-primary/20
-                       transition-all duration-300 font-medium text-xs
-                       hover:bg-primary/5 flex items-center justify-center gap-1.5 px-2"
+                       data-[state=active]:shadow-sm
+                       transition-all duration-200 font-medium
+                       hover:bg-primary/5 flex items-center justify-center gap-1.5 px-3"
           >
-            <CreditCard className="h-3.5 w-3.5" />
+            <CreditCard className="h-3 w-3" />
             <span className="hidden sm:inline">Controlo de Pagamentos</span>
             <span className="sm:hidden">Pagamentos</span>
           </TabsTrigger>
