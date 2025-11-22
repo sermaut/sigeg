@@ -1,4 +1,5 @@
 import React, { memo, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,8 +16,10 @@ interface OptimizedGroupCardProps {
 }
 
 const OptimizedGroupCard = memo(({ group }: OptimizedGroupCardProps) => {
+  const navigate = useNavigate();
+  
   const handleViewGroup = () => {
-    window.location.href = `/groups/${group.id}`;
+    navigate(`/groups/${group.id}`);
   };
 
   return (
@@ -80,6 +83,7 @@ interface RecentGroupsProps {
 }
 
 export const RecentGroups = memo(({ groups }: RecentGroupsProps) => {
+  const navigate = useNavigate();
   const recentGroups = useMemo(() => groups.slice(0, 5), [groups]);
 
   return (
@@ -93,7 +97,7 @@ export const RecentGroups = memo(({ groups }: RecentGroupsProps) => {
           variant="gradient" 
           size="sm"
           className="hover:shadow-glow"
-          onClick={() => window.location.href = "/groups"}
+          onClick={() => navigate("/groups")}
         >
           <Eye className="w-4 h-4" />
           Ver Todos
@@ -122,7 +126,7 @@ export const RecentGroups = memo(({ groups }: RecentGroupsProps) => {
             variant="gradient" 
             size="lg"
             className="hover:shadow-glow"
-            onClick={() => window.location.href = "/groups/new"}
+            onClick={() => navigate("/groups/new")}
           >
             <Users className="w-5 h-5" />
             Cadastrar Primeiro Grupo

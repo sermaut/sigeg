@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { StatsCard } from "./StatsCard";
 import { RecentGroups } from "./OptimizedDashboard";
@@ -18,6 +19,7 @@ interface DashboardStats {
 
 export function Dashboard() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats>({
     totalGroups: 0,
     totalMembers: 0,
@@ -133,7 +135,7 @@ export function Dashboard() {
             variant="gradient" 
             size="default"
             className="text-sm"
-            onClick={() => window.location.href = "/groups"}
+            onClick={() => navigate("/groups")}
           >
             <Users className="w-4 h-4" />
             Ver Grupos
@@ -189,7 +191,7 @@ export function Dashboard() {
             variant="gradient" 
             size="lg" 
             className="shadow-medium"
-            onClick={() => window.location.href = "/groups/new"}
+            onClick={() => navigate("/groups/new")}
           >
             <Plus className="w-5 h-5" />
             Novo Grupo

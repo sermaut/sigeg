@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { GroupCard } from "./GroupCard";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { Plus, Search, Filter, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePermissions } from '@/hooks/usePermissions';
 import { PermissionGuard } from '@/components/common/PermissionGuard';
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,6 +29,7 @@ export function GroupsList() {
   const [groupToDelete, setGroupToDelete] = useState<string | null>(null);
   const { toast } = useToast();
   const permissions = usePermissions();
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadGroups();
@@ -36,6 +39,12 @@ export function GroupsList() {
     try {
       setLoading(true);
       
+      // Verificar conexão com Supabase
+      const { error: connectionError } = await supabase.from('groups').select('count').limit(1);
+      if (connectionError) {
+        throw new Error(`Erro de conexão: ${connectionError.message}`);
+      }
+      
       // Otimizar consulta carregando apenas campos necessários
       const { data, error } = await supabase
         .from('groups')
@@ -43,13 +52,21 @@ export function GroupsList() {
         .order('name', { ascending: true });
 
       if (error) throw error;
+      
+      console.log('✅ Grupos carregados com sucesso:', data?.length);
       setGroups(data || []);
     } catch (error: any) {
-      console.error('Erro ao carregar grupos:', error);
-      console.error('Detalhes do erro:', error?.message, error?.details, error?.hint);
+      console.error('❌ Erro ao carregar grupos:', error);
+      console.error('📋 Detalhes do erro:', {
+        message: error?.message,
+        details: error?.details,
+        hint: error?.hint,
+        code: error?.code
+      });
+      
       toast({
         title: "Erro ao carregar grupos",
-        description: error?.message || "Falha ao carregar grupos",
+        description: error?.message || "Falha ao carregar grupos. Verifique sua conexão.",
         variant: "destructive",
       });
     } finally {
@@ -64,11 +81,11 @@ export function GroupsList() {
   );
 
   const handleView = (id: string) => {
-    window.location.href = `/groups/${id}`;
+    navigate(`/groups/${id}`);
   };
 
   const handleEdit = (id: string) => {
-    window.location.href = `/groups/${id}/edit`;
+    navigate(`/groups/${id}/edit`);
   };
 
   const handleDelete = (id: string) => {
@@ -107,8 +124,21 @@ export function GroupsList() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="space-y-6">
+        <Card className="card-elevated p-4">
+          <Skeleton className="h-10 w-full" />
+        </Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <Card key={i} className="p-6">
+              <div className="space-y-3">
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-4 w-2/3" />
+              </div>
+            </Card>
+          ))}
+        </div>
       </div>
     );
   }
@@ -166,7 +196,7 @@ export function GroupsList() {
               <Button 
                 variant="gradient" 
                 size="lg"
-                onClick={() => window.location.href = "/groups/new"}
+                onClick={() => navigate("/groups/new")}
               >
                 <Plus className="w-5 h-5" />
                 Criar Primeiro Grupo
@@ -182,7 +212,7 @@ export function GroupsList() {
           <Button 
             variant="gradient" 
             size="lg"
-            onClick={() => window.location.href = "/groups/new"}
+            onClick={() => navigate("/groups/new")}
           >
             <Plus className="w-5 h-5" />
             Novo Grupo
