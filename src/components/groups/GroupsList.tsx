@@ -36,19 +36,40 @@ export function GroupsList() {
     try {
       setLoading(true);
       
-      // Otimizar consulta carregando apenas campos necessários
+      // 🔍 DEBUG: Verificar sessão antes da query
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('🔐 Sessão atual:', {
+        userId: session?.user?.id,
+        email: session?.user?.email,
+        isAuthenticated: !!session
+      });
+      
+      // Carregar grupos com TODOS os campos necessários
       const { data, error } = await supabase
         .from('groups')
-        .select('id, name, municipality, province, is_active, max_members, monthly_fee, created_at')
+        .select('id, name, municipality, province, direction, is_active, max_members, monthly_fee, access_code, created_at')
         .order('name', { ascending: true });
 
-      if (error) throw error;
+      // 🔍 DEBUG: Mostrar resultado da query
+      if (error) {
+        console.error('❌ Erro do Supabase:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
+        throw error;
+      }
+      
+      console.log('✅ Grupos carregados:', data?.length || 0);
+      console.log('📊 Primeiro grupo:', data?.[0]);
+      
       setGroups(data || []);
     } catch (error) {
-      console.error('Erro ao carregar grupos:', error);
+      console.error('💥 Erro ao carregar grupos:', error);
       toast({
         title: "Erro",
-        description: "Falha ao carregar grupos",
+        description: error instanceof Error ? error.message : "Falha ao carregar grupos",
         variant: "destructive",
       });
     } finally {
