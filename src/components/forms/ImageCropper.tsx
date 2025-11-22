@@ -100,7 +100,7 @@ export function ImageCropper({ open, onOpenChange, imageSrc, onCrop }: ImageCrop
           };
           reader.readAsDataURL(blob);
         }
-      }, 'image/jpeg', 0.95);
+      }, 'image/webp', 0.85);
     };
     img.src = imageSrc;
   }, [imageSrc, cropArea, onCrop, onOpenChange]);
