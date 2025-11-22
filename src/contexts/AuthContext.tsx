@@ -2,7 +2,6 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { getRoleLevel } from '@/lib/memberHelpers';
-import type { Session } from '@supabase/supabase-js';
 
 export interface SystemAdmin {
   id: string;
@@ -67,62 +66,18 @@ const PERMISSION_MAP: Record<number, string[]> = {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
-    // Configurar listener de mudanças de autenticação PRIMEIRO
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.id);
-        
-        // Atualizar estado de forma síncrona
-        setSession(session);
-        
-        if (session?.user) {
-          // Recuperar dados do usuário do metadata
-          const metadata = session.user.user_metadata;
-          if (metadata?.sigeg_user) {
-            setUser(metadata.sigeg_user as AuthUser);
-          }
-        } else {
-          setUser(null);
-        }
-        
-        // Detectar eventos importantes e mostrar notificações
-        if (event === 'TOKEN_REFRESHED') {
-          console.log('Token renovado automaticamente');
-        }
-        
-        if (event === 'SIGNED_OUT') {
-          setTimeout(() => {
-            toast({
-              title: "Sessão encerrada",
-              description: "Você foi desconectado do sistema.",
-              variant: "destructive",
-            });
-          }, 0);
-          setUser(null);
-          setSession(null);
-        }
-        
-        if (event === 'USER_UPDATED') {
-          console.log('Dados do usuário atualizados');
-        }
-        
-        setLoading(false);
+    const storedUser = localStorage.getItem('sigeg_user');
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        console.error('Error parsing stored user:', error);
+        localStorage.removeItem('sigeg_user');
       }
-    );
-
-    // ENTÃO verificar se já existe uma sessão
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session?.user?.user_metadata?.sigeg_user) {
-        setUser(session.user.user_metadata.sigeg_user as AuthUser);
-      }
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    }
+    setLoading(false);
   }, []);
 
   const login = async (code: string, type: 'admin' | 'member') => {
@@ -175,84 +130,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           permissions
         };
 
-        // Criar sessão do Supabase Auth
-        const email = `admin-${data.id}@sigeg.internal`;
-        const password = normalizedCode;
-
-        // Tentar login primeiro
-        console.log('🔐 Tentando signInWithPassword para:', email);
-        let authResult = await supabase.auth.signInWithPassword({
-          email,
-          password
-        });
-
-        console.log('📊 Resultado signInWithPassword:', {
-          hasUser: !!authResult.data.user,
-          hasSession: !!authResult.data.session,
-          error: authResult.error?.message
-        });
-
-        // Se falhar, criar nova conta
-        if (authResult.error) {
-          console.log('⚠️ Login falhou, tentando signUp...');
-          console.log('📧 Email:', email);
-          console.log('🔑 Password length:', password.length);
-          
-          authResult = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              data: {
-                sigeg_user: authUser
-              },
-              emailRedirectTo: undefined
-            }
-          });
-          
-          console.log('📊 Resultado signUp:', {
-            hasUser: !!authResult.data.user,
-            hasSession: !!authResult.data.session,
-            error: authResult.error?.message,
-            errorDetails: authResult.error
-          });
-
-          // Confirmar email automaticamente se a conta foi criada
-          if (authResult.data.user && !authResult.error) {
-            console.log('✅ Conta criada, confirmando email...');
-            
-            try {
-              const confirmResult = await supabase.functions.invoke('confirm-auth-user', {
-                body: { userId: authResult.data.user.id }
-              });
-              
-              if (confirmResult.error) {
-                console.warn('⚠️ Falha ao confirmar email:', confirmResult.error);
-              } else {
-                console.log('✅ Email confirmado com sucesso');
-              }
-            } catch (confirmError) {
-              console.warn('⚠️ Exceção ao confirmar email:', confirmError);
-              // Não bloqueamos o login por causa disso
-            }
-          }
-        }
-
-        if (authResult.error && authResult.error.message !== 'User already registered') {
-          console.error('❌ Erro crítico de autenticação:', authResult.error);
-          console.error('📝 Detalhes completos:', JSON.stringify(authResult.error, null, 2));
-          return { success: false, error: `Erro ao criar sessão: ${authResult.error.message}` };
-        }
-
-        // Atualizar metadata se necessário
-        if (authResult.data.user) {
-          await supabase.auth.updateUser({
-            data: {
-              sigeg_user: authUser
-            }
-          });
-        }
-
         setUser(authUser);
+        localStorage.setItem('sigeg_user', JSON.stringify(authUser));
         return { success: true };
 
       } else {
@@ -328,79 +207,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           permissions
         };
 
-        // Criar sessão do Supabase Auth
-        const email = `member-${memberData.id}@sigeg.internal`;
-        const password = normalizedCode;
-
-        // Tentar login primeiro
-        console.log('🔐 Tentando signInWithPassword para:', email);
-        let authResult = await supabase.auth.signInWithPassword({
-          email,
-          password
-        });
-
-        console.log('📊 Resultado signInWithPassword:', {
-          hasUser: !!authResult.data.user,
-          hasSession: !!authResult.data.session,
-          error: authResult.error?.message
-        });
-
-        // Se falhar, criar nova conta
-        if (authResult.error) {
-          console.log('⚠️ Login falhou, tentando signUp...');
-          
-          authResult = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              data: {
-                sigeg_user: authUser
-              },
-              emailRedirectTo: undefined
-            }
-          });
-          
-          console.log('📊 Resultado signUp:', {
-            hasUser: !!authResult.data.user,
-            hasSession: !!authResult.data.session,
-            error: authResult.error?.message
-          });
-
-          // Confirmar email automaticamente se a conta foi criada
-          if (authResult.data.user && !authResult.error) {
-            console.log('✅ Conta criada, confirmando email...');
-            
-            try {
-              const confirmResult = await supabase.functions.invoke('confirm-auth-user', {
-                body: { userId: authResult.data.user.id }
-              });
-              
-              if (confirmResult.error) {
-                console.warn('⚠️ Falha ao confirmar email:', confirmResult.error);
-              } else {
-                console.log('✅ Email confirmado com sucesso');
-              }
-            } catch (confirmError) {
-              console.warn('⚠️ Exceção ao confirmar email:', confirmError);
-            }
-          }
-        }
-
-        if (authResult.error && authResult.error.message !== 'User already registered') {
-          console.error('❌ Erro crítico de autenticação:', authResult.error);
-          return { success: false, error: `Erro ao criar sessão: ${authResult.error.message}` };
-        }
-
-        // Atualizar metadata se necessário
-        if (authResult.data.user) {
-          await supabase.auth.updateUser({
-            data: {
-              sigeg_user: authUser
-            }
-          });
-        }
-
         setUser(authUser);
+        localStorage.setItem('sigeg_user', JSON.stringify(authUser));
 
         // Verificar notificações de atribuições pendentes
         setTimeout(async () => {
@@ -449,10 +257,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const logout = async () => {
-    await supabase.auth.signOut();
+  const logout = () => {
     setUser(null);
-    setSession(null);
+    localStorage.removeItem('sigeg_user');
   };
 
   const hasPermission = (permission: string): boolean => {

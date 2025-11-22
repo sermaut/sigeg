@@ -36,64 +36,19 @@ export function GroupsList() {
     try {
       setLoading(true);
       
-      // 🔍 DEBUG: Verificar sessão antes da query
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      console.log('🔐 Sessão atual:', {
-        userId: session?.user?.id,
-        email: session?.user?.email,
-        isAuthenticated: !!session,
-        sessionError: sessionError?.message
-      });
-      
-      // Carregar grupos com TODOS os campos necessários
+      // Otimizar consulta carregando apenas campos necessários
       const { data, error } = await supabase
         .from('groups')
-        .select('id, name, municipality, province, direction, is_active, max_members, monthly_fee, access_code, created_at')
+        .select('id, name, municipality, province, is_active, max_members, monthly_fee, created_at')
         .order('name', { ascending: true });
 
-      // 🔍 DEBUG: Mostrar resultado da query
-      if (error) {
-        console.error('❌ Erro do Supabase:', {
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          code: error.code,
-          statusCode: error.code
-        });
-        
-        // Mensagem mais específica baseada no erro
-        let errorMessage = 'Falha ao carregar grupos';
-        
-        if (error.message.includes('permission') || error.message.includes('policy')) {
-          errorMessage = 'Você não tem permissão para visualizar grupos. Faça login novamente.';
-        } else if (error.message.includes('network') || error.message.includes('fetch')) {
-          errorMessage = 'Erro de conexão. Verifique sua internet e tente novamente.';
-        } else {
-          errorMessage = `Erro ao carregar grupos: ${error.message}`;
-        }
-        
-        throw new Error(errorMessage);
-      }
-      
-      console.log('✅ Grupos carregados:', data?.length || 0);
-      console.log('📊 Primeiro grupo:', data?.[0]);
-      
-      if (!data || data.length === 0) {
-        console.log('⚠️ Nenhum grupo encontrado no banco de dados');
-      }
-      
+      if (error) throw error;
       setGroups(data || []);
     } catch (error) {
-      console.error('💥 Erro ao carregar grupos:', error);
-      
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : "Não foi possível carregar os dados dos grupos.";
-      
+      console.error('Erro ao carregar grupos:', error);
       toast({
-        title: "Erro ao carregar grupos",
-        description: errorMessage,
+        title: "Erro",
+        description: "Falha ao carregar grupos",
         variant: "destructive",
       });
     } finally {

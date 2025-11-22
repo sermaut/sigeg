@@ -42,57 +42,27 @@ export default function Auth() {
     setLoading(true);
     setError('');
 
-    try {
-      console.log(`🔐 Iniciando login como ${type} com código:`, normalizedCode);
+    const result = await login(normalizedCode, type);
+    
+    if (result.success) {
+      toast({
+        title: "Login realizado com sucesso!",
+        description: `Bem-vindo ao SIGEG`,
+      });
+    } else {
+      setError(result.error || 'Erro ao fazer login');
       
-      const result = await login(normalizedCode, type);
-      
-      if (result.success) {
-        toast({
-          title: "Login realizado com sucesso!",
-          description: `Bem-vindo ao SIGEG-BV! 👋`,
-        });
-        
-        // Aguardar um momento antes do redirect
-        setTimeout(() => {
-          // Redirect será feito automaticamente pelo Navigate no topo
-        }, 500);
-      } else {
-        console.error('❌ Login falhou:', result.error);
-        
-        // Mensagens de erro mais específicas
-        let errorMessage = result.error || 'Erro ao fazer login';
-        
-        if (errorMessage.includes('inválido') || errorMessage.includes('invalid')) {
-          errorMessage += '\n\n💡 Dica: Verifique se o código está correto e se a conta está ativa.';
-        }
-        
-        if (errorMessage.includes('sessão') || errorMessage.includes('auth')) {
-          errorMessage += '\n\n🔄 Tente limpar o cache do navegador e fazer login novamente.';
-        }
-        
-        setError(errorMessage);
-        
+      // Sugerir limpar cache se for erro de verificação
+      if (result.error?.includes('verificar código')) {
         toast({
           title: "Erro ao fazer login",
-          description: errorMessage,
+          description: "Se o problema persistir, tente limpar o cache do navegador.",
           variant: "destructive",
         });
       }
-    } catch (error) {
-      console.error('💥 Erro crítico no login:', error);
-      
-      const criticalError = 'Erro crítico ao processar login. Por favor, tente novamente.';
-      setError(criticalError);
-      
-      toast({
-        title: "Erro crítico",
-        description: criticalError,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
     }
+    
+    setLoading(false);
   };
 
   return (

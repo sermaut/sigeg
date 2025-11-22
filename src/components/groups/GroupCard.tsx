@@ -60,13 +60,6 @@ export function GroupCard({ group, onView, onEdit, onDelete }: GroupCardProps) {
 
         {/* Info com hover effect */}
         <div className="space-y-3 mb-6">
-          {group.direction && (
-            <div className="flex items-center justify-between text-sm p-3 rounded-lg
-                            bg-muted/30 hover:bg-muted/50 transition-colors">
-              <span className="text-muted-foreground font-medium">Direção:</span>
-              <span className="text-foreground font-medium capitalize">{group.direction}</span>
-            </div>
-          )}
           {group.access_code && (
             <div className="flex items-center justify-between text-sm p-3 rounded-lg
                             bg-muted/30 hover:bg-muted/50 transition-colors">
