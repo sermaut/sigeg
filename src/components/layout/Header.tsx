@@ -6,6 +6,8 @@ import { Bell, Search, User, LogOut, Shield, Users, Menu, Eye, EyeOff, Music } f
 import { LanguageSelector } from "@/components/common/LanguageSelector";
 import { RoleNotificationBadge } from "@/components/common/RoleNotificationBadge";
 import { useTranslation } from 'react-i18next';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -15,6 +17,8 @@ export function Header({ onMenuClick }: HeaderProps) {
   const { user, logout, isAdmin, isMember } = useAuth();
   const { t } = useTranslation();
   const [showCode, setShowCode] = useState(false);
+  const [popoverOpen, setPopoverOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (showCode) {
@@ -135,16 +139,82 @@ export function Header({ onMenuClick }: HeaderProps) {
             </div>
             
             {/* Avatar com gradiente */}
-            <div className="relative group">
-              <div className="absolute inset-0 gradient-primary rounded-full blur opacity-0 
-                              group-hover:opacity-75 transition-opacity duration-500" />
-              <Button variant="outline" size="icon" 
-                      className="relative rounded-full w-8 h-8 md:w-10 md:h-10 border-2 
-                                 border-primary/20 hover:border-primary hover:scale-110 
-                                 transition-all duration-300 gradient-primary shadow-soft">
-                <UserIcon className="w-3 h-3 md:w-4 md:h-4 text-white" />
-              </Button>
-            </div>
+            {isMobile ? (
+              <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <div className="relative group cursor-pointer">
+                    <div className="absolute inset-0 gradient-primary rounded-full blur opacity-0 
+                                    group-hover:opacity-75 transition-opacity duration-500" />
+                    <Button variant="outline" size="icon" 
+                            className="relative rounded-full w-8 h-8 border-2 
+                                       border-primary/20 hover:border-primary hover:scale-110 
+                                       transition-all duration-300 gradient-primary shadow-soft">
+                      <UserIcon className="w-3 h-3 text-white" />
+                    </Button>
+                  </div>
+                </PopoverTrigger>
+                <PopoverContent className="w-64 bg-background/95 backdrop-blur-xl border-primary/20">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3 pb-3 border-b border-border/50">
+                      <div className="gradient-primary rounded-full w-12 h-12 flex items-center justify-center shadow-soft">
+                        <UserIcon className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-foreground leading-tight">
+                          {name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {isAdmin() ? 'Administrador' : 'Membro'}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between py-2">
+                      <span className="text-xs text-muted-foreground">Código:</span>
+                      <div className="flex items-center gap-1.5">
+                        {showCode ? (
+                          <span className="text-xs text-foreground font-mono font-semibold">{code}</span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">••••••</span>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setShowCode(!showCode)}
+                          className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                        >
+                          {showCode ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                        </Button>
+                      </div>
+                    </div>
+
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      onClick={() => {
+                        setPopoverOpen(false);
+                        logout();
+                      }}
+                      className="w-full flex items-center justify-center gap-2"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Sair
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            ) : (
+              <div className="relative group">
+                <div className="absolute inset-0 gradient-primary rounded-full blur opacity-0 
+                                group-hover:opacity-75 transition-opacity duration-500" />
+                <Button variant="outline" size="icon" 
+                        className="relative rounded-full w-10 h-10 border-2 
+                                   border-primary/20 hover:border-primary hover:scale-110 
+                                   transition-all duration-300 gradient-primary shadow-soft">
+                  <UserIcon className="w-4 h-4 text-white" />
+                </Button>
+              </div>
+            )}
             
             {/* Botão logout */}
             <Button 
