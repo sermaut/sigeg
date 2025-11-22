@@ -18,7 +18,7 @@ interface FinancialCategoriesProps {
   onCategoriesUpdate: () => void;
   currentMemberId?: string;
   isGroupLeader?: boolean;
-  userType?: 'admin' | 'member';
+  userType?: 'admin' | 'member' | 'group';
   permissionLevel?: string;
 }
 

@@ -264,7 +264,7 @@ export type Database = {
       }
       groups: {
         Row: {
-          access_code: string | null
+          access_code: string
           created_at: string
           direction: Database["public"]["Enums"]["group_direction"]
           id: string
@@ -288,7 +288,7 @@ export type Database = {
           vice_president_2_name: string | null
         }
         Insert: {
-          access_code?: string | null
+          access_code: string
           created_at?: string
           direction: Database["public"]["Enums"]["group_direction"]
           id?: string
@@ -312,7 +312,7 @@ export type Database = {
           vice_president_2_name?: string | null
         }
         Update: {
-          access_code?: string | null
+          access_code?: string
           created_at?: string
           direction?: Database["public"]["Enums"]["group_direction"]
           id?: string
@@ -769,6 +769,7 @@ export type Database = {
       }
       clean_old_rehearsal_records: { Args: never; Returns: undefined }
       generate_admin_code: { Args: { prefix?: string }; Returns: string }
+      generate_group_code: { Args: never; Returns: string }
       get_group_statistics: {
         Args: never
         Returns: {

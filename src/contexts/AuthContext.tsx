@@ -26,20 +26,33 @@ export interface Member {
   profile_image_url?: string;
 }
 
+export interface Group {
+  id: string;
+  name: string;
+  access_code: string;
+  province: string;
+  municipality: string;
+  is_active: boolean;
+  president_name?: string;
+  vice_president_1_name?: string;
+  vice_president_2_name?: string;
+}
+
 export interface AuthUser {
-  type: 'admin' | 'member';
-  data: SystemAdmin | Member;
+  type: 'admin' | 'member' | 'group';
+  data: SystemAdmin | Member | Group;
   permissions: string[];
 }
 
 interface AuthContextType {
   user: AuthUser | null;
   loading: boolean;
-  login: (code: string, type: 'admin' | 'member') => Promise<{ success: boolean; error?: string }>;
+  login: (code: string, type: 'admin' | 'member' | 'group') => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   hasPermission: (permission: string) => boolean;
   isAdmin: () => boolean;
   isMember: () => boolean;
+  isGroup: () => boolean;
   getPermissionLevel: () => number;
 }
 
@@ -80,7 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   }, []);
 
-  const login = async (code: string, type: 'admin' | 'member') => {
+  const login = async (code: string, type: 'admin' | 'member' | 'group') => {
     try {
       setLoading(true);
 
@@ -134,7 +147,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('sigeg_user', JSON.stringify(authUser));
         return { success: true };
 
-      } else {
+      } else if (type === 'member') {
         // Normalizar o código de membro
         const normalizedCode = code.trim().toUpperCase();
         
@@ -248,6 +261,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }, 1000);
 
         return { success: true };
+      } else if (type === 'group') {
+        const normalizedCode = code.trim().toUpperCase();
+        
+        console.log('Tentando login de grupo com código:', normalizedCode);
+        
+        const { data: groupData, error: groupError } = await supabase
+          .from('groups')
+          .select('*')
+          .eq('access_code', normalizedCode)
+          .eq('is_active', true)
+          .maybeSingle();
+
+        if (groupError) {
+          console.error('Group login error:', groupError);
+          
+          if (groupError.message.includes('fetch') || groupError.message.includes('network')) {
+            return { success: false, error: 'Erro de conexão. Verifique sua internet e tente novamente.' };
+          }
+          
+          return { success: false, error: 'Erro ao verificar código de grupo. Por favor, tente novamente.' };
+        }
+
+        if (!groupData) {
+          console.log('Nenhum grupo encontrado com o código:', normalizedCode);
+          return { success: false, error: 'Código de grupo inválido ou grupo inativo' };
+        }
+        
+        console.log('Grupo encontrado:', groupData.name);
+
+        // Grupos têm permissões de visualização ampla
+        const permissions = ['view_group_data', 'view_all_members', 'view_finances'];
+
+        const authUser: AuthUser = {
+          type: 'group',
+          data: groupData as Group,
+          permissions
+        };
+
+        setUser(authUser);
+        localStorage.setItem('sigeg_user', JSON.stringify(authUser));
+        return { success: true };
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -273,6 +327,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isAdmin = () => user?.type === 'admin';
   const isMember = () => user?.type === 'member';
+  const isGroup = () => user?.type === 'group';
 
   const getPermissionLevel = () => {
     if (!user) return 999;
@@ -293,6 +348,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     hasPermission,
     isAdmin,
     isMember,
+    isGroup,
     getPermissionLevel
   };
 

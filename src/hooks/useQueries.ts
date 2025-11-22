@@ -129,10 +129,13 @@ export function useCreateGroup() {
   const { addError } = useAppStore();
 
   return useMutation({
-    mutationFn: async (newGroup: Omit<Group, 'id' | 'created_at' | 'updated_at'>) => {
+    mutationFn: async (newGroup: Omit<Group, 'id' | 'created_at' | 'updated_at' | 'access_code'>) => {
       const { data, error } = await supabase
         .from('groups')
-        .insert([newGroup])
+        .insert([{ 
+          ...newGroup,
+          access_code: undefined, // Será gerado pelo trigger
+        } as any])
         .select()
         .single();
       
