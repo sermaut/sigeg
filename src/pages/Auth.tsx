@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 export default function Auth() {
   const [memberCode, setMemberCode] = useState('');
   const [adminCode, setAdminCode] = useState('');
+  const [groupCode, setGroupCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
@@ -30,7 +31,7 @@ export default function Auth() {
     return <Navigate to={from} replace />;
   }
 
-  const handleLogin = async (code: string, type: 'admin' | 'member') => {
+  const handleLogin = async (code: string, type: 'admin' | 'member' | 'group') => {
     if (!code.trim()) {
       setError('Por favor, insira o código de acesso');
       return;
@@ -110,18 +111,24 @@ export default function Auth() {
           
           <CardContent className="pb-8">
             <Tabs defaultValue="member" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-2 p-1 bg-muted/50 rounded-xl">
+              <TabsList className="grid w-full grid-cols-3 p-1 bg-muted/50 rounded-xl">
                 <TabsTrigger value="member" 
                              className="flex items-center gap-2 rounded-lg data-[state=active]:gradient-primary 
                                        data-[state=active]:text-white transition-all duration-300">
                   <Users className="w-4 h-4" />
                   <span>Membro</span>
                 </TabsTrigger>
+                <TabsTrigger value="group"
+                             className="flex items-center gap-2 rounded-lg data-[state=active]:gradient-primary 
+                                       data-[state=active]:text-white transition-all duration-300">
+                  <Music className="w-4 h-4" />
+                  <span>Grupo</span>
+                </TabsTrigger>
                 <TabsTrigger value="admin"
                              className="flex items-center gap-2 rounded-lg data-[state=active]:gradient-primary 
                                        data-[state=active]:text-white transition-all duration-300">
                   <Shield className="w-4 h-4" />
-                  <span>Administrador</span>
+                  <span>Admin</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -157,6 +164,34 @@ export default function Auth() {
                     <Users className="w-5 h-5 mr-2" />
                   )}
                   Entrar como Membro
+                </Button>
+              </TabsContent>
+
+              <TabsContent value="group" className="space-y-4">
+                <div className="space-y-2">
+                  <Input
+                    type="text"
+                    placeholder="Digite o código do grupo (ex: ABCD-EF)"
+                    value={groupCode}
+                    onChange={(e) => setGroupCode(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleLogin(groupCode, 'group')}
+                    disabled={loading}
+                    className="input-modern h-12 text-base"
+                  />
+                </div>
+                <Button
+                  onClick={() => handleLogin(groupCode, 'group')}
+                  disabled={loading}
+                  variant="gradient"
+                  size="lg"
+                  className="w-full"
+                >
+                  {loading ? (
+                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                  ) : (
+                    <Music className="w-5 h-5 mr-2" />
+                  )}
+                  Entrar como Grupo
                 </Button>
               </TabsContent>
 

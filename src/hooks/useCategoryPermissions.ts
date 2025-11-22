@@ -13,7 +13,7 @@ export function useCategoryPermissions(
   categoryId: string | undefined,
   memberId: string | undefined,
   groupId: string | undefined,
-  userType?: 'admin' | 'member',
+  userType?: 'admin' | 'member' | 'group',
   permissionLevel?: string
 ) {
   const [permissions, setPermissions] = useState<CategoryPermission>({

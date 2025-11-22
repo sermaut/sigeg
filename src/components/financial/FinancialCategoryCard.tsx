@@ -20,7 +20,7 @@ interface FinancialCategoryCardProps {
   onClick?: () => void;
   isGroupLeader?: boolean;
   currentMemberId?: string;
-  userType?: 'admin' | 'member';
+  userType?: 'admin' | 'member' | 'group';
   permissionLevel?: string;
 }
 

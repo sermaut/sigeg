@@ -12,7 +12,7 @@ interface HeaderProps {
 }
 
 export function Header({ onMenuClick }: HeaderProps) {
-  const { user, logout, isAdmin, isMember } = useAuth();
+  const { user, logout, isAdmin, isMember, isGroup } = useAuth();
   const { t } = useTranslation();
   const [showCode, setShowCode] = useState(false);
 
@@ -34,6 +34,13 @@ export function Header({ onMenuClick }: HeaderProps) {
         name: admin.name || 'Administrador',
         code: admin.access_code,
         icon: Shield
+      };
+    } else if (isGroup?.()) {
+      const group = user.data as any;
+      return {
+        name: group.name || 'Grupo',
+        code: group.access_code,
+        icon: Music
       };
     } else {
       const member = user.data as any;
