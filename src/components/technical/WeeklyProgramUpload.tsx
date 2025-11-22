@@ -7,6 +7,7 @@ import { Upload, X, Image as ImageIcon, Music, Loader2, FileText, Camera, Mic, C
 import { useToast } from "@/hooks/use-toast";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { usePermissions } from "@/hooks/usePermissions";
+import { compressImage } from "@/lib/imageOptimization";
 
 interface WeeklyProgramUploadProps {
   groupId: string;
@@ -43,52 +44,6 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
     setIsOpen(open);
   };
 
-  const compressImage = async (file: File): Promise<File> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = (event) => {
-        const img = new Image();
-        img.src = event.target?.result as string;
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          let width = img.width;
-          let height = img.height;
-          
-          const maxDimension = 1920;
-          if (width > maxDimension || height > maxDimension) {
-            if (width > height) {
-              height = (height / width) * maxDimension;
-              width = maxDimension;
-            } else {
-              width = (width / height) * maxDimension;
-              height = maxDimension;
-            }
-          }
-          
-          canvas.width = width;
-          canvas.height = height;
-          
-          const ctx = canvas.getContext('2d');
-          ctx?.drawImage(img, 0, 0, width, height);
-          
-          canvas.toBlob((blob) => {
-            if (blob) {
-              const compressedFile = new File([blob], file.name, {
-                type: 'image/jpeg',
-                lastModified: Date.now(),
-              });
-              resolve(compressedFile);
-            } else {
-              reject(new Error('Falha na compressão'));
-            }
-          }, 'image/jpeg', 0.85);
-        };
-      };
-      reader.onerror = (error) => reject(error);
-    });
-  };
-
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -107,7 +62,7 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
     
     if (file.size > 1024 * 1024) {
       try {
-        finalFile = await compressImage(file);
+        finalFile = await compressImage(file, 1920, 0.7);
         console.log('Imagem comprimida:', file.size, '->', finalFile.size);
       } catch (error) {
         console.error('Erro ao comprimir:', error);

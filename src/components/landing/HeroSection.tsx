@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { OptimizedImage } from "@/components/common/OptimizedImage";
 import { Building, Users, Music, BarChart3, ArrowRight, Check } from "lucide-react";
 import heroImage from "@/assets/sigeg-hero.jpg";
 
@@ -96,9 +97,12 @@ export function HeroSection() {
             <div className="relative">
               <div className="absolute inset-0 gradient-primary rounded-3xl opacity-10 blur-3xl transform rotate-6"></div>
               <Card className="card-elevated overflow-hidden shadow-strong">
-                <img 
+                <OptimizedImage 
                   src={heroImage} 
                   alt="SIGEG Dashboard"
+                  width={800}
+                  height={600}
+                  priority={true}
                   className="w-full h-auto rounded-xl"
                 />
               </Card>

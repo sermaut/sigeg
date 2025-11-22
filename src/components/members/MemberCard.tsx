@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { OptimizedImage } from "@/components/common/OptimizedImage";
 import { 
   User, 
   Phone, 
@@ -73,10 +74,19 @@ export function MemberCard({
             <Avatar className="w-16 h-16 border-4 border-primary/10 
                               group-hover:border-primary/30 transition-all duration-500
                               group-hover:scale-110">
-              <AvatarImage src={member.profile_image_url} alt={member.name} />
-              <AvatarFallback className="gradient-primary text-white text-lg font-bold">
-                {getInitials(member.name)}
-              </AvatarFallback>
+              {member.profile_image_url ? (
+                <OptimizedImage 
+                  src={member.profile_image_url} 
+                  alt={member.name}
+                  width={64}
+                  height={64}
+                  className="rounded-full object-cover"
+                />
+              ) : (
+                <AvatarFallback className="gradient-primary text-white text-lg font-bold">
+                  {getInitials(member.name)}
+                </AvatarFallback>
+              )}
             </Avatar>
             {/* Indicador de status */}
             {member.is_active && (

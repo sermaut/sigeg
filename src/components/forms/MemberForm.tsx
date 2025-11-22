@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Camera, Upload } from "lucide-react";
 import { ImageCropper } from "./ImageCropper";
+import { compressImage } from "@/lib/imageOptimization";
 
 const memberSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
@@ -144,15 +145,24 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
     checkMemberLimit();
   }, [effectiveGroupId]);
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
+    if (!file) return;
+    
+    try {
+      const compressedFile = await compressImage(file, 512, 0.7);
       const reader = new FileReader();
       reader.onload = (e) => {
         setTempImageUrl(e.target?.result as string);
         setShowCropper(true);
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(compressedFile);
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Falha ao processar imagem",
+        variant: "destructive",
+      });
     }
   };
 
