@@ -149,6 +149,21 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
     const file = event.target.files?.[0];
     if (!file) return;
     
+    // Validar tamanho máximo de 2,5MB
+    const maxSizeInBytes = 2.5 * 1024 * 1024; // 2,5MB
+    if (file.size > maxSizeInBytes) {
+      toast({
+        title: "Imagem muito grande",
+        description: "A imagem deve ter no máximo 2,5MB. Por favor, selecione uma imagem menor.",
+        variant: "destructive",
+      });
+      // Limpar o input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
+    }
+    
     try {
       const compressedFile = await compressImage(file, 512, 0.7);
       const reader = new FileReader();
