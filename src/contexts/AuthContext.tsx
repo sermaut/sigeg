@@ -72,8 +72,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Configurar listener de mudanças de autenticação PRIMEIRO
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         console.log('Auth state changed:', event, session?.user?.id);
+        
+        // Atualizar estado de forma síncrona
         setSession(session);
         
         if (session?.user) {
@@ -84,6 +86,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         } else {
           setUser(null);
+        }
+        
+        // Detectar eventos importantes e mostrar notificações
+        if (event === 'TOKEN_REFRESHED') {
+          console.log('Token renovado automaticamente');
+        }
+        
+        if (event === 'SIGNED_OUT') {
+          setTimeout(() => {
+            toast({
+              title: "Sessão encerrada",
+              description: "Você foi desconectado do sistema.",
+              variant: "destructive",
+            });
+          }, 0);
+          setUser(null);
+          setSession(null);
+        }
+        
+        if (event === 'USER_UPDATED') {
+          console.log('Dados do usuário atualizados');
         }
         
         setLoading(false);

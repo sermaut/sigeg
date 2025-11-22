@@ -8,6 +8,7 @@ import { RoleNotificationBadge } from "@/components/common/RoleNotificationBadge
 import { useTranslation } from 'react-i18next';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { toast } from "@/hooks/use-toast";
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -153,10 +154,16 @@ export function Header({ onMenuClick }: HeaderProps) {
                     </Button>
                   </div>
                 </PopoverTrigger>
-                <PopoverContent className="w-64 bg-background/95 backdrop-blur-xl border-primary/20">
+                <PopoverContent 
+                  className="w-64 bg-background/95 backdrop-blur-xl border-primary/20
+                             animate-in slide-in-from-top-2 fade-in-50 duration-300"
+                  sideOffset={8}
+                >
                   <div className="space-y-3">
-                    <div className="flex items-center gap-3 pb-3 border-b border-border/50">
-                      <div className="gradient-primary rounded-full w-12 h-12 flex items-center justify-center shadow-soft">
+                    <div className="flex items-center gap-3 pb-3 border-b border-border/50
+                                    animate-in fade-in-50 slide-in-from-left-1 duration-300 delay-75">
+                      <div className="gradient-primary rounded-full w-12 h-12 flex items-center justify-center shadow-soft
+                                      animate-in scale-in-95 duration-300 delay-100">
                         <UserIcon className="w-5 h-5 text-white" />
                       </div>
                       <div className="flex-1">
@@ -169,7 +176,8 @@ export function Header({ onMenuClick }: HeaderProps) {
                       </div>
                     </div>
                     
-                    <div className="flex items-center justify-between py-2">
+                    <div className="flex items-center justify-between py-2
+                                    animate-in fade-in-50 slide-in-from-left-1 duration-300 delay-150">
                       <span className="text-xs text-muted-foreground">Código:</span>
                       <div className="flex items-center gap-1.5">
                         {showCode ? (
@@ -181,7 +189,8 @@ export function Header({ onMenuClick }: HeaderProps) {
                           variant="ghost"
                           size="icon"
                           onClick={() => setShowCode(!showCode)}
-                          className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                          className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground
+                                     transition-all duration-200 hover:scale-110"
                         >
                           {showCode ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
                         </Button>
@@ -193,9 +202,15 @@ export function Header({ onMenuClick }: HeaderProps) {
                       size="sm"
                       onClick={() => {
                         setPopoverOpen(false);
-                        logout();
+                        toast({
+                          title: "Logout realizado",
+                          description: "Até logo! 👋",
+                        });
+                        setTimeout(() => logout(), 300);
                       }}
-                      className="w-full flex items-center justify-center gap-2"
+                      className="w-full flex items-center justify-center gap-2
+                                 animate-in fade-in-50 slide-in-from-bottom-1 duration-300 delay-200
+                                 transition-all hover:scale-105"
                     >
                       <LogOut className="w-4 h-4" />
                       Sair
