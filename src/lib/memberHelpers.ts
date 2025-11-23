@@ -14,8 +14,13 @@ export const getRoleLabel = (role: string): string => {
     coordenador: "Coordenador",
     coordenador_adj: "Coordenador Adjunto",
     dirigente_tecnico: "Dirigente Técnico",
+    chefe_pelotao: "Chefe de Pelotão",
+    chefe_seccao: "Chefe de Secção",
+    chefe_grupo: "Chefe de Grupo",
     chefe_particao: "Chefe de Partição",
     chefe_categoria: "Chefe de Categoria",
+    chefe_equipa: "Chefe de Equipa",
+    chefe_missao: "Chefe de Missão",
     protocolo: "Protocolo",
     relacao_publica: "Relação Pública",
     evangelista: "Evangelista",
@@ -59,8 +64,8 @@ export const getPartitionLabel = (partition: string): string => {
 export const getRoleLevel = (role: string): number => {
   if (['presidente', 'vice_presidente_1', 'vice_presidente_2', 'secretario_1', 'secretario_2'].includes(role)) return 1;
   if (['inspector', 'inspector_adj', 'coordenador', 'coordenador_adj'].includes(role)) return 2;
-  if (role === 'dirigente_tecnico') return 3;
-  if (['chefe_particao', 'chefe_categoria'].includes(role)) return 4;
+  if (['dirigente_tecnico', 'chefe_pelotao', 'chefe_seccao', 'chefe_grupo'].includes(role)) return 3;
+  if (['chefe_particao', 'chefe_categoria', 'chefe_equipa', 'chefe_missao'].includes(role)) return 4;
   if (['protocolo', 'relacao_publica', 'evangelista', 'conselheiro', 'disciplinador'].includes(role)) return 5;
   if (role === 'financeiro') return 6;
   return 7; // membro_simples
