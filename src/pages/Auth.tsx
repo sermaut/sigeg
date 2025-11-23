@@ -26,9 +26,9 @@ export default function Auth() {
     // Sessão persistente - não limpar ao montar
   }, []);
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated - sempre para Dashboard
   if (user) {
-    return <Navigate to={from} replace />;
+    return <Navigate to="/" replace />;
   }
 
   const handleLogin = async (code: string, type: 'admin' | 'member' | 'group') => {
