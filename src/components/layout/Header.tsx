@@ -7,10 +7,14 @@ import { LanguageSelector } from "@/components/common/LanguageSelector";
 import { RoleNotificationBadge } from "@/components/common/RoleNotificationBadge";
 import { useTranslation } from 'react-i18next';
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -20,6 +24,8 @@ export function Header({ onMenuClick }: HeaderProps) {
   const { user, logout, isAdmin, isMember, isGroup } = useAuth();
   const { t } = useTranslation();
   const [showCode, setShowCode] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (showCode) {
@@ -58,6 +64,29 @@ export function Header({ onMenuClick }: HeaderProps) {
   };
 
   const { name, code, icon: UserIcon } = getDisplayInfo();
+
+  const handleMouseEnter = () => {
+    const timeout = setTimeout(() => {
+      setDialogOpen(true);
+    }, 500);
+    setHoverTimeout(timeout);
+  };
+
+  const handleMouseLeave = () => {
+    if (hoverTimeout) {
+      clearTimeout(hoverTimeout);
+      setHoverTimeout(null);
+    }
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   return (
     <header className="relative h-16 border-b border-cyan-500/25 
@@ -146,60 +175,97 @@ export function Header({ onMenuClick }: HeaderProps) {
               </div>
             </div>
             
-            {/* Avatar com Popover - Mobile e Desktop */}
+            {/* Avatar com Dialog - Click ou Hover */}
             <div className="relative group">
               <div className="absolute inset-0 gradient-primary rounded-full blur opacity-0 
                               group-hover:opacity-75 transition-opacity duration-500" />
               
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" size="icon" 
-                          className="relative rounded-full w-8 h-8 md:w-10 md:h-10 border-2 
-                                     border-primary/20 hover:border-primary hover:scale-110 
-                                     transition-all duration-300 gradient-primary shadow-soft">
+              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    className="relative rounded-full w-8 h-8 md:w-10 md:h-10 border-2 
+                               border-red-500 hover:border-red-400 hover:scale-110 
+                               transition-all duration-300 bg-primary shadow-soft"
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                  >
                     <UserIcon className="w-3 h-3 md:w-4 md:h-4 text-white" />
                   </Button>
-                </PopoverTrigger>
+                </DialogTrigger>
                 
-                <PopoverContent className="w-64 md:hidden" align="end">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full gradient-primary flex items-center justify-center border-2 border-primary/20">
-                        <UserIcon className="w-4 h-4 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold text-foreground leading-tight">{name}</p>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Informações da Sessão</DialogTitle>
+                  </DialogHeader>
+                  
+                  <div className="space-y-4 pt-4">
+                    {/* Avatar e Nome */}
+                    <div className="flex items-center gap-4">
+                      <Avatar className="h-16 w-16 border-2 border-primary/20">
+                        <AvatarImage 
+                          src={user?.type === 'member' ? (user.data as any).profile_image_url : undefined}
+                          alt={name}
+                        />
+                        <AvatarFallback className="bg-primary text-primary-foreground text-lg font-bold">
+                          {getInitials(name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="space-y-1">
+                        <p className="text-lg font-bold text-foreground">{name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {isAdmin() ? 'Administrador' : isGroup?.() ? 'Grupo' : 'Membro'}
+                        </p>
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg">
-                      <span className="text-xs text-muted-foreground flex-1">
-                        Código: {showCode ? code : "••••••"}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setShowCode(!showCode);
-                        }}
-                        className="h-6 w-6 text-muted-foreground hover:text-foreground transition-colors"
+                    <Separator />
+                    
+                    {/* Código com toggle visibility */}
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-muted-foreground">Código de Acesso</p>
+                      <div className="flex items-center gap-2">
+                        <code className="flex-1 px-3 py-2 bg-muted rounded-md text-sm font-mono">
+                          {showCode ? code : '••••••'}
+                        </code>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setShowCode(!showCode)}
+                          className="h-9 w-9"
+                        >
+                          {showCode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <Separator />
+                    
+                    {/* Botões de ação */}
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={() => setDialogOpen(false)} 
+                        variant="outline"
+                        className="flex-1"
                       >
-                        {showCode ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                        Fechar
+                      </Button>
+                      <Button 
+                        onClick={() => {
+                          logout();
+                          setDialogOpen(false);
+                        }} 
+                        variant="destructive"
+                        className="flex-1"
+                      >
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Sair
                       </Button>
                     </div>
-
-                    <Button
-                      onClick={logout}
-                      variant="destructive"
-                      className="w-full flex items-center justify-center gap-2"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      <span className="text-sm font-medium">Sair</span>
-                    </Button>
                   </div>
-                </PopoverContent>
-              </Popover>
+                </DialogContent>
+              </Dialog>
             </div>
             
             {/* Botão logout - Desktop */}
