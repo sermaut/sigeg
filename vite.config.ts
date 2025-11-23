@@ -18,37 +18,40 @@ export default defineConfig(({ mode }) => ({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'robots.txt'],
       manifest: {
-        name: 'SIGEG - Sistema de Gestão de Grupos',
-        short_name: 'SIGEG',
-        description: 'Sistema de Gestão de Grupos Musicais',
+        name: 'SIGEG-BV - Sistema de Gestão de Grupos',
+        short_name: 'SIGEG-BV',
+        description: 'Sistema de Gestão de Grupos Musicais - Boa Vista',
         theme_color: '#2563eb',
         background_color: '#ffffff',
         display: 'standalone',
         start_url: '/',
         icons: [
           {
-            src: '/placeholder.svg',
+            src: '/icon-192.png',
             sizes: '192x192',
-            type: 'image/svg+xml',
+            type: 'image/png',
           },
           {
-            src: '/placeholder.svg',
+            src: '/icon-512.png',
             sizes: '512x512',
-            type: 'image/svg+xml',
+            type: 'image/png',
+            purpose: 'any maskable',
           },
         ],
       },
       workbox: {
+        skipWaiting: true,
+        clientsClaim: true,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,jpg}'],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/udgqabvondahhzqphyzb\.supabase\.co\/.*/i,
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'supabase-cache',
+              cacheName: 'supabase-cache-v1',
               expiration: {
                 maxEntries: 100,
-                maxAgeSeconds: 60 * 15, // 15 minutes
+                maxAgeSeconds: 60 * 5, // 5 minutes
               },
               networkTimeoutSeconds: 3,
             },
@@ -57,7 +60,7 @@ export default defineConfig(({ mode }) => ({
             urlPattern: /\.(?:png|jpg|jpeg|svg|webp)$/,
             handler: 'CacheFirst',
             options: {
-              cacheName: 'images-cache',
+              cacheName: 'images-cache-v1',
               expiration: {
                 maxEntries: 50,
                 maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days

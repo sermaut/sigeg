@@ -32,9 +32,9 @@ const memberSchema = z.object({
     // Nível 2
     "inspector", "inspector_adj", "coordenador", "coordenador_adj",
     // Nível 3
-    "dirigente_tecnico",
+    "dirigente_tecnico", "chefe_pelotao", "chefe_seccao", "chefe_grupo",
     // Nível 4
-    "chefe_particao", "chefe_categoria",
+    "chefe_particao", "chefe_categoria", "chefe_equipa", "chefe_missao",
     // Nível 5
     "protocolo", "relacao_publica", "evangelista", "conselheiro", "disciplinador",
     // Nível 6
@@ -438,6 +438,9 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
                           Nível 3 - Direção Técnica
                         </div>
                         <SelectItem value="dirigente_tecnico">Dirigente Técnico</SelectItem>
+                        <SelectItem value="chefe_pelotao">Chefe de Pelotão</SelectItem>
+                        <SelectItem value="chefe_seccao">Chefe de Secção</SelectItem>
+                        <SelectItem value="chefe_grupo">Chefe de Grupo</SelectItem>
                         
                         {/* Nível 4 - Liderança Setorial */}
                         <div className="px-2 py-1.5 text-xs font-semibold text-primary bg-primary/5 mt-1">
@@ -445,6 +448,8 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
                         </div>
                         <SelectItem value="chefe_particao">Chefe de Partição</SelectItem>
                         <SelectItem value="chefe_categoria">Chefe de Categoria</SelectItem>
+                        <SelectItem value="chefe_equipa">Chefe de Equipa</SelectItem>
+                        <SelectItem value="chefe_missao">Chefe de Missão</SelectItem>
                         
                         {/* Nível 5 - Serviços Especiais */}
                         <div className="px-2 py-1.5 text-xs font-semibold text-primary bg-primary/5 mt-1">
