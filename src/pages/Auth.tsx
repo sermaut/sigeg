@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { Music, Shield, Users, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import sigegLogo from '@/assets/sigeg-logo-seal.png';
 
 export default function Auth() {
   const [memberCode, setMemberCode] = useState('');
@@ -79,11 +80,11 @@ export default function Auth() {
         {/* Logo com animação de entrada */}
         <div className="text-center space-y-4 animate-fade-in">
           <div className="relative w-24 h-24 mx-auto group">
-            <div className="absolute inset-0 gradient-primary rounded-3xl blur-xl opacity-50 
+            <div className="absolute inset-0 gradient-primary rounded-full blur-xl opacity-50 
                             group-hover:opacity-100 transition-opacity animate-pulse" />
-            <div className="relative w-24 h-24 gradient-primary rounded-3xl flex items-center 
-                            justify-center shadow-strong hover:scale-110 transition-transform duration-500">
-              <Music className="w-12 h-12 text-white" />
+            <div className="relative w-24 h-24 bg-white rounded-full flex items-center 
+                            justify-center shadow-strong hover:scale-110 transition-transform duration-500 p-1">
+              <img src={sigegLogo} alt="SIGEG Logo" className="w-full h-full object-contain" />
             </div>
           </div>
           <div className="space-y-2">
