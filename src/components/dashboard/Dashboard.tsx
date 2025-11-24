@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { StatsCard } from "./StatsCard";
 import { RecentGroups } from "./OptimizedDashboard";
+import { DashboardCharts } from "./DashboardCharts";
 import { Button } from "@/components/ui/button";
 import { Users, Building, UserPlus, Activity, Plus } from "@/lib/icons";
 import { useToast } from '@/hooks/use-toast';
@@ -180,6 +181,9 @@ export function Dashboard() {
           icon={UserPlus}
         />
       </div>
+
+      {/* Interactive Charts */}
+      <DashboardCharts />
 
       {/* Recent Groups - Optimized */}
       <RecentGroups groups={groups} />
