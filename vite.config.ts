@@ -15,21 +15,28 @@ export default defineConfig(({ mode }) => ({
     react(),
     mode === 'development' && componentTagger(),
     VitePWA({
-      registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'robots.txt'],
+      registerType: 'prompt',
+      devOptions: {
+        enabled: true,
+      },
+      includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
       manifest: {
         name: 'SIGEG-BV - Sistema de Gestão de Grupos',
         short_name: 'SIGEG-BV',
-        description: 'Sistema de Gestão de Grupos Musicais - Boa Vista',
+        description: 'Sistema completo de gestão de grupos musicais com controle financeiro, membros e atividades',
         theme_color: '#2563eb',
         background_color: '#ffffff',
         display: 'standalone',
+        orientation: 'any',
+        scope: '/',
         start_url: '/',
+        categories: ['productivity', 'business', 'music'],
         icons: [
           {
             src: '/icon-192.png',
             sizes: '192x192',
             type: 'image/png',
+            purpose: 'any',
           },
           {
             src: '/icon-512.png',
@@ -37,33 +44,66 @@ export default defineConfig(({ mode }) => ({
             type: 'image/png',
             purpose: 'any maskable',
           },
+          {
+            src: '/icon-192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'monochrome',
+          },
         ],
       },
       workbox: {
         skipWaiting: true,
         clientsClaim: true,
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,jpg}'],
+        cleanupOutdatedCaches: true,
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,jpg,woff2}'],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/udgqabvondahhzqphyzb\.supabase\.co\/.*/i,
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'supabase-cache-v1',
+              cacheName: 'supabase-cache-v2',
               expiration: {
                 maxEntries: 100,
-                maxAgeSeconds: 60 * 5, // 5 minutes
+                maxAgeSeconds: 60 * 5,
               },
               networkTimeoutSeconds: 3,
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
             },
           },
           {
-            urlPattern: /\.(?:png|jpg|jpeg|svg|webp)$/,
+            urlPattern: /\.(?:png|jpg|jpeg|svg|webp|gif)$/,
             handler: 'CacheFirst',
             options: {
-              cacheName: 'images-cache-v1',
+              cacheName: 'images-cache-v2',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 30,
+              },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-cache-v1',
+              expiration: {
+                maxEntries: 20,
+                maxAgeSeconds: 60 * 60 * 24 * 365,
+              },
+            },
+          },
+          {
+            urlPattern: ({ request }) => 
+              request.url.includes('/api/') && request.method === 'GET',
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'api-cache-v1',
               expiration: {
                 maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+                maxAgeSeconds: 60 * 2,
               },
             },
           },
