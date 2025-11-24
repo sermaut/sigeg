@@ -103,7 +103,7 @@ export default function Auth() {
                           via-primary to-transparent opacity-50" />
           
           <CardHeader className="space-y-1 pt-8">
-            <CardTitle className="text-3xl text-center font-bold">Acesso ao Sistema</CardTitle>
+            <CardTitle className="text-2xl text-center font-bold">Acesso ao Sistema</CardTitle>
             <p className="text-center text-muted-foreground">
               Entre com seu código de acesso
             </p>
