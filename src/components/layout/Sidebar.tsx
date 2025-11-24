@@ -76,14 +76,14 @@ export function Sidebar({ className, isOpen, onOpenChange }: SidebarProps) {
       {/* Mobile overlay */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/20 z-40 lg:hidden"
           onClick={() => onOpenChange(false)}
         />
       )}
       
       <div className={cn(
         "fixed lg:relative inset-y-0 left-0 z-50 flex flex-col h-full bg-gradient-to-b from-slate-900/95 via-cyan-950/95 to-blue-950/95 backdrop-blur-md border-r border-cyan-500/25 shadow-soft transition-all duration-300",
-        "w-64",
+        "w-[75vw] max-w-[280px] lg:w-64",
         isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         className
       )}>
