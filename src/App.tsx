@@ -10,6 +10,9 @@ import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { GlobalErrorToast } from '@/components/common/GlobalErrorToast';
 import { PerformanceMonitor } from '@/components/common/PerformanceMonitor';
 import { StatsSkeleton } from '@/components/common/LoadingSkeleton';
+import { PWAUpdatePrompt } from '@/components/common/PWAUpdatePrompt';
+import { PWAInstallPrompt } from '@/components/common/PWAInstallPrompt';
+import { OfflineIndicator } from '@/components/common/OfflineIndicator';
 import '@/i18n';
 
 // Lazy load pages for code splitting
@@ -64,6 +67,9 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <AuthProvider>
+            <PWAUpdatePrompt />
+            <PWAInstallPrompt />
+            <OfflineIndicator />
             <BrowserRouter>
               <div className="min-h-screen bg-background">
                 <GlobalErrorToast />
