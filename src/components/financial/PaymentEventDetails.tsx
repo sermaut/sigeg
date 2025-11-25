@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,11 +21,38 @@ export function PaymentEventDetails({ event, groupId, onClose }: PaymentEventDet
   const [selectedMember, setSelectedMember] = useState<any>(null);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [categoryLeaders, setCategoryLeaders] = useState<any[]>([]);
   const { toast } = useToast();
+  const { user, isGroup, isMember } = useAuth();
+
+  // Verificar se é líder de categoria
+  const currentMemberId = isMember() && user?.type === 'member' ? (user.data as any).id : undefined;
+  const isCategoryLeader = categoryLeaders.some(leader => leader.member_id === currentMemberId);
+  const canEditPayment = !isGroup?.() && !isCategoryLeader;
 
   useEffect(() => {
     loadMemberPayments();
+    if (event.category_id) {
+      loadCategoryLeaders();
+    }
   }, [event.id]);
+
+  const loadCategoryLeaders = async () => {
+    if (!event.category_id) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from("category_roles")
+        .select("*")
+        .eq("category_id", event.category_id)
+        .eq("is_active", true);
+
+      if (error) throw error;
+      setCategoryLeaders(data || []);
+    } catch (error) {
+      console.error("Erro ao carregar líderes:", error);
+    }
+  };
 
   const loadMemberPayments = async () => {
     try {
@@ -234,6 +262,7 @@ export function PaymentEventDetails({ event, groupId, onClose }: PaymentEventDet
         memberPayment={selectedMember}
         eventAmountToPay={Number(event.amount_to_pay)}
         onPaymentUpdated={handlePaymentUpdated}
+        canEditPayment={canEditPayment}
       />
     </Card>
   );

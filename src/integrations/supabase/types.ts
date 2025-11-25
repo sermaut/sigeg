@@ -827,32 +827,38 @@ export type Database = {
       weekly_program_content: {
         Row: {
           audio_url: string | null
+          category: string
           created_at: string
           expires_at: string
           group_id: string
           id: string
-          image_url: string
+          image_url: string | null
           is_deleted: boolean
+          items: Json | null
           title: string
         }
         Insert: {
           audio_url?: string | null
+          category?: string
           created_at?: string
           expires_at?: string
           group_id: string
           id?: string
-          image_url: string
+          image_url?: string | null
           is_deleted?: boolean
+          items?: Json | null
           title: string
         }
         Update: {
           audio_url?: string | null
+          category?: string
           created_at?: string
           expires_at?: string
           group_id?: string
           id?: string
-          image_url?: string
+          image_url?: string | null
           is_deleted?: boolean
+          items?: Json | null
           title?: string
         }
         Relationships: [

@@ -206,7 +206,11 @@ export default function GroupDetails() {
         description: `O membro foi ${newStatus ? 'ativado' : 'desativado'} com sucesso.`,
       });
       
-      loadGroupDetails();
+      // Recarregar detalhes do grupo e forçar atualização
+      await loadGroupDetails();
+      
+      // Forçar re-renderização
+      setMembers(prevMembers => [...prevMembers.filter(m => m.id !== memberToToggle.id || newStatus)]);
     } catch (error) {
       console.error('Erro ao alterar status:', error);
       toast({
