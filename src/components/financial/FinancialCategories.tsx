@@ -35,6 +35,8 @@ export function FinancialCategories({
   const [showTransactionDialog, setShowTransactionDialog] = useState(false);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loadingTransactions, setLoadingTransactions] = useState(false);
+  const [allLeaders, setAllLeaders] = useState<Map<string, any[]>>(new Map());
+  const [loadingLeaders, setLoadingLeaders] = useState(true);
   const { toast } = useToast();
   const permissions = usePermissions();
   
@@ -45,6 +47,54 @@ export function FinancialCategories({
     userType,
     permissionLevel
   );
+
+  // Pré-carregar todos os líderes em batch
+  useEffect(() => {
+    const loadAllLeaders = async () => {
+      if (categories.length === 0) {
+        setLoadingLeaders(false);
+        return;
+      }
+
+      setLoadingLeaders(true);
+      try {
+        const categoryIds = categories.map(c => c.id);
+        const { data, error } = await supabase
+          .from("category_roles")
+          .select(`
+            id,
+            role,
+            member_id,
+            category_id,
+            members!category_roles_member_id_fkey (
+              id,
+              name,
+              profile_image_url
+            )
+          `)
+          .in("category_id", categoryIds)
+          .eq("is_active", true)
+          .order("role", { ascending: true });
+
+        if (error) throw error;
+
+        // Agrupar líderes por categoria
+        const leadersMap = new Map();
+        data?.forEach(leader => {
+          const existing = leadersMap.get(leader.category_id) || [];
+          leadersMap.set(leader.category_id, [...existing, leader]);
+        });
+        
+        setAllLeaders(leadersMap);
+      } catch (error) {
+        console.error("Erro ao carregar líderes:", error);
+      } finally {
+        setLoadingLeaders(false);
+      }
+    };
+
+    loadAllLeaders();
+  }, [categories]);
 
   const loadTransactions = async (categoryId: string) => {
     setLoadingTransactions(true);
@@ -113,20 +163,29 @@ export function FinancialCategories({
   return (
     <div className="space-y-6">
       {/* Categories Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {categories.map((category, index) => (
-          <FinancialCategoryCard
-            key={category.id}
-            category={category}
-            index={index}
-            onClick={() => handleCategoryClick(category)}
-            isGroupLeader={isGroupLeader}
-            currentMemberId={currentMemberId}
-            userType={userType}
-            permissionLevel={permissionLevel}
-          />
-        ))}
-      </div>
+      {loadingLeaders ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {categories.map((category) => (
+            <div key={category.id} className="h-64 animate-pulse bg-muted rounded-lg" />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {categories.map((category, index) => (
+            <FinancialCategoryCard
+              key={category.id}
+              category={category}
+              index={index}
+              onClick={() => handleCategoryClick(category)}
+              isGroupLeader={isGroupLeader}
+              currentMemberId={currentMemberId}
+              userType={userType}
+              permissionLevel={permissionLevel}
+              leaders={allLeaders.get(category.id) || []}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Transaction Modal */}
       {selectedCategory && (
@@ -167,25 +226,33 @@ export function FinancialCategories({
             </div>
             
             <div className="space-y-6">
-              {canEdit && !permissionsLoading && (
-                <div className="flex justify-end">
-                  <Button 
-                    onClick={() => setShowTransactionDialog(true)}
-                    className="flex items-center gap-2"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Nova Transação
-                  </Button>
+              {permissionsLoading ? (
+                <div className="flex justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 </div>
-              )}
-              
-              {!canEdit && !permissionsLoading && (
-                <div className="bg-muted/50 p-4 rounded-lg text-center">
-                  <Lock className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">
-                    Esta categoria está bloqueada. Apenas líderes atribuídos podem adicionar transações.
-                  </p>
-                </div>
+              ) : (
+                <>
+                  {canEdit && (
+                    <div className="flex justify-end">
+                      <Button 
+                        onClick={() => setShowTransactionDialog(true)}
+                        className="flex items-center gap-2"
+                      >
+                        <Plus className="h-4 w-4" />
+                        Nova Transação
+                      </Button>
+                    </div>
+                  )}
+                  
+                  {!canEdit && (
+                    <div className="bg-muted/50 p-4 rounded-lg text-center">
+                      <Lock className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">
+                        Esta categoria está bloqueada. Apenas líderes atribuídos podem adicionar transações.
+                      </p>
+                    </div>
+                  )}
+                </>
               )}
               
               {canViewBalance ? (
