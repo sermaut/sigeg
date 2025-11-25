@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { Bell, User, LogOut, Shield, Users, Menu, Eye, EyeOff, Music } from "lucide-react";
+import { Bell, User, LogOut, Shield, Users, Menu, Eye, EyeOff, Music, RefreshCw } from "lucide-react";
 import { getRoleLabel } from "@/lib/memberHelpers";
 import { LanguageSelector } from "@/components/common/LanguageSelector";
 import { RoleNotificationBadge } from "@/components/common/RoleNotificationBadge";
 import { NotificationCenter } from "@/components/notifications/NotificationCenter";
 import { GlobalSearch } from "@/components/common/GlobalSearch";
 import { useTranslation } from 'react-i18next';
+import { useCacheClearer } from "@/lib/cacheUtils";
 import {
   Dialog,
   DialogContent,
@@ -25,6 +26,7 @@ interface HeaderProps {
 export function Header({ onMenuClick }: HeaderProps) {
   const { user, logout, isAdmin, isMember, isGroup } = useAuth();
   const { t } = useTranslation();
+  const { clearCache } = useCacheClearer();
   const [showCode, setShowCode] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
@@ -248,6 +250,17 @@ export function Header({ onMenuClick }: HeaderProps) {
                       </Button>
                       <Button 
                         onClick={() => {
+                          clearCache();
+                          setDialogOpen(false);
+                        }} 
+                        variant="secondary"
+                        className="flex-1"
+                      >
+                        <RefreshCw className="w-4 h-4 mr-2" />
+                        Limpar Cache
+                      </Button>
+                      <Button 
+                        onClick={() => {
                           logout();
                           setDialogOpen(false);
                         }} 
@@ -262,6 +275,19 @@ export function Header({ onMenuClick }: HeaderProps) {
                 </DialogContent>
               </Dialog>
             </div>
+            
+            {/* Botão limpar cache - Desktop */}
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={clearCache}
+              className="text-secondary-foreground hover:text-secondary hover:bg-secondary/10 
+                         w-8 h-8 md:w-10 md:h-10 hidden md:flex transition-all duration-300
+                         hover:scale-110"
+              title="Limpar cache do aplicativo"
+            >
+              <RefreshCw className="w-3 h-3 md:w-4 md:h-4" />
+            </Button>
             
             {/* Botão logout - Desktop */}
             <Button 
