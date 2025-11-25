@@ -32,18 +32,19 @@ const SheetMusic = lazy(() => import('@/pages/SheetMusic'));
 const AdminManagement = lazy(() => import('@/pages/AdminManagement'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 
-// PHASE 2: Optimize React Query with aggressive caching (30% gain)
+// ULTRA-AGGRESSIVE: Cache otimizado para máxima performance
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 15 * 60 * 1000, // 15 minutes instead of 10
-      gcTime: 30 * 60 * 1000, // 30 minutes
+      staleTime: 30 * 60 * 1000, // 30 minutos - dados considerados frescos
+      gcTime: 60 * 60 * 1000, // 60 minutos - mantém em memória
       retry: (failureCount, error: any) => {
         if (error?.message?.includes('4')) return false;
-        return failureCount < 2;
+        return failureCount < 1; // Apenas 1 retry
       },
       refetchOnWindowFocus: false,
       refetchOnReconnect: true,
+      refetchOnMount: false, // Não refetch se dados ainda válidos
     },
     mutations: {
       retry: 1,

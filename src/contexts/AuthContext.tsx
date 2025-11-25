@@ -153,19 +153,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         console.log('Tentando login de membro com código:', normalizedCode);
         
-        // First, get the member data
-        const { data: memberData, error: memberError } = await supabase
-          .from('members')
-          .select('*')
-          .eq('member_code', normalizedCode)
-          .eq('is_active', true)
-          .maybeSingle();
+        // OTIMIZAÇÃO: Buscar membro e grupo em paralelo
+        const [memberResult, groupResult] = await Promise.all([
+          supabase
+            .from('members')
+            .select('*')
+            .eq('member_code', normalizedCode)
+            .eq('is_active', true)
+            .maybeSingle(),
+          // Pre-fetch group info para evitar segunda query
+          supabase
+            .from('groups')
+            .select('id, name, is_active')
+            .limit(1000) // Cache all active groups
+        ]);
+
+        const { data: memberData, error: memberError } = memberResult;
 
         if (memberError) {
           console.error('Member login error:', memberError);
-          console.error('Error details:', JSON.stringify(memberError));
           
-          // Verificar se é erro de conexão
           if (memberError.message.includes('fetch') || memberError.message.includes('network')) {
             return { success: false, error: 'Erro de conexão. Verifique sua internet e tente novamente.' };
           }
@@ -186,23 +193,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return { success: false, error: 'Dados de membro incompletos' };
         }
 
-        // Validar role
         if (!memberData.role) {
           console.error('Member without role:', memberData);
           return { success: false, error: 'Dados de membro incompletos: função não definida' };
         }
 
-        // Verify group is active (separate query)
-        const { data: groupData, error: groupError } = await supabase
-          .from('groups')
-          .select('id, name, is_active')
-          .eq('id', memberData.group_id)
-          .maybeSingle();
-
+        // Verificar grupo do cache paralelo
+        const { data: groupsData, error: groupError } = groupResult;
+        
         if (groupError) {
           console.error('Group verification error:', groupError);
           return { success: false, error: 'Erro ao verificar grupo' };
         }
+
+        const groupData = groupsData?.find(g => g.id === memberData.group_id);
 
         if (!groupData || !groupData.is_active) {
           return { success: false, error: 'Grupo inativo ou não encontrado' };
@@ -223,42 +227,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(authUser);
         localStorage.setItem('sigeg_user', JSON.stringify(authUser));
 
-        // Verificar notificações de atribuições pendentes
-        setTimeout(async () => {
-          const { data: notifications } = await supabase
-            .from('category_role_notifications')
-            .select(`
-              id,
-              role,
-              is_read,
-              financial_categories (
-                name
-              )
-            `)
-            .eq('member_id', memberData.id)
-            .eq('is_read', false)
-            .order('created_at', { ascending: false })
-            .limit(3);
+        // OTIMIZAÇÃO: Notificações completamente assíncronas (não bloqueia login)
+        (async () => {
+          try {
+            const { data: notifications } = await supabase
+              .from('category_role_notifications')
+              .select(`
+                id,
+                role,
+                is_read,
+                financial_categories (
+                  name
+                )
+              `)
+              .eq('member_id', memberData.id)
+              .eq('is_read', false)
+              .order('created_at', { ascending: false })
+              .limit(3);
 
-          if (notifications && notifications.length > 0) {
-            const roleLabels: Record<string, string> = {
-              'presidente': 'Presidente',
-              'secretario': 'Secretário',
-              'auxiliar': 'Auxiliar'
-            };
+            if (notifications && notifications.length > 0) {
+              const roleLabels: Record<string, string> = {
+                'presidente': 'Presidente',
+                'secretario': 'Secretário',
+                'auxiliar': 'Auxiliar'
+              };
 
-            notifications.forEach((notification: any) => {
-              const categoryName = notification.financial_categories?.name || 'N/A';
-              const roleLabel = roleLabels[notification.role] || notification.role;
-              
-              toast({
-                title: "Nova Atribuição de Liderança! 🎉",
-                description: `Você foi designado como ${roleLabel} da categoria "${categoryName}".`,
-                duration: 8000,
+              notifications.forEach((notification: any) => {
+                const categoryName = notification.financial_categories?.name || 'N/A';
+                const roleLabel = roleLabels[notification.role] || notification.role;
+                
+                toast({
+                  title: "Nova Atribuição de Liderança! 🎉",
+                  description: `Você foi designado como ${roleLabel} da categoria "${categoryName}".`,
+                  duration: 8000,
+                });
               });
-            });
+            }
+          } catch (err) {
+            console.warn('Failed to load notifications:', err);
           }
-        }, 1000);
+        })();
 
         return { success: true };
       } else if (type === 'group') {

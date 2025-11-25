@@ -73,7 +73,7 @@ export function useGroups(limit?: number) {
       if (error) throw error;
       return data as Group[];
     },
-    staleTime: 15 * 60 * 1000, // 15 minutes - dados de grupos mudam pouco
+    staleTime: 30 * 60 * 1000, // 30 minutos - dados de grupos mudam pouco
   });
 }
 
@@ -120,7 +120,7 @@ export function useMembers(groupId?: string, limit?: number, fields?: string) {
       if (error) throw error;
       return data as any[];
     },
-    staleTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 30 * 60 * 1000, // 30 minutos - cache agressivo
   });
 }
 
@@ -136,7 +136,7 @@ export function useGroupsCount() {
       if (error) throw error;
       return count || 0;
     },
-    staleTime: 15 * 60 * 1000, // 15 minutes
+    staleTime: 30 * 60 * 1000, // 30 minutos - cache agressivo
   });
 }
 
@@ -161,7 +161,7 @@ export function useMembersCount(groupId?: string, activeOnly = false) {
       if (error) throw error;
       return count || 0;
     },
-    staleTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 30 * 60 * 1000, // 30 minutos - cache agressivo
   });
 }
 
