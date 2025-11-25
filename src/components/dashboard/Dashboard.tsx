@@ -37,15 +37,37 @@ export function Dashboard() {
 
   async function loadDashboardData() {
     try {
+      // OTIMIZAÇÃO: Carregar do cache primeiro para feedback instantâneo
+      const cachedStats = localStorage.getItem('dashboard_stats_cache');
+      const cachedGroups = localStorage.getItem('dashboard_groups_cache');
+      
+      if (cachedStats && cachedGroups) {
+        try {
+          const parsedStats = JSON.parse(cachedStats);
+          const parsedGroups = JSON.parse(cachedGroups);
+          const cacheAge = Date.now() - (parsedStats.timestamp || 0);
+          
+          // Se cache tem menos de 5 minutos, usar imediatamente
+          if (cacheAge < 5 * 60 * 1000) {
+            setStats(parsedStats);
+            setGroups(parsedGroups);
+            setLoading(false);
+            return; // Usar cache, não buscar do servidor
+          }
+        } catch (e) {
+          console.warn('Cache parse error:', e);
+        }
+      }
+
       setLoading(true);
 
-      // ULTRA-OPTIMIZED: Use COUNT queries for statistics + limit groups to 5
+      // ULTRA-OPTIMIZED: Queries paralelas com COUNT otimizado
       const [groupsResult, totalGroupsCount, totalMembersCount, activeGroupsCount] = await Promise.all([
         supabase
           .from('groups')
           .select('id, name, municipality, province, is_active, created_at')
           .order('created_at', { ascending: false })
-          .limit(5), // Reduced from 10 to 5
+          .limit(5),
         supabase
           .from('groups')
           .select('id', { count: 'exact', head: true }),
@@ -76,14 +98,24 @@ export function Dashboard() {
         return;
       }
 
-      setStats({
+      const newStats = {
         totalGroups: totalGroups || 0,
         totalMembers: totalMembers || 0,
         activeGroups: activeGroups || 0,
-        recentActivity: totalGroups || 0
-      });
+        recentActivity: totalGroups || 0,
+        timestamp: Date.now()
+      };
 
+      setStats(newStats);
       setGroups(groupsData || []);
+
+      // Salvar em cache para próxima vez
+      try {
+        localStorage.setItem('dashboard_stats_cache', JSON.stringify(newStats));
+        localStorage.setItem('dashboard_groups_cache', JSON.stringify(groupsData || []));
+      } catch (e) {
+        console.warn('Failed to cache dashboard data:', e);
+      }
     } catch (error) {
       console.error('Error loading dashboard data:', error);
       toast({
