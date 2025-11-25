@@ -230,29 +230,16 @@ export function FinancialCategories({
                 <div className="flex justify-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 </div>
-              ) : (
-                <>
-                  {canEdit && (
-                    <div className="flex justify-end">
-                      <Button 
-                        onClick={() => setShowTransactionDialog(true)}
-                        className="flex items-center gap-2"
-                      >
-                        <Plus className="h-4 w-4" />
-                        Nova Transação
-                      </Button>
-                    </div>
-                  )}
-                  
-                  {!canEdit && (
-                    <div className="bg-muted/50 p-4 rounded-lg text-center">
-                      <Lock className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground">
-                        Esta categoria está bloqueada. Apenas líderes atribuídos podem adicionar transações.
-                      </p>
-                    </div>
-                  )}
-                </>
+              ) : canEdit && (
+                <div className="flex justify-end">
+                  <Button 
+                    onClick={() => setShowTransactionDialog(true)}
+                    className="flex items-center gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Nova Transação
+                  </Button>
+                </div>
               )}
               
               {canViewBalance ? (
