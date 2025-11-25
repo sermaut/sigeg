@@ -6,9 +6,10 @@ interface TransactionsListProps {
   transactions: any[];
   loading: boolean;
   onTransactionDeleted: () => void;
+  canDelete?: boolean;
 }
 
-export function TransactionsList({ transactions, loading, onTransactionDeleted }: TransactionsListProps) {
+export function TransactionsList({ transactions, loading, onTransactionDeleted, canDelete = true }: TransactionsListProps) {
   const { toast } = useToast();
 
   const handleDelete = async (transactionId: string) => {
@@ -61,6 +62,7 @@ export function TransactionsList({ transactions, loading, onTransactionDeleted }
           key={transaction.id}
           transaction={transaction}
           onDelete={handleDelete}
+          canDelete={canDelete}
         />
       ))}
     </div>

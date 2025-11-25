@@ -14,9 +14,10 @@ interface TransactionCardProps {
     created_at: string;
   };
   onDelete: (id: string) => void;
+  canDelete?: boolean;
 }
 
-export function TransactionCard({ transaction, onDelete }: TransactionCardProps) {
+export function TransactionCard({ transaction, onDelete, canDelete = true }: TransactionCardProps) {
   const isIncome = transaction.type === "entrada";
   
   return (
@@ -49,14 +50,16 @@ export function TransactionCard({ transaction, onDelete }: TransactionCardProps)
             </div>
           </div>
           
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onDelete(transaction.id)}
-            className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive hover:bg-destructive/10"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          {canDelete && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onDelete(transaction.id)}
+              className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive hover:bg-destructive/10"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
         </div>
 
         {/* Descrição */}
