@@ -63,34 +63,37 @@ export function useCategoryPermissions(
           setLoading(false);
           return;
         }
-        // Verificar se é líder do grupo
-        const { data: groupData } = await supabase
-          .from("groups")
-          .select("president_id, vice_president_1_id, vice_president_2_id")
-          .eq("id", groupId)
-          .single();
+
+        // Paralelizar todas as consultas para performance
+        const [groupResult, roleResult, categoryResult] = await Promise.all([
+          supabase
+            .from("groups")
+            .select("president_id, vice_president_1_id, vice_president_2_id")
+            .eq("id", groupId)
+            .single(),
+          supabase
+            .from("category_roles")
+            .select("role")
+            .eq("category_id", categoryId)
+            .eq("member_id", memberId)
+            .eq("is_active", true)
+            .maybeSingle(),
+          supabase
+            .from("financial_categories")
+            .select("is_locked")
+            .eq("id", categoryId)
+            .single()
+        ]);
+
+        const groupData = groupResult.data;
+        const roleData = roleResult.data;
+        const categoryData = categoryResult.data;
 
         const isGroupLeader = groupData ? (
           groupData.president_id === memberId ||
           groupData.vice_president_1_id === memberId ||
           groupData.vice_president_2_id === memberId
         ) : false;
-
-        // Verificar se tem role na categoria
-        const { data: roleData } = await supabase
-          .from("category_roles")
-          .select("role")
-          .eq("category_id", categoryId)
-          .eq("member_id", memberId)
-          .eq("is_active", true)
-          .maybeSingle();
-
-        // Verificar se categoria está bloqueada
-        const { data: categoryData } = await supabase
-          .from("financial_categories")
-          .select("is_locked")
-          .eq("id", categoryId)
-          .single();
 
         const isLocked = categoryData?.is_locked ?? false;
         const hasRole = !!roleData;

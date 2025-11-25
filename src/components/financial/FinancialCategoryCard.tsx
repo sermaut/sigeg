@@ -23,6 +23,7 @@ interface FinancialCategoryCardProps {
   userType?: 'admin' | 'member' | 'group';
   permissionLevel?: string;
   onManageLeaders?: (categoryId: string, categoryName: string) => void;
+  leaders?: CategoryLeader[];
 }
 
 interface CategoryLeader {
@@ -95,17 +96,28 @@ export function FinancialCategoryCard({
   currentMemberId,
   userType,
   permissionLevel,
-  onManageLeaders
+  onManageLeaders,
+  leaders: externalLeaders
 }: FinancialCategoryCardProps) {
   const colorScheme = categoryColors[index % categoryColors.length];
   const [showLeadersDialog, setShowLeadersDialog] = useState(false);
-  const [leaders, setLeaders] = useState<CategoryLeader[]>([]);
+  const [internalLeaders, setInternalLeaders] = useState<CategoryLeader[]>([]);
   const [hasAccess, setHasAccess] = useState(true);
 
+  // Usar leaders externos se disponíveis, senão usar internos
+  const leaders = externalLeaders || internalLeaders;
+
   useEffect(() => {
-    loadLeaders();
+    // Só carregar leaders se não foram passados externamente
+    if (!externalLeaders) {
+      loadLeaders();
+    }
+  }, [category.id, externalLeaders]);
+
+  useEffect(() => {
+    // checkAccess depende de leaders, então executa separadamente
     checkAccess();
-  }, [category.id, currentMemberId, userType, permissionLevel]);
+  }, [leaders, currentMemberId, userType, permissionLevel, category.is_locked, isGroupLeader]);
 
   const checkAccess = async () => {
     // Admins principais têm acesso a tudo
@@ -150,7 +162,7 @@ export function FinancialCategoryCard({
         .order("role", { ascending: true });
 
       if (data) {
-        setLeaders(data as any);
+        setInternalLeaders(data as any);
       }
     } catch (error) {
       console.error("Erro ao carregar líderes:", error);
@@ -281,7 +293,7 @@ export function FinancialCategoryCard({
           open={showLeadersDialog}
           onOpenChange={(open) => {
             setShowLeadersDialog(open);
-            if (!open) loadLeaders();
+            if (!open && !externalLeaders) loadLeaders();
           }}
           categoryId={category.id}
           groupId={category.group_id}
