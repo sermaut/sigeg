@@ -38,7 +38,7 @@ export function FinancialCategories({
   const { toast } = useToast();
   const permissions = usePermissions();
   
-  const { canViewBalance, canEdit, loading: permissionsLoading } = useCategoryPermissions(
+  const { canViewBalance, canEdit, canDelete, loading: permissionsLoading } = useCategoryPermissions(
     selectedCategory?.id,
     currentMemberId,
     groupId,
@@ -193,6 +193,7 @@ export function FinancialCategories({
                   transactions={transactions}
                   loading={loadingTransactions}
                   onTransactionDeleted={handleTransactionAdded}
+                  canDelete={canDelete}
                 />
               ) : (
                 <div className="bg-muted/50 p-8 rounded-lg text-center">
@@ -213,6 +214,8 @@ export function FinancialCategories({
         onOpenChange={setShowTransactionDialog}
         categoryId={selectedCategory?.id}
         onTransactionAdded={handleTransactionAdded}
+        canCreate={canEdit}
+        isLocked={selectedCategory?.is_locked}
       />
     </div>
   );

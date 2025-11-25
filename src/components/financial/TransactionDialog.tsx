@@ -13,9 +13,11 @@ interface TransactionDialogProps {
   onOpenChange: (open: boolean) => void;
   categoryId: string;
   onTransactionAdded: () => void;
+  canCreate?: boolean;
+  isLocked?: boolean;
 }
 
-export function TransactionDialog({ open, onOpenChange, categoryId, onTransactionAdded }: TransactionDialogProps) {
+export function TransactionDialog({ open, onOpenChange, categoryId, onTransactionAdded, canCreate = true, isLocked = false }: TransactionDialogProps) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     type: "entrada",
@@ -27,6 +29,15 @@ export function TransactionDialog({ open, onOpenChange, categoryId, onTransactio
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!categoryId) return;
+
+    if (!canCreate || isLocked) {
+      toast({
+        title: "Ação não permitida",
+        description: "Você não tem permissão para criar transações nesta categoria.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setLoading(true);
     try {
@@ -71,7 +82,11 @@ export function TransactionDialog({ open, onOpenChange, categoryId, onTransactio
         <DialogHeader>
           <DialogTitle>Nova Transação</DialogTitle>
           <DialogDescription>
-            Adicione uma entrada ou saída financeira para esta categoria.
+            {isLocked ? (
+              <span className="text-destructive">Esta categoria está bloqueada. Apenas líderes podem criar transações.</span>
+            ) : (
+              "Adicione uma entrada ou saída financeira para esta categoria."
+            )}
           </DialogDescription>
         </DialogHeader>
         
@@ -118,7 +133,7 @@ export function TransactionDialog({ open, onOpenChange, categoryId, onTransactio
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading || !canCreate || isLocked}>
               {loading ? "Adicionando..." : "Adicionar"}
             </Button>
           </div>
