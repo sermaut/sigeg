@@ -89,7 +89,7 @@ export default function GroupDetails() {
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [memberToToggle, setMemberToToggle] = useState<{ id: string; isActive: boolean } | null>(null);
 
-  // Use React Query hooks for automatic caching
+  // Use React Query hooks with cache - queries run in parallel
   const { data: group, isLoading: groupLoading, refetch: refetchGroup } = useGroup(id || '');
   const { data: members = [], isLoading: membersLoading, refetch: refetchMembers } = useMembers(
     id, 
@@ -99,36 +99,53 @@ export default function GroupDetails() {
 
   const loading = groupLoading || membersLoading;
 
+  // Try to load from localStorage cache first for instant display
+  const getCachedData = (key: string) => {
+    try {
+      const cached = localStorage.getItem(`cache_${key}`);
+      if (cached) {
+        const { data, timestamp } = JSON.parse(cached);
+        if (Date.now() - timestamp < 30 * 60 * 1000) return data;
+      }
+    } catch {}
+    return null;
+  };
+
+  const cachedGroup = getCachedData(`group_${id}`);
+  const cachedMembers = getCachedData(`members_${id}`);
+  const displayGroup = group || cachedGroup;
+  const displayMembers = members.length > 0 ? members : (cachedMembers || []);
+
   // Obter ID do membro atual se for membro
   const currentMemberId = isMember() && user?.type === 'member' ? (user.data as any).id : undefined;
   
   // Verificar se é líder do grupo
-  const isGroupLeader = group ? (
-    group.president_id === currentMemberId ||
-    group.vice_president_1_id === currentMemberId ||
-    group.vice_president_2_id === currentMemberId ||
-    group.secretary_1_id === currentMemberId ||
-    group.secretary_2_id === currentMemberId
+  const isGroupLeader = displayGroup ? (
+    displayGroup.president_id === currentMemberId ||
+    displayGroup.vice_president_1_id === currentMemberId ||
+    displayGroup.vice_president_2_id === currentMemberId ||
+    displayGroup.secretary_1_id === currentMemberId ||
+    displayGroup.secretary_2_id === currentMemberId
   ) : false;
 
   // Redirect if group not found
-  if (!groupLoading && !group && id) {
+  if (!groupLoading && !displayGroup && id) {
     navigate('/groups');
   }
 
-  const filteredMembers = members.filter(member =>
+  const filteredMembers = displayMembers.filter(member =>
     member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (member.role && member.role.toLowerCase().includes(searchTerm.toLowerCase())) ||
     (member.partition && member.partition.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  const activeMembers = members.filter(m => m.is_active);
+  const activeMembers = displayMembers.filter(m => m.is_active);
   const leadersCount = [
-    group?.president_id,
-    group?.vice_president_1_id,
-    group?.vice_president_2_id,
-    group?.secretary_1_id,
-    group?.secretary_2_id
+    displayGroup?.president_id,
+    displayGroup?.vice_president_1_id,
+    displayGroup?.vice_president_2_id,
+    displayGroup?.secretary_1_id,
+    displayGroup?.secretary_2_id
   ].filter(Boolean).length;
 
   const handleMemberView = (memberId: string) => {
@@ -140,7 +157,7 @@ export default function GroupDetails() {
   };
 
   const handleMemberToggleStatus = (memberId: string) => {
-    const member = members.find(m => m.id === memberId);
+    const member = displayMembers.find(m => m.id === memberId);
     if (!member) return;
     
     setMemberToToggle({ id: memberId, isActive: member.is_active });
@@ -180,7 +197,8 @@ export default function GroupDetails() {
     }
   };
 
-  if (loading) {
+  // Show cached data immediately with loading overlay instead of full loading screen
+  if (loading && !displayGroup) {
     return (
       <MainLayout>
         <div className="flex items-center justify-center h-64">
@@ -190,7 +208,7 @@ export default function GroupDetails() {
     );
   }
 
-  if (!group) {
+  if (!displayGroup) {
     return (
       <MainLayout>
         <div className="text-center py-12">
@@ -201,6 +219,14 @@ export default function GroupDetails() {
         </div>
       </MainLayout>
     );
+  }
+
+  // Cache data for instant subsequent loads
+  if (group && !loading) {
+    localStorage.setItem(`cache_group_${id}`, JSON.stringify({ data: group, timestamp: Date.now() }));
+  }
+  if (members.length > 0 && !loading) {
+    localStorage.setItem(`cache_members_${id}`, JSON.stringify({ data: members, timestamp: Date.now() }));
   }
 
   return (
@@ -233,12 +259,12 @@ export default function GroupDetails() {
               <div className="flex items-center gap-3 mb-2">
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-primary 
                                bg-clip-text text-transparent">
-                  {group.name}
+                  {displayGroup.name}
                 </h1>
               </div>
               <div className="flex items-center space-x-2 text-muted-foreground">
                 <MapPin className="w-5 h-5" />
-                <span className="text-lg">{group.municipality}, {group.province}</span>
+                <span className="text-lg">{displayGroup.municipality}, {displayGroup.province}</span>
               </div>
             </div>
           </div>
