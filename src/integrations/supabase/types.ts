@@ -901,6 +901,7 @@ export type Database = {
         }[]
       }
       get_member_role_level: { Args: { p_member_id: string }; Returns: number }
+      get_user_group_id: { Args: { p_member_id: string }; Returns: string }
       is_category_leader: {
         Args: { p_category_id: string; p_member_id: string }
         Returns: boolean
