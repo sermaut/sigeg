@@ -11,13 +11,26 @@ export interface Group {
   is_active: boolean;
   max_members: number;
   monthly_fee: number;
+  access_code: string;
+  president_id?: string;
+  vice_president_1_id?: string;
+  vice_president_2_id?: string;
+  secretary_1_id?: string;
+  secretary_2_id?: string;
   president_name?: string;
   vice_president_1_name?: string;
   vice_president_2_name?: string;
   secretary_1_name?: string;
   secretary_2_name?: string;
+  plan_id?: string;
   created_at: string;
   updated_at: string;
+  monthly_plans?: {
+    name: string;
+    max_members: number;
+    price_per_member: number;
+    is_active: boolean;
+  };
 }
 
 export interface Member {
@@ -35,6 +48,8 @@ export interface Member {
   partition?: 'soprano' | 'contralto' | 'tenor' | 'baixo' | 'instrumental';
   is_active: boolean;
   profile_image_url?: string;
+  profession?: string;
+  education_level?: string;
   created_at: string;
   updated_at: string;
 }
@@ -79,14 +94,17 @@ export function useGroup(id: string) {
   });
 }
 
-// Members Query Hooks
-export function useMembers(groupId?: string, limit?: number) {
+// Members Query Hooks  
+export function useMembers(groupId?: string, limit?: number, fields?: string) {
   return useQuery({
-    queryKey: ['members', groupId, limit],
+    queryKey: ['members', groupId, limit, fields],
     queryFn: async () => {
+      // Select only necessary fields for performance
+      const selectFields = fields || 'id, name, role, partition, is_active, phone, profile_image_url';
+      
       let query = supabase
         .from('members')
-        .select('*')
+        .select(selectFields)
         .order('created_at', { ascending: false });
       
       if (groupId) {
@@ -100,7 +118,48 @@ export function useMembers(groupId?: string, limit?: number) {
       const { data, error } = await query;
       
       if (error) throw error;
-      return data as Member[];
+      return data as any[];
+    },
+    staleTime: 10 * 60 * 1000, // 10 minutes
+  });
+}
+
+// Count queries for statistics - much faster than loading all data
+export function useGroupsCount() {
+  return useQuery({
+    queryKey: ['groups', 'count'],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('groups')
+        .select('id', { count: 'exact', head: true });
+      
+      if (error) throw error;
+      return count || 0;
+    },
+    staleTime: 15 * 60 * 1000, // 15 minutes
+  });
+}
+
+export function useMembersCount(groupId?: string, activeOnly = false) {
+  return useQuery({
+    queryKey: ['members', 'count', groupId, activeOnly],
+    queryFn: async () => {
+      let query = supabase
+        .from('members')
+        .select('id', { count: 'exact', head: true });
+      
+      if (groupId) {
+        query = query.eq('group_id', groupId);
+      }
+      
+      if (activeOnly) {
+        query = query.eq('is_active', true);
+      }
+      
+      const { count, error } = await query;
+      
+      if (error) throw error;
+      return count || 0;
     },
     staleTime: 10 * 60 * 1000, // 10 minutes
   });

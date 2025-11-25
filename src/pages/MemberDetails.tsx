@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { useMember } from "@/hooks/useQueries";
+import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -77,51 +79,35 @@ export default function MemberDetails() {
   const { toast } = useToast();
   const permissions = usePermissions();
   
-  const [member, setMember] = useState<Member | null>(null);
-  const [group, setGroup] = useState<Group | null>(null);
-  const [loading, setLoading] = useState(true);
   const [showMemberCode, setShowMemberCode] = useState(false);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
 
-  useEffect(() => {
-    if (id) {
-      loadMemberDetails();
-    }
-  }, [id]);
-
-  async function loadMemberDetails() {
-    try {
-      // Carregar dados do membro
-      const { data: memberData, error: memberError } = await supabase
-        .from('members')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (memberError) throw memberError;
-      setMember(memberData);
-
-      // Carregar dados do grupo
-      const { data: groupData, error: groupError } = await supabase
+  // Use React Query hooks for automatic caching and revalidation
+  const { data: member, isLoading: memberLoading, refetch: refetchMember } = useMember(id || '');
+  
+  const { data: group, isLoading: groupLoading } = useQuery({
+    queryKey: ['groups', member?.group_id],
+    queryFn: async () => {
+      if (!member?.group_id) return null;
+      
+      const { data, error } = await supabase
         .from('groups')
         .select('id, name, province, municipality, direction')
-        .eq('id', memberData.group_id)
+        .eq('id', member.group_id)
         .single();
 
-      if (groupError) throw groupError;
-      setGroup(groupData);
+      if (error) throw error;
+      return data as Group;
+    },
+    enabled: !!member?.group_id,
+    staleTime: 15 * 60 * 1000, // 15 minutes
+  });
 
-    } catch (error) {
-      console.error('Erro ao carregar detalhes do membro:', error);
-      toast({
-        title: "Erro",
-        description: "Falha ao carregar dados do membro",
-        variant: "destructive",
-      });
-      navigate('/groups');
-    } finally {
-      setLoading(false);
-    }
+  const loading = memberLoading || groupLoading;
+
+  // Redirect if member not found
+  if (!memberLoading && !member && id) {
+    navigate('/groups');
   }
 
   const handleSoftDelete = () => {
@@ -147,7 +133,7 @@ export default function MemberDetails() {
         description: `${member.name} foi ${member.is_active ? 'desativado' : 'reativado'} com sucesso.`,
       });
       
-      loadMemberDetails();
+      refetchMember();
     } catch (error) {
       console.error('Erro ao alterar status:', error);
       toast({

@@ -1,15 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { GroupCard } from "./GroupCard";
+import { GroupCard } from "./GroupCard.memo";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
 import { Plus, Search, Filter, Trash2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { usePermissions } from '@/hooks/usePermissions';
-import { PermissionGuard } from '@/components/common/PermissionGuard';
-import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,59 +15,24 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
+import { usePermissions } from "@/hooks/usePermissions";
+import { PermissionGuard } from "@/components/common/PermissionGuard";
+import { useGroups } from "@/hooks/useQueries";
+import { useQueryClient } from "@tanstack/react-query";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function GroupsList() {
-  const [groups, setGroups] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const { data: groups = [], isLoading: loading } = useGroups();
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [groupToDelete, setGroupToDelete] = useState<string | null>(null);
-  const { toast } = useToast();
   const permissions = usePermissions();
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    loadGroups();
-  }, []);
-
-  async function loadGroups() {
-    try {
-      setLoading(true);
-      
-      // Verificar conexão com Supabase
-      const { error: connectionError } = await supabase.from('groups').select('count').limit(1);
-      if (connectionError) {
-        throw new Error(`Erro de conexão: ${connectionError.message}`);
-      }
-      
-      // Otimizar consulta carregando apenas campos necessários
-      const { data, error } = await supabase
-        .from('groups')
-        .select('id, name, municipality, province, is_active, max_members, monthly_fee, created_at')
-        .order('name', { ascending: true });
-
-      if (error) throw error;
-      
-      console.log('✅ Grupos carregados com sucesso:', data?.length);
-      setGroups(data || []);
-    } catch (error: any) {
-      console.error('❌ Erro ao carregar grupos:', error);
-      console.error('📋 Detalhes do erro:', {
-        message: error?.message,
-        details: error?.details,
-        hint: error?.hint,
-        code: error?.code
-      });
-      
-      toast({
-        title: "Erro ao carregar grupos",
-        description: error?.message || "Falha ao carregar grupos. Verifique sua conexão.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }
 
   const filteredGroups = groups.filter(group =>
     group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -108,7 +68,7 @@ export function GroupsList() {
         title: "Grupo excluído com sucesso!",
       });
       
-      loadGroups();
+      queryClient.invalidateQueries({ queryKey: ['groups'] });
     } catch (error) {
       console.error('Erro ao excluir grupo:', error);
       toast({
