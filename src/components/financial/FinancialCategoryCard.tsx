@@ -127,13 +127,7 @@ export function FinancialCategoryCard({
       return;
     }
 
-    // Se não está bloqueada, todos têm acesso
-    if (!category.is_locked) {
-      setHasAccess(true);
-      return;
-    }
-
-    // Se está bloqueada, verificar se é líder
+    // Verificar se é líder desta categoria específica
     if (!currentMemberId) {
       setHasAccess(false);
       return;
@@ -203,34 +197,36 @@ export function FinancialCategoryCard({
   };
 
   const handleCardClick = () => {
-    onClick?.();
+    if (hasAccess) {
+      onClick?.();
+    }
   };
 
   return (
     <>
       <Card 
-        className={`group cursor-pointer transition-all duration-500 border-2 ${colorScheme.border} 
-                    hover:-translate-y-2 hover:shadow-2xl ${colorScheme.shadow} backdrop-blur-sm relative overflow-hidden
-                    ${!hasAccess && isLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
+        className={`group transition-all duration-500 border-2 ${colorScheme.border} 
+                    backdrop-blur-sm relative overflow-hidden
+                    ${hasAccess ? 'cursor-pointer hover:-translate-y-2 hover:shadow-2xl ' + colorScheme.shadow : 'opacity-60 cursor-not-allowed'}`}
         onClick={handleCardClick}
       >
         <div className={`absolute inset-0 bg-gradient-to-br ${colorScheme.gradient} 
-                        ${!hasAccess && isLocked ? 'opacity-3' : 'opacity-5 group-hover:opacity-10'} 
+                        ${!hasAccess ? 'opacity-3' : 'opacity-5 group-hover:opacity-10'} 
                         transition-opacity`} />
         
         <div className="relative p-6">
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-3 flex-1">
               <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${colorScheme.icon}
-                              transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 shadow-sm`}>
-                {!hasAccess && isLocked ? (
+                              transition-all duration-500 ${hasAccess ? 'group-hover:scale-110 group-hover:rotate-6' : ''} shadow-sm`}>
+                {!hasAccess ? (
                   <Lock className="w-6 h-6" />
                 ) : (
                   getBalanceIcon()
                 )}
               </div>
               <div className="flex-1">
-                <h3 className="font-bold text-lg text-foreground group-hover:text-primary transition-colors line-clamp-1">
+                <h3 className={`font-bold text-lg text-foreground transition-colors line-clamp-1 ${hasAccess ? 'group-hover:text-primary' : ''}`}>
                   {category.name}
                 </h3>
                 {category.description && (
@@ -238,7 +234,7 @@ export function FinancialCategoryCard({
                 )}
               </div>
             </div>
-            {isLocked && hasAccess && <Lock className="w-5 h-5 text-muted-foreground flex-shrink-0" />}
+            {!hasAccess && <Lock className="w-5 h-5 text-muted-foreground flex-shrink-0" />}
           </div>
           
           <div className="space-y-3">
