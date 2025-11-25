@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,7 @@ import { FinancialCategories } from "./FinancialCategories";
 import { PaymentEvents } from "./PaymentEvents";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
 
 interface FinancialDashboardProps {
   groupId: string;
@@ -17,8 +17,6 @@ interface FinancialDashboardProps {
 }
 
 export function FinancialDashboard({ groupId, currentMemberId, isGroupLeader: isGroupLeaderProp }: FinancialDashboardProps) {
-  const [loading, setLoading] = useState(true);
-  const [categories, setCategories] = useState<any[]>([]);
   const { toast } = useToast();
   const { user, isAdmin } = useAuth();
   
@@ -31,15 +29,10 @@ export function FinancialDashboard({ groupId, currentMemberId, isGroupLeader: is
   // Usar a prop ou o cálculo direto
   const isGroupLeader = isGroupLeaderProp ?? isActualGroupLeader;
 
-  useEffect(() => {
-    loadCategories();
-  }, [groupId]);
-
-  const loadCategories = async () => {
-    try {
-      setLoading(true);
-      
-      // Otimizar consulta carregando apenas campos necessários
+  // Use React Query for automatic caching and revalidation
+  const { data: categories = [], isLoading: loading, refetch: refetchCategories } = useQuery({
+    queryKey: ['financial-categories', groupId],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from("financial_categories")
         .select("id, name, description, total_balance, created_at, is_locked, group_id")
@@ -47,17 +40,11 @@ export function FinancialDashboard({ groupId, currentMemberId, isGroupLeader: is
         .order("name");
 
       if (error) throw error;
-      setCategories(data || []);
-    } catch (error) {
-      console.error("Erro ao carregar categorias:", error);
-      toast({
-        title: "Erro ao carregar categorias financeiras",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+      return data || [];
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes - financial data changes less frequently
+    enabled: !!groupId,
+  });
 
   const totalBalance = categories.reduce((sum, cat) => sum + Number(cat.total_balance), 0);
   const positiveBalance = categories.filter(cat => Number(cat.total_balance) > 0).reduce((sum, cat) => sum + Number(cat.total_balance), 0);
@@ -113,7 +100,7 @@ export function FinancialDashboard({ groupId, currentMemberId, isGroupLeader: is
           <FinancialCategories 
             groupId={groupId} 
             categories={categories}
-            onCategoriesUpdate={loadCategories}
+            onCategoriesUpdate={refetchCategories}
             currentMemberId={currentMemberId}
             isGroupLeader={isGroupLeader}
             userType={user?.type}

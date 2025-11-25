@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { supabase } from "@/integrations/supabase/client";
+import { useGroup, useMembers } from "@/hooks/useQueries";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -83,13 +84,20 @@ export default function GroupDetails() {
   const { user, isMember } = useAuth();
   const permissions = usePermissions();
   
-  const [group, setGroup] = useState<Group | null>(null);
-  const [members, setMembers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [refreshPrograms, setRefreshPrograms] = useState(0);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [memberToToggle, setMemberToToggle] = useState<{ id: string; isActive: boolean } | null>(null);
+
+  // Use React Query hooks for automatic caching
+  const { data: group, isLoading: groupLoading, refetch: refetchGroup } = useGroup(id || '');
+  const { data: members = [], isLoading: membersLoading, refetch: refetchMembers } = useMembers(
+    id, 
+    undefined, 
+    'id, name, role, partition, is_active, phone, profile_image_url'
+  );
+
+  const loading = groupLoading || membersLoading;
 
   // Obter ID do membro atual se for membro
   const currentMemberId = isMember() && user?.type === 'member' ? (user.data as any).id : undefined;
@@ -103,58 +111,9 @@ export default function GroupDetails() {
     group.secretary_2_id === currentMemberId
   ) : false;
 
-  useEffect(() => {
-    if (id) {
-      loadGroupDetails();
-    }
-  }, [id]);
-
-  async function loadGroupDetails() {
-    try {
-      // Otimizar carregamento paralelo 
-      const [groupResponse, membersResponse] = await Promise.all([
-        supabase
-          .from('groups')
-          .select(`
-            *,
-            monthly_plans (
-              name,
-              max_members,
-              price_per_member,
-              is_active
-            )
-          `)
-          .eq('id', id)
-          .maybeSingle(),
-        supabase
-          .from('members')
-          .select('id, name, role, partition, is_active, phone, profile_image_url')
-          .eq('group_id', id)
-          .order('name')
-      ]);
-
-      if (groupResponse.error) throw groupResponse.error;
-      if (membersResponse.error) throw membersResponse.error;
-
-      if (!groupResponse.data) {
-        navigate('/groups');
-        return;
-      }
-
-      setGroup(groupResponse.data);
-      setMembers(membersResponse.data || []);
-
-    } catch (error) {
-      console.error('Erro ao carregar detalhes do grupo:', error);
-      toast({
-        title: "Erro",
-        description: "Falha ao carregar detalhes do grupo",
-        variant: "destructive",
-      });
-      navigate('/groups');
-    } finally {
-      setLoading(false);
-    }
+  // Redirect if group not found
+  if (!groupLoading && !group && id) {
+    navigate('/groups');
   }
 
   const filteredMembers = members.filter(member =>
@@ -206,11 +165,8 @@ export default function GroupDetails() {
         description: `O membro foi ${newStatus ? 'ativado' : 'desativado'} com sucesso.`,
       });
       
-      // Recarregar detalhes do grupo e forçar atualização
-      await loadGroupDetails();
-      
-      // Forçar re-renderização
-      setMembers(prevMembers => [...prevMembers.filter(m => m.id !== memberToToggle.id || newStatus)]);
+      // Refetch data using React Query
+      await Promise.all([refetchGroup(), refetchMembers()]);
     } catch (error) {
       console.error('Erro ao alterar status:', error);
       toast({

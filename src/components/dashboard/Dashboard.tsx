@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { StatsCard } from "./StatsCard";
+import { StatsCard } from "./StatsCard.memo";
 import { RecentGroups } from "./OptimizedDashboard";
 import { DashboardCharts } from "./DashboardCharts";
 import { FinancialSummaryWidget } from "./FinancialSummaryWidget";
@@ -39,27 +39,36 @@ export function Dashboard() {
     try {
       setLoading(true);
 
-      // PHASE 2: Parallel queries for 30% performance gain
-      const [groupsResult, membersResult] = await Promise.all([
+      // ULTRA-OPTIMIZED: Use COUNT queries for statistics + limit groups to 5
+      const [groupsResult, totalGroupsCount, totalMembersCount, activeGroupsCount] = await Promise.all([
         supabase
           .from('groups')
           .select('id, name, municipality, province, is_active, created_at')
           .order('created_at', { ascending: false })
-          .limit(10),
+          .limit(5), // Reduced from 10 to 5
+        supabase
+          .from('groups')
+          .select('id', { count: 'exact', head: true }),
         supabase
           .from('members')
-          .select('id, group_id, is_active')
+          .select('id', { count: 'exact', head: true })
+          .eq('is_active', true),
+        supabase
+          .from('groups')
+          .select('id', { count: 'exact', head: true })
           .eq('is_active', true)
       ]);
 
       const { data: groupsData, error: groupsError } = groupsResult;
-      const { data: membersData, error: membersError } = membersResult;
+      const { count: totalGroups, error: totalGroupsError } = totalGroupsCount;
+      const { count: totalMembers, error: totalMembersError } = totalMembersCount;
+      const { count: activeGroups, error: activeGroupsError } = activeGroupsCount;
 
-      if (groupsError) {
-        console.error('Error loading groups:', groupsError);
+      if (groupsError || totalGroupsError || totalMembersError || activeGroupsError) {
+        console.error('Error loading dashboard data:', { groupsError, totalGroupsError, totalMembersError, activeGroupsError });
         toast({
-          title: "Erro ao carregar grupos",
-          description: "Não foi possível carregar os dados dos grupos.",
+          title: "Erro ao carregar dados",
+          description: "Não foi possível carregar alguns dados do painel.",
           variant: "destructive",
         });
         setStats({ totalGroups: 0, totalMembers: 0, activeGroups: 0, recentActivity: 0 });
@@ -67,25 +76,11 @@ export function Dashboard() {
         return;
       }
 
-      if (membersError) {
-        console.error('Error loading members:', membersError);
-        toast({
-          title: "Erro ao carregar membros",
-          description: "Não foi possível carregar os dados dos membros.",
-          variant: "destructive",
-        });
-      }
-
-      // Calculate statistics with safe defaults
-      const totalGroups = groupsData?.length || 0;
-      const totalMembers = membersData?.length || 0;
-      const activeGroups = groupsData?.filter(g => g.is_active).length || 0;
-
       setStats({
-        totalGroups,
-        totalMembers,
-        activeGroups,
-        recentActivity: totalGroups
+        totalGroups: totalGroups || 0,
+        totalMembers: totalMembers || 0,
+        activeGroups: activeGroups || 0,
+        recentActivity: totalGroups || 0
       });
 
       setGroups(groupsData || []);
