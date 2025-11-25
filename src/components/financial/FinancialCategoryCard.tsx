@@ -254,7 +254,7 @@ export function FinancialCategoryCard({
                   )}
                 </div>
               </div>
-            ) : isGroupLeader && (
+            ) : (
               <div className="mt-3 pt-3 border-t border-destructive/20">
                 <Badge variant="destructive" className="text-xs w-full justify-center">
                   Sem líderes atribuídos
@@ -263,17 +263,15 @@ export function FinancialCategoryCard({
             )}
 
             {/* Botão de gestão */}
-            {isGroupLeader && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleManageLeaders}
-                className="w-full mt-2 text-xs"
-              >
-                <Settings className="h-3 w-3 mr-1" />
-                Gerir Líderes
-              </Button>
-            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleManageLeaders}
+              className="w-full mt-2 text-xs"
+            >
+              <Settings className="h-3 w-3 mr-1" />
+              Gerir Líderes
+            </Button>
           </div>
         </div>
       </Card>
