@@ -16,11 +16,20 @@ interface FinancialDashboardProps {
   isGroupLeader?: boolean;
 }
 
-export function FinancialDashboard({ groupId, currentMemberId, isGroupLeader }: FinancialDashboardProps) {
+export function FinancialDashboard({ groupId, currentMemberId, isGroupLeader: isGroupLeaderProp }: FinancialDashboardProps) {
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<any[]>([]);
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
+  
+  // Verificar se é líder do grupo através do role do membro
+  const isMember = user?.type === 'member';
+  const memberData = isMember ? user?.data as any : null;
+  const memberRole = memberData?.role || '';
+  const isActualGroupLeader = isAdmin() || ['presidente', 'vice_presidente_1', 'vice_presidente_2', 'secretario_1', 'secretario_2'].includes(memberRole);
+  
+  // Usar a prop ou o cálculo direto
+  const isGroupLeader = isGroupLeaderProp ?? isActualGroupLeader;
 
   useEffect(() => {
     loadCategories();
