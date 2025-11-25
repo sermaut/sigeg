@@ -5,6 +5,10 @@ export interface CategoryPermission {
   canView: boolean;
   canViewBalance: boolean;
   canEdit: boolean;
+  canDelete: boolean;
+  canManageLeaders: boolean;
+  canLockCategory: boolean;
+  permissionLevel: number; // 0=group leader, 1=presidente, 2=secretario, 3=auxiliar, 999=no access
   role?: 'presidente' | 'secretario' | 'auxiliar';
   isGroupLeader: boolean;
 }
@@ -20,6 +24,10 @@ export function useCategoryPermissions(
     canView: true,
     canViewBalance: false,
     canEdit: false,
+    canDelete: false,
+    canManageLeaders: false,
+    canLockCategory: false,
+    permissionLevel: 999,
     isGroupLeader: false,
   });
   const [loading, setLoading] = useState(true);
@@ -39,6 +47,10 @@ export function useCategoryPermissions(
             canView: true,
             canViewBalance: true,
             canEdit: true,
+            canDelete: true,
+            canManageLeaders: true,
+            canLockCategory: true,
+            permissionLevel: 0,
             isGroupLeader: false,
             role: undefined,
           });
@@ -83,11 +95,33 @@ export function useCategoryPermissions(
         const isLocked = categoryData?.is_locked ?? false;
         const hasRole = !!roleData;
         const canViewBalance = isGroupLeader || hasRole;
+        
+        // Determinar nível de permissão
+        let level = 999;
+        if (isGroupLeader) {
+          level = 0;
+        } else if (roleData?.role === 'presidente') {
+          level = 1;
+        } else if (roleData?.role === 'secretario') {
+          level = 2;
+        } else if (roleData?.role === 'auxiliar') {
+          level = 3;
+        }
+
+        // Permissões baseadas no nível
+        const canEdit = level <= 2 && (!isLocked || level <= 1);
+        const canDelete = level <= 1;
+        const canManageLeaders = level <= 1;
+        const canLockCategory = level === 0 || level === 1;
 
         setPermissions({
           canView: true,
           canViewBalance,
-          canEdit: !isLocked || hasRole || isGroupLeader,
+          canEdit,
+          canDelete,
+          canManageLeaders,
+          canLockCategory,
+          permissionLevel: level,
           role: roleData?.role,
           isGroupLeader,
         });

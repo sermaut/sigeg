@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Plus, TrendingUp, TrendingDown, Wallet, CreditCard } from "lucide-react";
+import { Plus, TrendingUp, TrendingDown, Wallet, CreditCard, Shield, Info } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { FinancialCategories } from "./FinancialCategories";
 import { PaymentEvents } from "./PaymentEvents";
 import { useToast } from "@/hooks/use-toast";
@@ -59,6 +60,16 @@ export function FinancialDashboard({ groupId, currentMemberId, isGroupLeader }: 
 
   return (
     <div className="space-y-6">
+      {/* Header com informações e ação */}
+      {isGroupLeader && (
+        <Alert>
+          <Info className="h-4 w-4" />
+          <AlertDescription className="text-sm">
+            Como líder do grupo, você pode atribuir membros para gerir cada categoria financeira. 
+            Clique em "Gerir Líderes" em cada categoria para atribuir permissões.
+          </AlertDescription>
+        </Alert>
+      )}
 
       <Tabs defaultValue="categories" className="w-full mt-4">
         <TabsList className="grid w-full grid-cols-2 h-9 p-0.5 bg-gradient-to-r from-muted/60 to-muted/40 

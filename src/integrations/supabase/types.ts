@@ -881,6 +881,10 @@ export type Database = {
       clean_old_rehearsal_records: { Args: never; Returns: undefined }
       generate_admin_code: { Args: { prefix?: string }; Returns: string }
       generate_group_code: { Args: never; Returns: string }
+      get_category_permission_level: {
+        Args: { p_category_id: string; p_member_id: string }
+        Returns: number
+      }
       get_group_statistics: {
         Args: never
         Returns: {
