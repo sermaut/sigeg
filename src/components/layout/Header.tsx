@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
-import { Bell, Search, User, LogOut, Shield, Users, Menu, Eye, EyeOff, Music } from "lucide-react";
+import { Bell, User, LogOut, Shield, Users, Menu, Eye, EyeOff, Music } from "lucide-react";
 import { LanguageSelector } from "@/components/common/LanguageSelector";
 import { RoleNotificationBadge } from "@/components/common/RoleNotificationBadge";
+import { NotificationCenter } from "@/components/notifications/NotificationCenter";
+import { GlobalSearch } from "@/components/common/GlobalSearch";
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -120,28 +121,16 @@ export function Header({ onMenuClick }: HeaderProps) {
           </div>
         </div>
 
-        {/* Search com efeito aprimorado */}
+        {/* Global Search */}
         <div className="hidden md:flex items-center space-x-4 flex-1 max-w-md">
-          <div className="relative flex-1 group">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 
-                              text-white/70 w-4 h-4 
-                              group-focus-within:text-cyan-300 transition-colors z-10" />
-            <Input
-              placeholder="Buscar grupos, membros..."
-              className="pl-10 h-10 
-                         bg-white/60 backdrop-blur-sm
-                         border-2 border-primary/20
-                         focus:border-primary focus:bg-white
-                         focus:ring-4 focus:ring-primary/10 
-                         transition-all duration-300 
-                         hover:border-primary/40 hover:bg-white/80
-                         placeholder:text-slate-500"
-            />
-          </div>
+          <GlobalSearch />
         </div>
 
         {/* User info section */}
         <div className="flex items-center space-x-2 md:space-x-3">
+          {/* Notification Center */}
+          <NotificationCenter />
+          
           <LanguageSelector />
           
           {/* Notificação de atribuições */}

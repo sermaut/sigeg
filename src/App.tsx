@@ -28,6 +28,7 @@ const MemberDetails = lazy(() => import('@/pages/MemberDetails'));
 const ReportsPage = lazy(() => import('@/components/reports/ReportsPage'));
 const ServicesPage = lazy(() => import('@/components/services/ServicesPage'));
 const MonthlyPlans = lazy(() => import('@/pages/MonthlyPlans'));
+const SheetMusic = lazy(() => import('@/pages/SheetMusic'));
 const AdminManagement = lazy(() => import('@/pages/AdminManagement'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 
@@ -184,6 +185,15 @@ function App() {
                       element={
                         <ProtectedRoute permission="manage_groups">
                           <MonthlyPlans />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
+                    <Route
+                      path="/sheet-music"
+                      element={
+                        <ProtectedRoute permission="view_group_data">
+                          <SheetMusic />
                         </ProtectedRoute>
                       }
                     />
