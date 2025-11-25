@@ -82,7 +82,7 @@ export default function MemberDetails() {
   const [showMemberCode, setShowMemberCode] = useState(false);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
 
-  // Use React Query hooks for automatic caching and revalidation
+  // Use React Query hooks with cache - queries run in parallel
   const { data: member, isLoading: memberLoading, refetch: refetchMember } = useMember(id || '');
   
   const { data: group, isLoading: groupLoading } = useQuery({
@@ -100,14 +100,45 @@ export default function MemberDetails() {
       return data as Group;
     },
     enabled: !!member?.group_id,
-    staleTime: 15 * 60 * 1000, // 15 minutes
+    staleTime: 30 * 60 * 1000, // 30 minutes cache
   });
 
   const loading = memberLoading || groupLoading;
 
+  // Try to load from localStorage cache first for instant display
+  const getCachedData = (key: string) => {
+    try {
+      const cached = localStorage.getItem(`cache_${key}`);
+      if (cached) {
+        const { data, timestamp } = JSON.parse(cached);
+        if (Date.now() - timestamp < 30 * 60 * 1000) return data;
+      }
+    } catch {}
+    return null;
+  };
+
+  const cachedMember = getCachedData(`member_${id}`);
+  const displayMember = member || cachedMember;
+
+  // Show cached data immediately
+  if (loading && !displayMember) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </MainLayout>
+    );
+  }
+
   // Redirect if member not found
-  if (!memberLoading && !member && id) {
+  if (!memberLoading && !displayMember && id) {
     navigate('/groups');
+  }
+
+  // Cache data for instant subsequent loads
+  if (member && !loading) {
+    localStorage.setItem(`cache_member_${id}`, JSON.stringify({ data: member, timestamp: Date.now() }));
   }
 
   const handleSoftDelete = () => {
@@ -115,22 +146,22 @@ export default function MemberDetails() {
   };
 
   const confirmSoftDelete = async () => {
-    if (!member) return;
+    if (!displayMember) return;
     
     try {
       const { error } = await supabase
         .from('members')
         .update({ 
-          is_active: !member.is_active,
+          is_active: !displayMember.is_active,
           updated_at: new Date().toISOString()
         })
-        .eq('id', member.id);
+        .eq('id', displayMember.id);
       
       if (error) throw error;
       
       toast({
-        title: member.is_active ? "Membro desativado" : "Membro reativado",
-        description: `${member.name} foi ${member.is_active ? 'desativado' : 'reativado'} com sucesso.`,
+        title: displayMember.is_active ? "Membro desativado" : "Membro reativado",
+        description: `${displayMember.name} foi ${displayMember.is_active ? 'desativado' : 'reativado'} com sucesso.`,
       });
       
       refetchMember();
@@ -184,7 +215,7 @@ export default function MemberDetails() {
     }, 10000);
   };
 
-  if (loading) {
+  if (loading && !displayMember) {
     return (
       <MainLayout>
         <div className="flex items-center justify-center h-64">
@@ -194,7 +225,7 @@ export default function MemberDetails() {
     );
   }
 
-  if (!member || !group) {
+  if (!displayMember || !group) {
     return (
       <MainLayout>
         <div className="text-center py-12">

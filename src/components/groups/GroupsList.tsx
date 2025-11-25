@@ -22,6 +22,7 @@ import { useGroups } from "@/hooks/useQueries";
 import { useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useCallback } from "react";
 
 export function GroupsList() {
   const navigate = useNavigate();
@@ -39,6 +40,37 @@ export function GroupsList() {
     group.municipality.toLowerCase().includes(searchTerm.toLowerCase()) ||
     group.province.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Prefetch group and members data on hover for instant navigation
+  const handleGroupHover = useCallback((groupId: string) => {
+    // Prefetch group details
+    queryClient.prefetchQuery({
+      queryKey: ['groups', groupId],
+      queryFn: async () => {
+        const { data } = await supabase
+          .from('groups')
+          .select('*')
+          .eq('id', groupId)
+          .single();
+        return data;
+      },
+      staleTime: 30 * 60 * 1000,
+    });
+    
+    // Prefetch members list
+    queryClient.prefetchQuery({
+      queryKey: ['members', groupId, undefined, 'id, name, role, partition, is_active, phone, profile_image_url'],
+      queryFn: async () => {
+        const { data } = await supabase
+          .from('members')
+          .select('id, name, role, partition, is_active, phone, profile_image_url')
+          .eq('group_id', groupId)
+          .order('created_at', { ascending: false });
+        return data;
+      },
+      staleTime: 30 * 60 * 1000,
+    });
+  }, [queryClient]);
 
   const handleView = (id: string) => {
     navigate(`/groups/${id}`);
@@ -128,13 +160,14 @@ export function GroupsList() {
       {filteredGroups.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredGroups.map((group) => (
-            <GroupCard
-              key={group.id}
-              group={group}
-              onView={handleView}
-              onEdit={permissions.canEditGroup ? handleEdit : undefined}
-              onDelete={permissions.canDeleteGroup ? handleDelete : undefined}
-            />
+            <div key={group.id} onMouseEnter={() => handleGroupHover(group.id)}>
+              <GroupCard
+                group={group}
+                onView={handleView}
+                onEdit={permissions.canEditGroup ? handleEdit : undefined}
+                onDelete={permissions.canDeleteGroup ? handleDelete : undefined}
+              />
+            </div>
           ))}
         </div>
       ) : (
