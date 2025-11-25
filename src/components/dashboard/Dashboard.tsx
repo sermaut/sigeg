@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { StatsCard } from "./StatsCard";
 import { RecentGroups } from "./OptimizedDashboard";
 import { DashboardCharts } from "./DashboardCharts";
+import { FinancialSummaryWidget } from "./FinancialSummaryWidget";
 import { Button } from "@/components/ui/button";
 import { Users, Building, UserPlus, Activity, Plus } from "@/lib/icons";
 import { useToast } from '@/hooks/use-toast';
@@ -182,8 +183,17 @@ export function Dashboard() {
         />
       </div>
 
+      {/* Financial Summary Widget */}
+      <section>
+        <h2 className="text-2xl font-semibold mb-6">Resumo Financeiro</h2>
+        <FinancialSummaryWidget />
+      </section>
+
       {/* Interactive Charts */}
-      <DashboardCharts />
+      <section>
+        <h2 className="text-2xl font-semibold mb-6">Estatísticas e Tendências</h2>
+        <DashboardCharts />
+      </section>
 
       {/* Recent Groups - Optimized */}
       <RecentGroups groups={groups} />

@@ -12,7 +12,8 @@ import {
   Shield,
   CreditCard,
   FileText,
-  Briefcase
+  Briefcase,
+  BookOpen
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -45,6 +46,7 @@ export function Sidebar({ className, isOpen, onOpenChange }: SidebarProps) {
     { icon: Users, label: "Grupos", href: "/groups", show: true },
     { icon: UserPlus, label: "Novo Membro", href: "/members/new", show: permissions.canAccessNewMember },
     { icon: Briefcase, label: "Serviços Musicais", href: "/services", show: true },
+    { icon: BookOpen, label: "Partituras", href: "/sheet-music", show: true },
     { 
       icon: FileText, 
       label: "Relatórios", 

@@ -540,6 +540,51 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          created_at: string | null
+          data: Json | null
+          id: string
+          is_read: boolean | null
+          link: string | null
+          message: string
+          recipient_id: string
+          recipient_type: string
+          scheduled_for: string | null
+          sent_at: string | null
+          title: string
+          type: string
+        }
+        Insert: {
+          created_at?: string | null
+          data?: Json | null
+          id?: string
+          is_read?: boolean | null
+          link?: string | null
+          message: string
+          recipient_id: string
+          recipient_type: string
+          scheduled_for?: string | null
+          sent_at?: string | null
+          title: string
+          type: string
+        }
+        Update: {
+          created_at?: string | null
+          data?: Json | null
+          id?: string
+          is_read?: boolean | null
+          link?: string | null
+          message?: string
+          recipient_id?: string
+          recipient_type?: string
+          scheduled_for?: string | null
+          sent_at?: string | null
+          title?: string
+          type?: string
+        }
+        Relationships: []
+      }
       payment_events: {
         Row: {
           amount_to_pay: number
@@ -644,6 +689,72 @@ export type Database = {
           {
             foreignKeyName: "rehearsal_attendance_member_id_fkey"
             columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sheet_music: {
+        Row: {
+          author: string | null
+          category: string
+          created_at: string | null
+          download_count: number | null
+          event_type: string | null
+          file_size: number | null
+          file_url: string
+          group_id: string | null
+          id: string
+          is_active: boolean | null
+          partition: string | null
+          title: string
+          updated_at: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          author?: string | null
+          category: string
+          created_at?: string | null
+          download_count?: number | null
+          event_type?: string | null
+          file_size?: number | null
+          file_url: string
+          group_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          partition?: string | null
+          title: string
+          updated_at?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          author?: string | null
+          category?: string
+          created_at?: string | null
+          download_count?: number | null
+          event_type?: string | null
+          file_size?: number | null
+          file_url?: string
+          group_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          partition?: string | null
+          title?: string
+          updated_at?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sheet_music_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sheet_music_uploaded_by_fkey"
+            columns: ["uploaded_by"]
             isOneToOne: false
             referencedRelation: "members"
             referencedColumns: ["id"]
