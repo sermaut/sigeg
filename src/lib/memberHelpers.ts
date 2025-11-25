@@ -21,6 +21,7 @@ export const getRoleLabel = (role: string): string => {
     chefe_categoria: "Chefe de Categoria",
     chefe_equipa: "Chefe de Equipa",
     chefe_missao: "Chefe de Missão",
+    chefe_percussao: "Chefe de Percussão",
     protocolo: "Protocolo",
     relacao_publica: "Relação Pública",
     evangelista: "Evangelista",
@@ -65,7 +66,7 @@ export const getRoleLevel = (role: string): number => {
   if (['presidente', 'vice_presidente_1', 'vice_presidente_2', 'secretario_1', 'secretario_2'].includes(role)) return 1;
   if (['inspector', 'inspector_adj', 'coordenador', 'coordenador_adj'].includes(role)) return 2;
   if (['dirigente_tecnico', 'chefe_pelotao', 'chefe_seccao', 'chefe_grupo'].includes(role)) return 3;
-  if (['chefe_particao', 'chefe_categoria', 'chefe_equipa', 'chefe_missao'].includes(role)) return 4;
+  if (['chefe_particao', 'chefe_categoria', 'chefe_equipa', 'chefe_missao', 'chefe_percussao'].includes(role)) return 4;
   if (['protocolo', 'relacao_publica', 'evangelista', 'conselheiro', 'disciplinador'].includes(role)) return 5;
   if (role === 'financeiro') return 6;
   return 7; // membro_simples

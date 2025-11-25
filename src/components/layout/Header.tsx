@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { Bell, User, LogOut, Shield, Users, Menu, Eye, EyeOff, Music } from "lucide-react";
+import { getRoleLabel } from "@/lib/memberHelpers";
 import { LanguageSelector } from "@/components/common/LanguageSelector";
 import { RoleNotificationBadge } from "@/components/common/RoleNotificationBadge";
 import { NotificationCenter } from "@/components/notifications/NotificationCenter";
@@ -206,6 +207,11 @@ export function Header({ onMenuClick }: HeaderProps) {
                         <p className="text-sm text-muted-foreground">
                           {isAdmin() ? 'Administrador' : isGroup?.() ? 'Grupo' : 'Membro'}
                         </p>
+                        {isMember() && (user.data as any).role && (
+                          <p className="text-xs text-muted-foreground">
+                            Função: {getRoleLabel((user.data as any).role)}
+                          </p>
+                        )}
                       </div>
                     </div>
                     

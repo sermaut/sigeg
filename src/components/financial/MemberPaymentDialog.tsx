@@ -13,6 +13,7 @@ interface MemberPaymentDialogProps {
   memberPayment: any;
   eventAmountToPay: number;
   onPaymentUpdated: () => void;
+  canEditPayment?: boolean;
 }
 
 export function MemberPaymentDialog({ 
@@ -20,7 +21,8 @@ export function MemberPaymentDialog({
   onOpenChange, 
   memberPayment, 
   eventAmountToPay, 
-  onPaymentUpdated 
+  onPaymentUpdated,
+  canEditPayment = true
 }: MemberPaymentDialogProps) {
   const [loading, setLoading] = useState(false);
   const [amountPaid, setAmountPaid] = useState("");
@@ -156,24 +158,35 @@ export function MemberPaymentDialog({
               />
             </div>
 
-            <div className="flex justify-between space-x-2">
+            {canEditPayment ? (
+              <div className="flex justify-between space-x-2">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={handleClear}
+                  disabled={loading}
+                >
+                  Limpar
+                </Button>
+                <div className="flex space-x-2">
+                  <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                    Cancelar
+                  </Button>
+                  <Button type="submit" disabled={loading}>
+                    {loading ? "Salvando..." : "Salvar"}
+                  </Button>
+                </div>
+              </div>
+            ) : (
               <Button 
                 type="button" 
                 variant="outline" 
-                onClick={handleClear}
-                disabled={loading}
+                onClick={() => onOpenChange(false)}
+                className="w-full"
               >
-                Limpar
+                Fechar
               </Button>
-              <div className="flex space-x-2">
-                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                  Cancelar
-                </Button>
-                <Button type="submit" disabled={loading}>
-                  {loading ? "Salvando..." : "Salvar"}
-                </Button>
-              </div>
-            </div>
+            )}
           </form>
         </div>
       </DialogContent>

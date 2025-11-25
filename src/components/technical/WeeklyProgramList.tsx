@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Trash2, Calendar, Music, FileText, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { WeeklyProgramEditDialog } from "./WeeklyProgramEditDialog";
@@ -19,10 +20,18 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+interface ProgramItem {
+  subtitle?: string;
+  image_url?: string;
+  audio_url?: string;
+}
+
 interface WeeklyProgram {
   id: string;
   title: string;
-  image_url: string;
+  category: string;
+  items: ProgramItem[];
+  image_url: string | null;
   audio_url: string | null;
   created_at: string;
   expires_at: string;
@@ -55,7 +64,12 @@ export function WeeklyProgramList({ groupId, refreshTrigger }: WeeklyProgramList
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setPrograms(data || []);
+      // Converter items de Json para ProgramItem[]
+      const typedPrograms = (data || []).map(program => ({
+        ...program,
+        items: Array.isArray(program.items) ? program.items as ProgramItem[] : []
+      }));
+      setPrograms(typedPrograms);
     } catch (error) {
       console.error('Erro ao carregar programas:', error);
       toast({
@@ -103,6 +117,9 @@ export function WeeklyProgramList({ groupId, refreshTrigger }: WeeklyProgramList
     return days;
   };
 
+  const hymnsPrograms = programs.filter(p => p.category === 'hino');
+  const accompanimentPrograms = programs.filter(p => p.category === 'acompanhamento');
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -121,80 +138,153 @@ export function WeeklyProgramList({ groupId, refreshTrigger }: WeeklyProgramList
     );
   }
 
+  const renderProgram = (program: WeeklyProgram) => {
+    const daysRemaining = getDaysRemaining(program.expires_at);
+    
+    return (
+      <Card key={program.id} className="overflow-hidden border-primary/10 shadow-md hover:shadow-lg transition-shadow duration-300">
+        <div className="p-4 space-y-3 bg-gradient-to-br from-background to-accent/5">
+          <div className="flex items-start justify-between">
+            <h3 className="font-bold text-lg text-foreground flex items-center gap-2">
+              <FileText className="w-5 h-5 text-primary" />
+              {program.title}
+            </h3>
+            <div className="flex gap-2">
+              <PermissionGuard require="canEditWeeklyProgram">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setEditProgram(program)}
+                  className="text-primary hover:text-primary hover:bg-primary/10"
+                >
+                  <Edit className="w-4 h-4" />
+                </Button>
+              </PermissionGuard>
+              <PermissionGuard require="canDeleteWeeklyProgram">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setDeleteId(program.id)}
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </PermissionGuard>
+            </div>
+          </div>
+
+          {/* Renderizar items */}
+          {program.items && Array.isArray(program.items) && program.items.length > 0 && (
+            <div className="space-y-4">
+              {program.items.map((item: ProgramItem, index: number) => (
+                <div key={index} className="space-y-2 p-3 bg-background/50 rounded-lg border border-primary/10">
+                  {item.subtitle && (
+                    <p className="text-sm font-medium text-foreground">{item.subtitle}</p>
+                  )}
+                  
+                  {item.image_url && (
+                    <div
+                      className="relative cursor-pointer group"
+                      onClick={() => setFullscreenImage(item.image_url!)}
+                    >
+                      <img
+                        src={item.image_url}
+                        alt={item.subtitle || `Item ${index + 1}`}
+                        className="w-full h-48 object-cover rounded-lg border-2 border-primary/20 shadow-md transition-transform group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded-lg" />
+                    </div>
+                  )}
+
+                  {item.audio_url && (
+                    <div className="space-y-2">
+                      <div className="flex items-center text-sm font-medium text-foreground">
+                        <Music className="w-4 h-4 mr-2 text-primary" />
+                        Áudio
+                      </div>
+                      <CustomAudioPlayer audioUrl={item.audio_url} />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Legado: imagem e áudio únicos (para programas antigos) */}
+          {program.image_url && (
+            <div
+              className="relative cursor-pointer group"
+              onClick={() => setFullscreenImage(program.image_url!)}
+            >
+              <img
+                src={program.image_url}
+                alt={program.title}
+                className="w-full h-64 object-cover rounded-lg border-2 border-primary/20 shadow-md transition-transform group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded-lg" />
+            </div>
+          )}
+
+          {program.audio_url && (
+            <div className="space-y-2">
+              <div className="flex items-center text-sm font-medium text-foreground">
+                <Music className="w-4 h-4 mr-2 text-primary" />
+                Áudio do Programa
+              </div>
+              <CustomAudioPlayer audioUrl={program.audio_url} />
+            </div>
+          )}
+
+          <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-primary/10">
+            <div className="flex items-center">
+              <Calendar className="w-3 h-3 mr-1" />
+              Expira em {daysRemaining} {daysRemaining === 1 ? 'dia' : 'dias'}
+            </div>
+            <span>
+              {new Date(program.created_at).toLocaleDateString('pt-BR')}
+            </span>
+          </div>
+        </div>
+      </Card>
+    );
+  };
+
   return (
     <>
-      <div className="space-y-4">
-        {programs.map((program) => {
-          const daysRemaining = getDaysRemaining(program.expires_at);
-          
-          return (
-            <Card key={program.id} className="overflow-hidden border-primary/10 shadow-md hover:shadow-lg transition-shadow duration-300">
-              <div className="p-4 space-y-3 bg-gradient-to-br from-background to-accent/5">
-                <div className="flex items-start justify-between">
-                  <h3 className="font-bold text-lg text-foreground flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-primary" />
-                    {program.title}
-                  </h3>
-                  <div className="flex gap-2">
-                    <PermissionGuard require="canEditWeeklyProgram">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setEditProgram(program)}
-                        className="text-primary hover:text-primary hover:bg-primary/10"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                    </PermissionGuard>
-                    <PermissionGuard require="canDeleteWeeklyProgram">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setDeleteId(program.id)}
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </PermissionGuard>
-                  </div>
-                </div>
+      <Tabs defaultValue="hinos" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-4">
+          <TabsTrigger value="hinos">
+            Hinos ({hymnsPrograms.length})
+          </TabsTrigger>
+          <TabsTrigger value="acompanhamentos">
+            Acompanhamentos ({accompanimentPrograms.length})
+          </TabsTrigger>
+        </TabsList>
 
-                <div
-                  className="relative cursor-pointer group"
-                  onClick={() => setFullscreenImage(program.image_url)}
-                >
-                  <img
-                    src={program.image_url}
-                    alt={program.title}
-                    className="w-full h-64 object-cover rounded-lg border-2 border-primary/20 shadow-md transition-transform group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded-lg" />
-                </div>
-
-                {program.audio_url && (
-                  <div className="space-y-2">
-                    <div className="flex items-center text-sm font-medium text-foreground">
-                      <Music className="w-4 h-4 mr-2 text-primary" />
-                      Áudio do Programa
-                    </div>
-                    <CustomAudioPlayer audioUrl={program.audio_url} />
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-primary/10">
-                  <div className="flex items-center">
-                    <Calendar className="w-3 h-3 mr-1" />
-                    Expira em {daysRemaining} {daysRemaining === 1 ? 'dia' : 'dias'}
-                  </div>
-                  <span>
-                    {new Date(program.created_at).toLocaleDateString('pt-BR')}
-                  </span>
-                </div>
-              </div>
+        <TabsContent value="hinos" className="space-y-4">
+          {hymnsPrograms.length === 0 ? (
+            <Card className="p-8 text-center">
+              <p className="text-muted-foreground">
+                Nenhum programa de hino adicionado ainda
+              </p>
             </Card>
-          );
-        })}
-      </div>
+          ) : (
+            hymnsPrograms.map(renderProgram)
+          )}
+        </TabsContent>
+
+        <TabsContent value="acompanhamentos" className="space-y-4">
+          {accompanimentPrograms.length === 0 ? (
+            <Card className="p-8 text-center">
+              <p className="text-muted-foreground">
+                Nenhum programa de acompanhamento adicionado ainda
+              </p>
+            </Card>
+          ) : (
+            accompanimentPrograms.map(renderProgram)
+          )}
+        </TabsContent>
+      </Tabs>
 
       <AlertDialog open={deleteId !== null} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
