@@ -1,12 +1,28 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Crown, UserCheck, Users } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { AlertCircle, Crown, FileText, Eye, UserPlus, Trash2, Shield, Info } from "lucide-react";
+import { toast } from "sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { getCategoryRoleLabel, getCategoryRoleDescription, getCategoryRoleBadgeVariant } from "@/lib/categoryRoleHelpers";
 
 interface CategoryLeadersDialogProps {
   open: boolean;
@@ -18,8 +34,8 @@ interface CategoryLeadersDialogProps {
 
 interface CategoryRole {
   id: string;
-  member_id: string;
   role: 'presidente' | 'secretario' | 'auxiliar';
+  member_id: string;
   members: {
     id: string;
     name: string;
@@ -31,6 +47,7 @@ interface Member {
   id: string;
   name: string;
   profile_image_url: string | null;
+  role?: string;
 }
 
 export function CategoryLeadersDialog({
@@ -40,19 +57,19 @@ export function CategoryLeadersDialog({
   groupId,
   categoryName,
 }: CategoryLeadersDialogProps) {
+  const { user } = useAuth();
   const [leaders, setLeaders] = useState<CategoryRole[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [selectedMember, setSelectedMember] = useState<string>("");
-  const [selectedRole, setSelectedRole] = useState<'presidente' | 'secretario' | 'auxiliar'>("auxiliar");
+  const [selectedRole, setSelectedRole] = useState<'presidente' | 'secretario' | 'auxiliar' | "">("");
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
 
   useEffect(() => {
     if (open) {
       loadLeaders();
       loadMembers();
     }
-  }, [open, categoryId, groupId]);
+  }, [open, categoryId]);
 
   const loadLeaders = async () => {
     try {
@@ -60,8 +77,8 @@ export function CategoryLeadersDialog({
         .from("category_roles")
         .select(`
           id,
-          member_id,
           role,
+          member_id,
           members!category_roles_member_id_fkey (
             id,
             name,
@@ -72,9 +89,10 @@ export function CategoryLeadersDialog({
         .eq("is_active", true);
 
       if (error) throw error;
-      setLeaders(data as any);
+      setLeaders(data as any || []);
     } catch (error) {
       console.error("Erro ao carregar líderes:", error);
+      toast.error("Erro ao carregar líderes da categoria");
     }
   };
 
@@ -82,49 +100,41 @@ export function CategoryLeadersDialog({
     try {
       const { data, error } = await supabase
         .from("members")
-        .select("id, name, profile_image_url")
+        .select("id, name, profile_image_url, role")
         .eq("group_id", groupId)
         .eq("is_active", true)
-        .order("name", { ascending: true });
+        .order("name");
 
-      if (error) {
-        console.error("Erro ao carregar membros:", error);
-        toast({
-          title: "Erro ao carregar membros",
-          description: error.message,
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      console.log("Membros carregados:", data?.length || 0, "para o grupo:", groupId);
+      if (error) throw error;
       setMembers(data || []);
     } catch (error) {
       console.error("Erro ao carregar membros:", error);
-      toast({
-        title: "Erro ao carregar membros",
-        variant: "destructive",
-      });
+      toast.error("Erro ao carregar membros do grupo");
     }
   };
 
   const handleAddLeader = async () => {
-    if (!selectedMember) return;
+    if (!selectedMember || !selectedRole) {
+      toast.error("Selecione um membro e um cargo");
+      return;
+    }
 
     setLoading(true);
     try {
       // Verificar se já existe presidente ou secretário
-      if (selectedRole === 'presidente' || selectedRole === 'secretario') {
-        const existing = leaders.find(l => l.role === selectedRole);
-        if (existing) {
-          toast({
-            title: "Erro",
-            description: `Já existe um ${selectedRole} nesta categoria.`,
-            variant: "destructive",
-          });
-          setLoading(false);
-          return;
-        }
+      const existingLeader = leaders.find(l => l.role === selectedRole);
+      if ((selectedRole === 'presidente' || selectedRole === 'secretario') && existingLeader) {
+        toast.error(`Já existe um ${getCategoryRoleLabel(selectedRole)} nesta categoria`);
+        setLoading(false);
+        return;
+      }
+
+      // Verificar se o membro já tem um cargo nesta categoria
+      const memberHasRole = leaders.find(l => l.member_id === selectedMember);
+      if (memberHasRole) {
+        toast.error("Este membro já possui um cargo nesta categoria");
+        setLoading(false);
+        return;
       }
 
       const { error } = await supabase
@@ -134,63 +144,57 @@ export function CategoryLeadersDialog({
           member_id: selectedMember,
           role: selectedRole,
           group_id: groupId,
+          assigned_by: user?.data?.id,
         });
 
       if (error) throw error;
 
-      // Criar notificação para o membro atribuído
-      const { error: notificationError } = await supabase
-        .from("category_role_notifications")
+      // Criar notificação para o membro
+      const selectedMemberData = members.find(m => m.id === selectedMember);
+      await supabase
+        .from("notifications")
         .insert({
-          member_id: selectedMember,
-          category_id: categoryId,
-          role: selectedRole,
-          is_read: false,
+          recipient_id: selectedMember,
+          recipient_type: 'member',
+          type: 'category_role_assigned',
+          title: 'Novo Cargo Atribuído',
+          message: `Você foi designado como ${getCategoryRoleLabel(selectedRole)} da categoria "${categoryName}"`,
+          link: `/financial?category=${categoryId}`,
         });
 
-      if (notificationError) {
-        console.error("Erro ao criar notificação:", notificationError);
-      }
-
-      toast({
-        title: "Líder adicionado",
-        description: "O membro foi atribuído à categoria com sucesso e será notificado.",
-      });
-
+      toast.success(`${selectedMemberData?.name} adicionado como ${getCategoryRoleLabel(selectedRole)}`);
       setSelectedMember("");
+      setSelectedRole("");
       loadLeaders();
     } catch (error) {
       console.error("Erro ao adicionar líder:", error);
-      toast({
-        title: "Erro ao adicionar líder",
-        variant: "destructive",
-      });
+      toast.error("Erro ao adicionar líder");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRemoveLeader = async (roleId: string) => {
+  const handleRemoveLeader = async (leaderId: string, memberName: string, role: string) => {
+    if (!confirm(`Tem certeza que deseja remover ${memberName} do cargo de ${getCategoryRoleLabel(role)}?`)) {
+      return;
+    }
+
+    setLoading(true);
     try {
       const { error } = await supabase
         .from("category_roles")
         .delete()
-        .eq("id", roleId);
+        .eq("id", leaderId);
 
       if (error) throw error;
 
-      toast({
-        title: "Líder removido",
-        description: "O membro foi removido da categoria.",
-      });
-
+      toast.success(`${memberName} removido do cargo`);
       loadLeaders();
     } catch (error) {
       console.error("Erro ao remover líder:", error);
-      toast({
-        title: "Erro ao remover líder",
-        variant: "destructive",
-      });
+      toast.error("Erro ao remover líder");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -199,57 +203,57 @@ export function CategoryLeadersDialog({
       case 'presidente':
         return <Crown className="h-4 w-4" />;
       case 'secretario':
-        return <UserCheck className="h-4 w-4" />;
+        return <FileText className="h-4 w-4" />;
+      case 'auxiliar':
+        return <Eye className="h-4 w-4" />;
       default:
-        return <Users className="h-4 w-4" />;
+        return <Shield className="h-4 w-4" />;
     }
   };
 
-  const getRoleBadgeVariant = (role: string) => {
-    switch (role) {
-      case 'presidente':
-        return 'default';
-      case 'secretario':
-        return 'secondary';
-      default:
-        return 'outline';
-    }
-  };
+  const hasPresidente = leaders.some(l => l.role === 'presidente');
+  const hasSecretario = leaders.some(l => l.role === 'secretario');
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md md:max-w-lg lg:max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
-        <DialogHeader className="space-y-3">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-primary/10 to-accent/10">
-              <Crown className="h-5 w-5 text-primary" />
-            </div>
-            <div className="flex-1">
-              <DialogTitle className="text-xl sm:text-2xl">Gerir Líderes</DialogTitle>
-              <p className="text-sm text-muted-foreground font-normal">{categoryName}</p>
-            </div>
-          </div>
+      <DialogContent className="max-w-2xl max-h-[90vh]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            Gerir Líderes - {categoryName}
+          </DialogTitle>
           <DialogDescription>
-            Atribua presidente, secretário e auxiliares para esta categoria financeira.
+            Atribua cargos aos membros para gerenciar esta categoria financeira
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 mt-4">
+        <div className="space-y-6">
+          {/* Informações de permissões */}
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertDescription className="text-xs space-y-1">
+              <div><strong>Presidente:</strong> Permissão total - criar, editar, deletar transações e gerir líderes</div>
+              <div><strong>Secretário:</strong> Criar e editar suas próprias transações</div>
+              <div><strong>Auxiliar:</strong> Apenas visualizar saldos e transações</div>
+            </AlertDescription>
+          </Alert>
+
           {/* Adicionar novo líder */}
-          <div className="space-y-3 p-4 sm:p-5 rounded-xl bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-950/30 dark:to-blue-950/30 border border-primary/10 shadow-sm transition-all duration-300 hover:shadow-md">
-            <h4 className="font-semibold text-sm flex items-center gap-2">
-              <Users className="h-4 w-4 text-primary" />
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold flex items-center gap-2">
+              <UserPlus className="h-4 w-4" />
               Adicionar Líder
-            </h4>
-            <div className="flex flex-col sm:flex-row gap-3">
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Select value={selectedMember} onValueChange={setSelectedMember}>
-                <SelectTrigger className="w-full sm:flex-1 h-11 bg-background/80 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-colors">
-                  <SelectValue placeholder="Selecionar membro..." />
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecionar membro" />
                 </SelectTrigger>
                 <SelectContent>
                   {members
                     .filter(m => !leaders.find(l => l.member_id === m.id))
-                    .map(member => (
+                    .map((member) => (
                       <SelectItem key={member.id} value={member.id}>
                         {member.name}
                       </SelectItem>
@@ -257,84 +261,102 @@ export function CategoryLeadersDialog({
                 </SelectContent>
               </Select>
 
-              <Select value={selectedRole} onValueChange={(val) => setSelectedRole(val as any)}>
-                <SelectTrigger className="w-full sm:w-40 h-11 bg-background/80 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-colors">
-                  <SelectValue />
+              <Select value={selectedRole} onValueChange={(value) => setSelectedRole(value as any)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecionar cargo" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="presidente">Presidente</SelectItem>
-                  <SelectItem value="secretario">Secretário</SelectItem>
-                  <SelectItem value="auxiliar">Auxiliar</SelectItem>
+                  <SelectItem value="presidente" disabled={hasPresidente}>
+                    <div className="flex items-center gap-2">
+                      <Crown className="h-4 w-4" />
+                      Presidente {hasPresidente && "(Já atribuído)"}
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="secretario" disabled={hasSecretario}>
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      Secretário {hasSecretario && "(Já atribuído)"}
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="auxiliar">
+                    <div className="flex items-center gap-2">
+                      <Eye className="h-4 w-4" />
+                      Auxiliar
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
-
-              <Button 
-                onClick={handleAddLeader} 
-                disabled={!selectedMember || loading}
-                className="w-full sm:w-auto h-11 shadow-sm hover:shadow-md transition-all duration-300"
-              >
-                {loading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                    <span>Adicionando...</span>
-                  </div>
-                ) : (
-                  'Adicionar'
-                )}
-              </Button>
             </div>
+
+            {selectedRole && (
+              <Alert>
+                <Info className="h-4 w-4" />
+                <AlertDescription className="text-xs">
+                  {getCategoryRoleDescription(selectedRole)}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <Button 
+              onClick={handleAddLeader} 
+              disabled={!selectedMember || !selectedRole || loading}
+              className="w-full"
+            >
+              <UserPlus className="h-4 w-4 mr-2" />
+              Adicionar Líder
+            </Button>
           </div>
 
           {/* Lista de líderes atuais */}
-          <div className="space-y-3">
-            <h4 className="font-semibold text-sm flex items-center gap-2">
-              <UserCheck className="h-4 w-4 text-primary" />
-              Líderes Atuais
-            </h4>
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold">Líderes Atuais</h3>
+            
             {leaders.length === 0 ? (
-              <div className="py-12 text-center border-2 border-dashed rounded-xl bg-muted/30">
-                <Users className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" />
-                <p className="text-sm text-muted-foreground">
-                  Nenhum líder atribuído a esta categoria.
-                </p>
-              </div>
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Nenhum líder atribuído a esta categoria. Adicione líderes para controlar o acesso.
+                </AlertDescription>
+              </Alert>
             ) : (
-              <div className="space-y-2">
-                {leaders.map((leader) => (
-                  <div
-                    key={leader.id}
-                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 border rounded-xl hover:bg-muted/50 transition-all duration-300 shadow-sm hover:shadow-md bg-background/50 backdrop-blur-sm"
-                  >
-                    <div className="flex items-center gap-3 flex-1">
-                      <Avatar className="h-12 w-12 border-2 border-primary/20">
-                        <AvatarImage src={leader.members.profile_image_url || undefined} />
-                        <AvatarFallback className="bg-gradient-to-br from-primary/20 to-accent/20 text-primary font-semibold">
-                          {leader.members.name.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold truncate">{leader.members.name}</p>
-                        <Badge 
-                          variant={getRoleBadgeVariant(leader.role)} 
-                          className="mt-1.5 flex items-center gap-1.5 w-fit shadow-sm"
-                        >
-                          {getRoleIcon(leader.role)}
-                          <span className="capitalize font-medium">{leader.role}</span>
-                        </Badge>
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveLeader(leader.id)}
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10 transition-all duration-300 w-full sm:w-auto"
+              <ScrollArea className="h-[300px] pr-4">
+                <div className="space-y-3">
+                  {leaders.map((leader) => (
+                    <div
+                      key={leader.id}
+                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                     >
-                      <Trash2 className="h-4 w-4 sm:mr-0 mr-2" />
-                      <span className="sm:hidden">Remover</span>
-                    </Button>
-                  </div>
-                ))}
-              </div>
+                      <div className="flex items-center gap-3">
+                        <Avatar>
+                          <AvatarImage src={leader.members.profile_image_url || undefined} />
+                          <AvatarFallback>
+                            {leader.members.name.substring(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium">{leader.members.name}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant={getCategoryRoleBadgeVariant(leader.role)} className="flex items-center gap-1">
+                              {getRoleIcon(leader.role)}
+                              {getCategoryRoleLabel(leader.role)}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          handleRemoveLeader(leader.id, leader.members.name, leader.role)
+                        }
+                        disabled={loading}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
             )}
           </div>
         </div>

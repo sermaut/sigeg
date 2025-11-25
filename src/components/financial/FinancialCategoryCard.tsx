@@ -22,6 +22,7 @@ interface FinancialCategoryCardProps {
   currentMemberId?: string;
   userType?: 'admin' | 'member' | 'group';
   permissionLevel?: string;
+  onManageLeaders?: (categoryId: string, categoryName: string) => void;
 }
 
 interface CategoryLeader {
@@ -93,7 +94,8 @@ export function FinancialCategoryCard({
   isGroupLeader = false,
   currentMemberId,
   userType,
-  permissionLevel
+  permissionLevel,
+  onManageLeaders
 }: FinancialCategoryCardProps) {
   const colorScheme = categoryColors[index % categoryColors.length];
   const [showLeadersDialog, setShowLeadersDialog] = useState(false);
@@ -181,7 +183,11 @@ export function FinancialCategoryCard({
 
   const handleManageLeaders = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setShowLeadersDialog(true);
+    if (onManageLeaders) {
+      onManageLeaders(category.id, category.name);
+    } else {
+      setShowLeadersDialog(true);
+    }
   };
 
   const handleCardClick = () => {
@@ -225,8 +231,8 @@ export function FinancialCategoryCard({
           
           <div className="space-y-3">
 
-            {/* Líderes */}
-            {leaders.length > 0 && (
+            {/* Líderes ou Badge de aviso */}
+            {leaders.length > 0 ? (
               <div className="mt-3 pt-3 border-t border-current/20">
                 <div className="flex items-center gap-1 flex-wrap">
                   {leaders.slice(0, 3).map((leader) => (
@@ -248,6 +254,12 @@ export function FinancialCategoryCard({
                   )}
                 </div>
               </div>
+            ) : isGroupLeader && (
+              <div className="mt-3 pt-3 border-t border-destructive/20">
+                <Badge variant="destructive" className="text-xs w-full justify-center">
+                  Sem líderes atribuídos
+                </Badge>
+              </div>
             )}
 
             {/* Botão de gestão */}
@@ -266,16 +278,18 @@ export function FinancialCategoryCard({
         </div>
       </Card>
 
-      <CategoryLeadersDialog
-        open={showLeadersDialog}
-        onOpenChange={(open) => {
-          setShowLeadersDialog(open);
-          if (!open) loadLeaders();
-        }}
-        categoryId={category.id}
-        groupId={category.group_id}
-        categoryName={category.name}
-      />
+      {!onManageLeaders && (
+        <CategoryLeadersDialog
+          open={showLeadersDialog}
+          onOpenChange={(open) => {
+            setShowLeadersDialog(open);
+            if (!open) loadLeaders();
+          }}
+          categoryId={category.id}
+          groupId={category.group_id}
+          categoryName={category.name}
+        />
+      )}
     </>
   );
 }
