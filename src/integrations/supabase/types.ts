@@ -909,6 +909,14 @@ export type Database = {
         Args: { p_group_id: string; p_member_id: string }
         Returns: boolean
       }
+      is_group_leadership: {
+        Args: { p_group_id: string; p_member_id: string }
+        Returns: boolean
+      }
+      is_member_of_group: {
+        Args: { p_group_id: string; p_member_id: string }
+        Returns: boolean
+      }
       soft_delete_expired_weekly_programs: { Args: never; Returns: undefined }
     }
     Enums: {
