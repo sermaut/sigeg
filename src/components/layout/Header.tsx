@@ -188,30 +188,30 @@ export function Header({ onMenuClick }: HeaderProps) {
                   </Button>
                 </DialogTrigger>
                 
-                <DialogContent className="sm:max-w-md mx-2.5 rounded-2xl">
+                <DialogContent className="sm:max-w-md mx-[7px] rounded-2xl">
                   <DialogHeader className="text-center">
-                    <DialogTitle className="text-xl font-bold">Informações da Sessão</DialogTitle>
+                    <DialogTitle className="text-lg font-bold">Informações da Sessão</DialogTitle>
                   </DialogHeader>
                   
-                  <div className="flex flex-col gap-6 py-4">
+                  <div className="flex flex-col gap-4 py-3">
                     {/* Avatar e Nome */}
-                    <div className="flex items-center gap-4">
-                      <Avatar className="h-20 w-20 border-2 border-primary shadow-lg">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-16 w-16 border-2 border-primary shadow-lg">
                         <AvatarImage 
                           src={user?.type === 'member' ? (user.data as any).profile_image_url : undefined}
                           alt={name}
                         />
-                        <AvatarFallback className="bg-primary/10 text-2xl font-semibold">
+                        <AvatarFallback className="bg-primary/10 text-xl font-semibold">
                           {getInitials(name)}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
-                        <h3 className="text-lg font-bold">{name}</h3>
-                        <p className="text-sm text-muted-foreground capitalize font-medium">
+                        <h3 className="text-base font-bold">{name}</h3>
+                        <p className="text-xs text-muted-foreground capitalize font-medium">
                           {isAdmin() ? 'Administrador' : isGroup?.() ? 'Grupo' : 'Membro'}
                         </p>
                         {isMember() && (user.data as any).role && (
-                          <p className="text-xs text-muted-foreground mt-0.5">
+                          <p className="text-[10px] text-muted-foreground mt-0.5">
                             {getRoleLabel((user.data as any).role)}
                           </p>
                         )}
@@ -219,21 +219,21 @@ export function Header({ onMenuClick }: HeaderProps) {
                     </div>
                     
                     {/* Código com toggle visibility */}
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-muted-foreground">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-muted-foreground">
                         Código de Acesso
                       </label>
                       <div className="flex items-center gap-2">
-                        <div className="flex-1 rounded-xl border-2 bg-muted/30 px-4 py-3 font-mono text-sm font-semibold">
+                        <div className="flex-1 rounded-xl border-2 bg-muted/30 px-3 py-2 font-mono text-xs font-semibold">
                           {showCode ? code : '••••••'}
                         </div>
                         <Button
                           variant="outline"
                           size="icon"
                           onClick={() => setShowCode(!showCode)}
-                          className="h-11 w-11 rounded-xl border-2"
+                          className="h-9 w-9 rounded-xl border-2"
                         >
-                          {showCode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          {showCode ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                         </Button>
                       </div>
                     </div>
@@ -242,8 +242,8 @@ export function Header({ onMenuClick }: HeaderProps) {
                     <div className="flex flex-col gap-2">
                       <Button 
                         onClick={() => setDialogOpen(false)} 
-                        variant="outline"
-                        className="w-full rounded-xl border-2 h-11 font-semibold"
+                        variant="secondary"
+                        className="w-full rounded-xl h-10 text-sm font-semibold"
                       >
                         Fechar
                       </Button>
@@ -253,7 +253,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                           setDialogOpen(false);
                         }} 
                         variant="outline"
-                        className="w-full rounded-xl border-2 h-11 font-semibold"
+                        className="w-full rounded-xl border-2 h-10 text-sm font-semibold"
                         disabled={isClearing}
                       >
                         {isClearing ? (
@@ -263,7 +263,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                           </>
                         ) : (
                           <>
-                            <RefreshCw className="w-4 h-4 mr-2" />
+                            <RefreshCw className="w-3.5 h-3.5 mr-2" />
                             Limpar Cache
                           </>
                         )}
@@ -274,9 +274,9 @@ export function Header({ onMenuClick }: HeaderProps) {
                           setDialogOpen(false);
                         }} 
                         variant="destructive"
-                        className="w-full rounded-xl h-11 font-semibold"
+                        className="w-full rounded-xl h-10 text-sm font-semibold"
                       >
-                        <LogOut className="w-4 h-4 mr-2" />
+                        <LogOut className="w-3.5 h-3.5 mr-2" />
                         Sair
                       </Button>
                     </div>
