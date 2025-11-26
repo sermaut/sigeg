@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from '@/hooks/use-toast';
 
@@ -67,15 +68,26 @@ export async function clearAllApplicationCache(reload: boolean = true): Promise<
  */
 export function useCacheClearer() {
   const queryClient = useQueryClient();
+  const [isClearing, setIsClearing] = useState(false);
 
   const clearCache = async () => {
-    // Clear React Query cache first
-    queryClient.clear();
-    console.log('✅ React Query cache cleared');
+    if (isClearing) return; // Prevent multiple simultaneous clears
+    
+    setIsClearing(true);
+    
+    try {
+      // Clear React Query cache first
+      queryClient.clear();
+      console.log('✅ React Query cache cleared');
 
-    // Then clear all other caches
-    await clearAllApplicationCache(true);
+      // Then clear all other caches
+      await clearAllApplicationCache(true);
+    } catch (error) {
+      console.error('Error clearing cache:', error);
+      setIsClearing(false);
+    }
+    // Note: setIsClearing(false) not needed if page reloads
   };
 
-  return { clearCache };
+  return { clearCache, isClearing };
 }
