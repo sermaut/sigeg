@@ -249,7 +249,7 @@ export default function GroupDetails() {
             Grupos
           </span>
           <span className="text-muted-foreground">/</span>
-          <span className="text-sm font-semibold text-primary">{group.name}</span>
+          <span className="text-sm font-semibold text-primary">{displayGroup.name}</span>
         </div>
 
         {/* Header do grupo com gradiente */}
@@ -354,34 +354,34 @@ export default function GroupDetails() {
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {group.president_name && (
+                    {displayGroup.president_name && (
                       <div>
                         <label className="text-sm font-medium text-muted-foreground">Presidente</label>
-                        <p className="text-foreground">{group.president_name}</p>
+                        <p className="text-foreground">{displayGroup.president_name}</p>
                       </div>
                     )}
-                    {group.vice_president_1_name && (
+                    {displayGroup.vice_president_1_name && (
                       <div>
                         <label className="text-sm font-medium text-muted-foreground">Vice-presidente 1</label>
-                        <p className="text-foreground">{group.vice_president_1_name}</p>
+                        <p className="text-foreground">{displayGroup.vice_president_1_name}</p>
                       </div>
                     )}
-                    {group.vice_president_2_name && (
+                    {displayGroup.vice_president_2_name && (
                       <div>
                         <label className="text-sm font-medium text-muted-foreground">Vice-presidente 2</label>
-                        <p className="text-foreground">{group.vice_president_2_name}</p>
+                        <p className="text-foreground">{displayGroup.vice_president_2_name}</p>
                       </div>
                     )}
-                    {group.secretary_1_name && (
+                    {displayGroup.secretary_1_name && (
                       <div>
                         <label className="text-sm font-medium text-muted-foreground">Secretário 1</label>
-                        <p className="text-foreground">{group.secretary_1_name}</p>
+                        <p className="text-foreground">{displayGroup.secretary_1_name}</p>
                       </div>
                     )}
-                    {group.secretary_2_name && (
+                    {displayGroup.secretary_2_name && (
                       <div>
                         <label className="text-sm font-medium text-muted-foreground">Secretário 2</label>
-                        <p className="text-foreground">{group.secretary_2_name}</p>
+                        <p className="text-foreground">{displayGroup.secretary_2_name}</p>
                       </div>
                     )}
                   </div>
@@ -399,37 +399,37 @@ export default function GroupDetails() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Direção</label>
-                      <p className="text-foreground capitalize">{group.direction}</p>
+                      <p className="text-foreground capitalize">{displayGroup.direction}</p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Província</label>
-                      <p className="text-foreground">{group.province}</p>
+                      <p className="text-foreground">{displayGroup.province}</p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Município</label>
-                      <p className="text-foreground">{group.municipality}</p>
+                      <p className="text-foreground">{displayGroup.municipality}</p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Total de Membros</label>
-                      <p className="text-foreground">{members.length} / {group.max_members}</p>
+                      <p className="text-foreground">{displayMembers.length} / {displayGroup.max_members}</p>
                     </div>
                     {permissions.canViewGroupFinancialInfo && (
                       <div>
                         <label className="text-sm font-medium text-muted-foreground">Mensalidade</label>
-                        <p className="text-foreground">{group.monthly_fee} Kz</p>
+                        <p className="text-foreground">{displayGroup.monthly_fee} Kz</p>
                       </div>
                     )}
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Data de Criação</label>
                       <p className="text-foreground">
-                        {new Date(group.created_at).toLocaleDateString('pt-BR')}
+                        {new Date(displayGroup.created_at).toLocaleDateString('pt-BR')}
                       </p>
                     </div>
                     {permissions.canViewGroupFinancialInfo && (
                       <div>
                         <label className="text-sm font-medium text-muted-foreground">Código de Acesso</label>
                         <code className="px-2 py-1 bg-muted rounded text-xs font-mono">
-                          {group.access_code || 'Não definido'}
+                          {displayGroup.access_code || 'Não definido'}
                         </code>
                       </div>
                     )}
@@ -437,17 +437,17 @@ export default function GroupDetails() {
                       <label className="text-sm font-medium text-muted-foreground">Plano Atual</label>
                       <div className="flex items-center space-x-2">
                         <p className="text-foreground">
-                          {group.monthly_plans?.name || 'Nenhum plano definido'}
+                          {displayGroup.monthly_plans?.name || 'Nenhum plano definido'}
                         </p>
-                        {group.monthly_plans && (
-                          <Badge variant={group.monthly_plans.is_active ? "default" : "secondary"}>
-                            {group.monthly_plans.is_active ? "Ativo" : "Inativo"}
+                        {displayGroup.monthly_plans && (
+                          <Badge variant={displayGroup.monthly_plans.is_active ? "default" : "secondary"}>
+                            {displayGroup.monthly_plans.is_active ? "Ativo" : "Inativo"}
                           </Badge>
                         )}
                       </div>
-                      {group.monthly_plans && (
+                      {displayGroup.monthly_plans && (
                         <div className="mt-1 text-sm text-muted-foreground">
-                          Máx. {group.monthly_plans.max_members} membros • {group.monthly_plans.price_per_member} Kz por membro
+                          Máx. {displayGroup.monthly_plans.max_members} membros • {displayGroup.monthly_plans.price_per_member} Kz por membro
                         </div>
                       )}
                     </div>
@@ -530,13 +530,13 @@ export default function GroupDetails() {
               <TabsContent value="ensaios" className="space-y-6 mt-6">
                 <RehearsalAttendance 
                   groupId={id!} 
-                  members={members}
+                  members={displayMembers}
                   groupLeaders={{
-                    president_id: group?.president_id,
-                    vice_president_1_id: group?.vice_president_1_id,
-                    vice_president_2_id: group?.vice_president_2_id,
-                    secretary_1_id: group?.secretary_1_id,
-                    secretary_2_id: group?.secretary_2_id,
+                    president_id: displayGroup?.president_id,
+                    vice_president_1_id: displayGroup?.vice_president_1_id,
+                    vice_president_2_id: displayGroup?.vice_president_2_id,
+                    secretary_1_id: displayGroup?.secretary_1_id,
+                    secretary_2_id: displayGroup?.secretary_2_id,
                   }}
                 />
               </TabsContent>
