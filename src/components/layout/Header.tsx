@@ -207,9 +207,11 @@ export function Header({ onMenuClick }: HeaderProps) {
                       </Avatar>
                       <div className="flex-1">
                         <h3 className="text-lg font-bold text-cyan-600 dark:text-cyan-400">{name}</h3>
-                        <p className="text-xs text-muted-foreground capitalize font-medium">
-                          {isAdmin() ? 'Administrador' : isGroup?.() ? 'Grupo' : 'Membro'}
-                        </p>
+                        {!isMember() && (
+                          <p className="text-xs text-muted-foreground capitalize font-medium">
+                            {isAdmin() ? 'Administrador' : 'Grupo'}
+                          </p>
+                        )}
                         {isMember() && (user.data as any).role && (
                           <p className="text-sm text-muted-foreground mt-0.5 font-medium">
                             {getRoleLabel((user.data as any).role)}
