@@ -2,8 +2,9 @@ import React from 'react';
 import { ErrorBoundary as ReactErrorBoundary } from 'react-error-boundary';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { AlertTriangle, RefreshCw, ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 interface ErrorFallbackProps {
   error: Error;
@@ -12,6 +13,15 @@ interface ErrorFallbackProps {
 
 function ErrorFallback({ error, resetErrorBoundary }: ErrorFallbackProps) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  
+  const handleGoBack = () => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      navigate('/');
+    }
+  };
   
   const clearCacheAndRetry = () => {
     try {
@@ -51,12 +61,21 @@ function ErrorFallback({ error, resetErrorBoundary }: ErrorFallbackProps) {
           </AlertDescription>
         </Alert>
         
-        <div className="flex">
+        <div className="flex flex-col gap-2">
+          <Button
+            onClick={handleGoBack}
+            variant="outline"
+            className="w-full"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Voltar
+          </Button>
           <Button
             onClick={clearCacheAndRetry}
             variant="default"
             className="w-full"
           >
+            <RefreshCw className="w-4 h-4 mr-2" />
             Limpar cache e voltar ao login
           </Button>
         </div>
