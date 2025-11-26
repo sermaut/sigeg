@@ -9,6 +9,7 @@ import { NotificationCenter } from "@/components/notifications/NotificationCente
 import { GlobalSearch } from "@/components/common/GlobalSearch";
 import { useTranslation } from 'react-i18next';
 import { useCacheClearer } from "@/lib/cacheUtils";
+import { InlineLoader } from "@/components/common/LoadingIndicators";
 import {
   Dialog,
   DialogContent,
@@ -26,7 +27,7 @@ interface HeaderProps {
 export function Header({ onMenuClick }: HeaderProps) {
   const { user, logout, isAdmin, isMember, isGroup } = useAuth();
   const { t } = useTranslation();
-  const { clearCache } = useCacheClearer();
+  const { clearCache, isClearing } = useCacheClearer();
   const [showCode, setShowCode] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
@@ -249,15 +250,25 @@ export function Header({ onMenuClick }: HeaderProps) {
                         Fechar
                       </Button>
                       <Button 
-                        onClick={() => {
-                          clearCache();
+                        onClick={async () => {
+                          await clearCache();
                           setDialogOpen(false);
                         }} 
                         variant="secondary"
                         className="flex-1"
+                        disabled={isClearing}
                       >
-                        <RefreshCw className="w-4 h-4 mr-2" />
-                        Limpar Cache
+                        {isClearing ? (
+                          <>
+                            <InlineLoader className="mr-2" />
+                            Limpando...
+                          </>
+                        ) : (
+                          <>
+                            <RefreshCw className="w-4 h-4 mr-2" />
+                            Limpar Cache
+                          </>
+                        )}
                       </Button>
                       <Button 
                         onClick={() => {
@@ -281,12 +292,17 @@ export function Header({ onMenuClick }: HeaderProps) {
               variant="ghost" 
               size="icon"
               onClick={clearCache}
-              className="text-secondary-foreground hover:text-secondary hover:bg-secondary/10 
+              disabled={isClearing}
+              className="text-white hover:text-cyan-100 hover:bg-cyan-700/30 
                          w-8 h-8 md:w-10 md:h-10 hidden md:flex transition-all duration-300
-                         hover:scale-110"
-              title="Limpar cache do aplicativo"
+                         hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed"
+              title={isClearing ? "Limpando cache..." : "Limpar cache do aplicativo"}
             >
-              <RefreshCw className="w-3 h-3 md:w-4 md:h-4" />
+              {isClearing ? (
+                <InlineLoader className="text-white" />
+              ) : (
+                <RefreshCw className="w-3 h-3 md:w-4 md:h-4" />
+              )}
             </Button>
             
             {/* Botão logout - Desktop */}
