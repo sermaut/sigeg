@@ -11,35 +11,38 @@ import { toast } from '@/hooks/use-toast';
  */
 export async function clearAllApplicationCache(reload: boolean = true): Promise<void> {
   try {
+    // Show starting toast
+    toast({
+      title: "🔄 Iniciando limpeza...",
+      description: "Removendo caches da aplicação",
+      duration: 1500,
+    });
+
     // 1. Clear localStorage cache items
     const localStorageKeys = Object.keys(localStorage);
-    localStorageKeys.forEach(key => {
-      if (key.startsWith('cache_')) {
-        localStorage.removeItem(key);
-      }
-    });
-    console.log('✅ localStorage cache cleared');
+    const cacheKeysCleared = localStorageKeys.filter(key => key.startsWith('cache_'));
+    cacheKeysCleared.forEach(key => localStorage.removeItem(key));
+    console.log('✅ localStorage cache cleared:', cacheKeysCleared.length, 'items');
 
     // 2. Clear sessionStorage
     sessionStorage.clear();
     console.log('✅ sessionStorage cleared');
 
     // 3. Clear Service Worker caches
+    let swCachesCleared = 0;
     if ('caches' in window) {
       const cacheNames = await caches.keys();
       await Promise.all(
         cacheNames.map(cacheName => caches.delete(cacheName))
       );
+      swCachesCleared = cacheNames.length;
       console.log('✅ Service Worker caches cleared:', cacheNames);
     }
 
-    // 4. Clear React Query cache (if available)
-    // Note: This needs to be called from a component with access to queryClient
-    // We'll handle this separately in the component
-
+    // Show success toast with statistics
     toast({
-      title: "Cache limpo com sucesso!",
-      description: reload ? "A página será recarregada..." : "Todos os caches foram removidos.",
+      title: "✨ Cache limpo com sucesso!",
+      description: `${cacheKeysCleared.length} itens removidos. ${reload ? 'Recarregando página...' : 'Cache atualizado.'}`,
       duration: 2000,
     });
 
@@ -47,15 +50,15 @@ export async function clearAllApplicationCache(reload: boolean = true): Promise<
     if (reload) {
       setTimeout(() => {
         window.location.reload();
-      }, 1000);
+      }, 1200);
     }
 
     return Promise.resolve();
   } catch (error) {
     console.error('❌ Error clearing cache:', error);
     toast({
-      title: "Erro ao limpar cache",
-      description: "Ocorreu um erro ao tentar limpar o cache.",
+      title: "❌ Erro ao limpar cache",
+      description: "Ocorreu um erro. Tente novamente.",
       variant: "destructive",
       duration: 3000,
     });
