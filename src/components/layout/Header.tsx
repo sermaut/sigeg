@@ -242,8 +242,8 @@ export function Header({ onMenuClick }: HeaderProps) {
                     <div className="flex gap-1.5 pt-1">
                       <Button 
                         onClick={() => setDialogOpen(false)} 
-                        variant="secondary"
-                        className="flex-1 rounded-lg h-9 text-xs font-semibold"
+                        variant="outline"
+                        className="flex-1 rounded-lg h-9 text-xs font-semibold bg-blue-500/10 border-2 border-blue-500 text-blue-600 hover:bg-blue-500/20 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                       >
                         Fechar
                       </Button>
@@ -253,7 +253,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                           setDialogOpen(false);
                         }} 
                         variant="outline"
-                        className="flex-1 rounded-lg border-2 h-9 text-xs font-semibold hover:bg-cyan-500/10 hover:border-cyan-500"
+                        className="flex-1 rounded-lg border-2 h-9 text-xs font-semibold bg-green-500/10 border-green-500 text-green-600 hover:bg-green-500/20 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
                         disabled={isClearing}
                       >
                         {isClearing ? (
