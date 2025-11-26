@@ -133,7 +133,18 @@ export function Dashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="flex flex-col items-center gap-4">
+          <div className="flex items-end gap-1 h-10">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="w-2 bg-primary rounded-full animate-wave-bar"
+                style={{ animationDelay: `${i * 0.1}s` }}
+              />
+            ))}
+          </div>
+          <p className="text-sm text-muted-foreground animate-pulse">Carregando painel...</p>
+        </div>
       </div>
     );
   }

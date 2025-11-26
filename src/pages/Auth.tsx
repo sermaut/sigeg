@@ -160,7 +160,16 @@ export default function Auth() {
                   className="w-full"
                 >
                   {loading ? (
-                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                    <>
+                      <div className="flex items-center gap-1 mr-2">
+                        <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse-bounce" 
+                             style={{ animationDelay: "0s" }} />
+                        <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse-bounce" 
+                             style={{ animationDelay: "0.15s" }} />
+                        <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse-bounce" 
+                             style={{ animationDelay: "0.3s" }} />
+                      </div>
+                    </>
                   ) : (
                     <Users className="w-5 h-5 mr-2" />
                   )}
@@ -188,7 +197,16 @@ export default function Auth() {
                   className="w-full"
                 >
                   {loading ? (
-                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                    <>
+                      <div className="flex items-center gap-1 mr-2">
+                        <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse-bounce" 
+                             style={{ animationDelay: "0s" }} />
+                        <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse-bounce" 
+                             style={{ animationDelay: "0.15s" }} />
+                        <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse-bounce" 
+                             style={{ animationDelay: "0.3s" }} />
+                      </div>
+                    </>
                   ) : (
                     <Music className="w-5 h-5 mr-2" />
                   )}
@@ -216,7 +234,16 @@ export default function Auth() {
                   className="w-full"
                 >
                   {loading ? (
-                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                    <>
+                      <div className="flex items-center gap-1 mr-2">
+                        <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse-bounce" 
+                             style={{ animationDelay: "0s" }} />
+                        <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse-bounce" 
+                             style={{ animationDelay: "0.15s" }} />
+                        <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse-bounce" 
+                             style={{ animationDelay: "0.3s" }} />
+                      </div>
+                    </>
                   ) : (
                     <Shield className="w-5 h-5 mr-2" />
                   )}

@@ -228,7 +228,15 @@ export function FinancialCategories({
             <div className="space-y-6">
               {permissionsLoading ? (
                 <div className="flex justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  <div className="flex items-end gap-1 h-8">
+                    {[0, 1, 2, 3, 4].map((i) => (
+                      <div
+                        key={i}
+                        className="w-1.5 bg-primary rounded-full animate-wave-bar"
+                        style={{ animationDelay: `${i * 0.1}s` }}
+                      />
+                    ))}
+                  </div>
                 </div>
               ) : canEdit && (
                 <div className="flex justify-end">

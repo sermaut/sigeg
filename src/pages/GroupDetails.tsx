@@ -46,6 +46,7 @@ import { FinancialDashboard } from "@/components/financial/FinancialDashboard";
 import { WeeklyProgramUpload } from "@/components/technical/WeeklyProgramUpload";
 import { WeeklyProgramList } from "@/components/technical/WeeklyProgramList";
 import { RehearsalAttendance } from "@/components/technical/RehearsalAttendance";
+import { PageLoadingOverlay } from "@/components/common/LoadingIndicators";
 
 interface Group {
   id: string;
@@ -231,7 +232,8 @@ export default function GroupDetails() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-gradient-to-br from-background via-primary/3 to-accent/3">
+      <PageLoadingOverlay isLoading={loading} showCachedData={!!displayGroup}>
+        <div className="min-h-screen bg-gradient-to-br from-background via-primary/3 to-accent/3">
         {/* Breadcrumb com hover effects */}
         <div className="flex items-center space-x-2 mb-6 animate-fade-in">
           <Button
@@ -578,6 +580,7 @@ export default function GroupDetails() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
+      </PageLoadingOverlay>
     </MainLayout>
   );
 }
