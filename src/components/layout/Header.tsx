@@ -188,25 +188,25 @@ export function Header({ onMenuClick }: HeaderProps) {
                   </Button>
                 </DialogTrigger>
                 
-                <DialogContent className="sm:max-w-md mx-[7px] rounded-2xl">
+                <DialogContent className="sm:max-w-md rounded-2xl">
                   <DialogHeader className="text-center">
-                    <DialogTitle className="text-lg font-bold">Informações da Sessão</DialogTitle>
+                    <DialogTitle className="text-base font-bold">Informações da Sessão</DialogTitle>
                   </DialogHeader>
                   
-                  <div className="flex flex-col gap-4 py-3">
+                  <div className="flex flex-col gap-3 py-2">
                     {/* Avatar e Nome */}
                     <div className="flex items-center gap-3">
-                      <Avatar className="h-16 w-16 border-2 border-primary shadow-lg">
+                      <Avatar className="h-14 w-14 border-2 border-primary shadow-lg">
                         <AvatarImage 
                           src={user?.type === 'member' ? (user.data as any).profile_image_url : undefined}
                           alt={name}
                         />
-                        <AvatarFallback className="bg-primary/10 text-xl font-semibold">
+                        <AvatarFallback className="bg-primary/10 text-lg font-semibold">
                           {getInitials(name)}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
-                        <h3 className="text-base font-bold">{name}</h3>
+                        <h3 className="text-sm font-bold">{name}</h3>
                         <p className="text-xs text-muted-foreground capitalize font-medium">
                           {isAdmin() ? 'Administrador' : isGroup?.() ? 'Grupo' : 'Membro'}
                         </p>
@@ -219,31 +219,31 @@ export function Header({ onMenuClick }: HeaderProps) {
                     </div>
                     
                     {/* Código com toggle visibility */}
-                    <div className="space-y-1.5">
+                    <div className="space-y-1">
                       <label className="text-xs font-medium text-muted-foreground">
                         Código de Acesso
                       </label>
                       <div className="flex items-center gap-2">
-                        <div className="flex-1 rounded-xl border-2 bg-muted/30 px-3 py-2 font-mono text-xs font-semibold">
+                        <div className="flex-1 rounded-lg border-2 bg-muted/30 px-2.5 py-1.5 font-mono text-xs font-semibold">
                           {showCode ? code : '••••••'}
                         </div>
                         <Button
                           variant="outline"
                           size="icon"
                           onClick={() => setShowCode(!showCode)}
-                          className="h-9 w-9 rounded-xl border-2"
+                          className="h-8 w-8 rounded-lg border-2"
                         >
-                          {showCode ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                          {showCode ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
                         </Button>
                       </div>
                     </div>
                     
-                    {/* Botões de ação */}
-                    <div className="flex flex-col gap-2">
+                    {/* Botões de ação em linha */}
+                    <div className="flex gap-1.5 pt-1">
                       <Button 
                         onClick={() => setDialogOpen(false)} 
                         variant="secondary"
-                        className="w-full rounded-xl h-10 text-sm font-semibold"
+                        className="flex-1 rounded-lg h-9 text-xs font-semibold"
                       >
                         Fechar
                       </Button>
@@ -253,18 +253,18 @@ export function Header({ onMenuClick }: HeaderProps) {
                           setDialogOpen(false);
                         }} 
                         variant="outline"
-                        className="w-full rounded-xl border-2 h-10 text-sm font-semibold"
+                        className="flex-1 rounded-lg border-2 h-9 text-xs font-semibold hover:bg-cyan-500/10 hover:border-cyan-500"
                         disabled={isClearing}
                       >
                         {isClearing ? (
                           <>
-                            <InlineLoader className="mr-2" />
-                            Limpando...
+                            <InlineLoader className="mr-1" />
+                            <span className="hidden sm:inline">Limpando...</span>
                           </>
                         ) : (
                           <>
-                            <RefreshCw className="w-3.5 h-3.5 mr-2" />
-                            Limpar Cache
+                            <RefreshCw className="w-3 h-3 sm:mr-1" />
+                            <span className="hidden sm:inline">Cache</span>
                           </>
                         )}
                       </Button>
@@ -274,10 +274,10 @@ export function Header({ onMenuClick }: HeaderProps) {
                           setDialogOpen(false);
                         }} 
                         variant="destructive"
-                        className="w-full rounded-xl h-10 text-sm font-semibold"
+                        className="flex-1 rounded-lg h-9 text-xs font-semibold"
                       >
-                        <LogOut className="w-3.5 h-3.5 mr-2" />
-                        Sair
+                        <LogOut className="w-3 h-3 sm:mr-1" />
+                        <span className="hidden sm:inline">Sair</span>
                       </Button>
                     </div>
                   </div>
@@ -293,13 +293,17 @@ export function Header({ onMenuClick }: HeaderProps) {
               disabled={isClearing}
               className="text-white hover:text-cyan-100 hover:bg-cyan-700/30 
                          w-8 h-8 md:w-10 md:h-10 hidden md:flex transition-all duration-300
-                         hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed"
+                         hover:scale-110 hover:rotate-12 disabled:opacity-50 disabled:cursor-not-allowed
+                         relative group"
               title={isClearing ? "Limpando cache..." : "Limpar cache do aplicativo"}
             >
               {isClearing ? (
                 <InlineLoader className="text-white" />
               ) : (
-                <RefreshCw className="w-3 h-3 md:w-4 md:h-4" />
+                <>
+                  <RefreshCw className="w-3 h-3 md:w-4 md:h-4 transition-transform group-hover:rotate-180 duration-500" />
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-cyan-400 rounded-full animate-pulse opacity-0 group-hover:opacity-100 transition-opacity" />
+                </>
               )}
             </Button>
             
