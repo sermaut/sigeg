@@ -270,43 +270,6 @@ export default function GroupDetails() {
               </div>
             </div>
           </div>
-          
-          {/* Botões de ação com gradientes */}
-          <div className="flex flex-wrap gap-2 justify-center mt-5">
-            <PermissionGuard require="canEditGroup">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => navigate(`/groups/${id}/edit`)}
-                className="hover:border-primary hover:text-primary hover:bg-primary/5 transition-all hover:scale-105 h-9 w-9"
-                title="Editar Grupo"
-              >
-                <Edit className="w-4 h-4" />
-              </Button>
-            </PermissionGuard>
-            <PermissionGuard require="canAddMember">
-              <Button
-                variant="gradient"
-                size="icon"
-                onClick={() => navigate(`/members/new?groupId=${id}`)}
-                className="hover:shadow-glow h-9 w-9"
-                title="Adicionar Membro"
-              >
-                <UserPlus className="w-4 h-4" />
-              </Button>
-            </PermissionGuard>
-            <PermissionGuard require="canAccessMonthlyPlans">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => navigate(`/plans/${id}`)}
-                className="hover:border-accent hover:text-accent hover:bg-accent/5 transition-all hover:scale-105 h-9 w-9"
-                title="Gerenciar Plano"
-              >
-                <CreditCard className="w-4 h-4" />
-              </Button>
-            </PermissionGuard>
-          </div>
         </div>
 
         {/* Stats Cards - removed as requested */}
@@ -343,7 +306,33 @@ export default function GroupDetails() {
           <TabsContent value="info">
             <Card className="border-2 border-primary/10 shadow-lg">
               <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5">
-                <CardTitle className="text-foreground">Detalhes do Grupo</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-foreground">Detalhes do Grupo</CardTitle>
+                  <div className="flex gap-2">
+                    <PermissionGuard require="canEditGroup">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => navigate(`/groups/${id}/edit`)}
+                        className="hover:border-primary hover:text-primary hover:bg-primary/5 transition-all hover:scale-105 h-9 w-9"
+                        title="Editar Grupo"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                    </PermissionGuard>
+                    <PermissionGuard require="canAccessMonthlyPlans">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => navigate(`/plans/${id}`)}
+                        className="hover:border-accent hover:text-accent hover:bg-accent/5 transition-all hover:scale-105 h-9 w-9"
+                        title="Gerenciar Plano"
+                      >
+                        <CreditCard className="w-4 h-4" />
+                      </Button>
+                    </PermissionGuard>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent className="p-8 space-y-8">
                 {/* Liderança Section */}
@@ -463,7 +452,20 @@ export default function GroupDetails() {
             <Card className="border-2 border-primary/10 shadow-lg">
               <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <CardTitle className="text-foreground text-center">Membros do Grupo</CardTitle>
+                  <div className="flex items-center gap-2">
+                    <CardTitle className="text-foreground">Membros do Grupo</CardTitle>
+                    <PermissionGuard require="canAddMember">
+                      <Button
+                        variant="gradient"
+                        size="icon"
+                        onClick={() => navigate(`/members/new?groupId=${id}`)}
+                        className="hover:shadow-glow h-9 w-9"
+                        title="Adicionar Membro"
+                      >
+                        <UserPlus className="w-4 h-4" />
+                      </Button>
+                    </PermissionGuard>
+                  </div>
                   <div className="relative w-full sm:w-64">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
