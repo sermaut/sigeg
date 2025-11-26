@@ -43,6 +43,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { usePermissions } from "@/hooks/usePermissions";
 import { PermissionGuard } from "@/components/common/PermissionGuard";
+import { PageLoadingOverlay } from "@/components/common/LoadingIndicators";
 
 interface Member {
   id: string;
@@ -240,7 +241,8 @@ export default function MemberDetails() {
 
   return (
     <MainLayout>
-      <div className="space-y-6">
+      <PageLoadingOverlay isLoading={loading} showCachedData={!!displayMember}>
+        <div className="space-y-6">
         {/* Header with breadcrumb */}
         <div className="flex items-center space-x-2 mb-6 text-xs">
           <Button
@@ -549,6 +551,7 @@ export default function MemberDetails() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
+      </PageLoadingOverlay>
     </MainLayout>
   );
 }
