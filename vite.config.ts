@@ -60,15 +60,15 @@ export default defineConfig(({ mode }) => ({
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
         runtimeCaching: [
           {
-            // Aggressive caching for Supabase API calls
-            urlPattern: /^https:\/\/udgqabvondahhzqphyzb\.supabase\.co\/.*/i,
-            handler: 'NetworkFirst',
+            // ULTRA-AGGRESSIVE: StaleWhileRevalidate for instant Supabase responses
+            urlPattern: /^https:\/\/udgqabvondahhzqphyzb\.supabase\.co\/rest\/.*/i,
+            handler: 'StaleWhileRevalidate',
             options: {
-              cacheName: 'supabase-cache-v2',
-              networkTimeoutSeconds: 3,
+              cacheName: 'supabase-api-v3',
+              networkTimeoutSeconds: 2, // Fast timeout
               expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 5, // 5 minutes
+                maxEntries: 200,
+                maxAgeSeconds: 60 * 30, // 30 minutes
               },
               cacheableResponse: {
                 statuses: [0, 200],
@@ -76,39 +76,53 @@ export default defineConfig(({ mode }) => ({
             },
           },
           {
-            // Cache images aggressively
+            // Storage/Auth uses NetworkFirst (needs fresh data)
+            urlPattern: /^https:\/\/udgqabvondahhzqphyzb\.supabase\.co\/(auth|storage)\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'supabase-auth-storage-v1',
+              networkTimeoutSeconds: 5,
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 5, // 5 minutes
+              },
+            },
+          },
+          {
+            // Cache images aggressively with CacheFirst
             urlPattern: /\.(?:png|jpg|jpeg|svg|webp|gif)$/,
             handler: 'CacheFirst',
             options: {
-              cacheName: 'images-cache-v2',
+              cacheName: 'images-cache-v3',
               expiration: {
-                maxEntries: 200,
+                maxEntries: 300,
                 maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
               },
             },
           },
           {
-            // Cache Google Fonts
+            // Cache Google Fonts for 1 year
             urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i,
             handler: 'CacheFirst',
             options: {
               cacheName: 'google-fonts-cache-v1',
               expiration: {
-                maxEntries: 20,
+                maxEntries: 30,
                 maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
               },
             },
           },
           {
-            // Cache API GET requests
+            // StaleWhileRevalidate for general API requests
             urlPattern: ({ request }) => 
               request.url.includes('/api/') && request.method === 'GET',
-            handler: 'NetworkFirst',
+            handler: 'StaleWhileRevalidate',
             options: {
-              cacheName: 'api-cache-v1',
+              cacheName: 'api-cache-v2',
+              networkTimeoutSeconds: 2,
               expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 2, // 2 minutes
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 10, // 10 minutes
               },
             },
           },

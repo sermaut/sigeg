@@ -1,149 +1,56 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { StatsCard } from "./StatsCard.memo";
 import { RecentGroups } from "./OptimizedDashboard";
 import { DashboardCharts } from "./DashboardCharts";
 import { FinancialSummaryWidget } from "./FinancialSummaryWidget";
 import { Button } from "@/components/ui/button";
 import { Users, Building, UserPlus, Activity, Plus } from "@/lib/icons";
-import { useToast } from '@/hooks/use-toast';
-import { usePermissions } from '@/hooks/usePermissions';
 import { PermissionGuard } from '@/components/common/PermissionGuard';
+import { useDashboardStats, useRecentGroups } from '@/hooks/useOptimizedQueries';
+import { Skeleton } from "@/components/ui/skeleton";
 import sigegLogo from "@/assets/sigeg-logo.png";
 
-interface DashboardStats {
-  totalGroups: number;
-  totalMembers: number;
-  activeGroups: number;
-  recentActivity: number;
+// Skeleton component for stats cards
+function StatsCardSkeleton() {
+  return (
+    <div className="p-6 rounded-lg border bg-card">
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-8 w-8 rounded-full" />
+      </div>
+      <Skeleton className="h-8 w-16 mt-2" />
+      <Skeleton className="h-3 w-20 mt-2" />
+    </div>
+  );
 }
 
 export function Dashboard() {
-  const { toast } = useToast();
   const navigate = useNavigate();
-  const [stats, setStats] = useState<DashboardStats>({
-    totalGroups: 0,
-    totalMembers: 0,
-    activeGroups: 0,
-    recentActivity: 0
-  });
-  const [groups, setGroups] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  
+  // Use React Query hooks for optimized data fetching
+  const { data: stats, isLoading: statsLoading } = useDashboardStats();
+  const { data: groups = [], isLoading: groupsLoading } = useRecentGroups(5);
 
-  useEffect(() => {
-    loadDashboardData();
-  }, []);
+  const loading = statsLoading && !stats;
 
-  async function loadDashboardData() {
-    try {
-      // OTIMIZAÇÃO: Carregar do cache primeiro para feedback instantâneo
-      const cachedStats = localStorage.getItem('dashboard_stats_cache');
-      const cachedGroups = localStorage.getItem('dashboard_groups_cache');
-      
-      if (cachedStats && cachedGroups) {
-        try {
-          const parsedStats = JSON.parse(cachedStats);
-          const parsedGroups = JSON.parse(cachedGroups);
-          const cacheAge = Date.now() - (parsedStats.timestamp || 0);
-          
-          // Se cache tem menos de 5 minutos, usar imediatamente
-          if (cacheAge < 5 * 60 * 1000) {
-            setStats(parsedStats);
-            setGroups(parsedGroups);
-            setLoading(false);
-            return; // Usar cache, não buscar do servidor
-          }
-        } catch (e) {
-          console.warn('Cache parse error:', e);
-        }
-      }
-
-      setLoading(true);
-
-      // ULTRA-OPTIMIZED: Queries paralelas com COUNT otimizado
-      const [groupsResult, totalGroupsCount, totalMembersCount, activeGroupsCount] = await Promise.all([
-        supabase
-          .from('groups')
-          .select('id, name, municipality, province, is_active, created_at')
-          .order('created_at', { ascending: false })
-          .limit(5),
-        supabase
-          .from('groups')
-          .select('id', { count: 'exact', head: true }),
-        supabase
-          .from('members')
-          .select('id', { count: 'exact', head: true })
-          .eq('is_active', true),
-        supabase
-          .from('groups')
-          .select('id', { count: 'exact', head: true })
-          .eq('is_active', true)
-      ]);
-
-      const { data: groupsData, error: groupsError } = groupsResult;
-      const { count: totalGroups, error: totalGroupsError } = totalGroupsCount;
-      const { count: totalMembers, error: totalMembersError } = totalMembersCount;
-      const { count: activeGroups, error: activeGroupsError } = activeGroupsCount;
-
-      if (groupsError || totalGroupsError || totalMembersError || activeGroupsError) {
-        console.error('Error loading dashboard data:', { groupsError, totalGroupsError, totalMembersError, activeGroupsError });
-        toast({
-          title: "Erro ao carregar dados",
-          description: "Não foi possível carregar alguns dados do painel.",
-          variant: "destructive",
-        });
-        setStats({ totalGroups: 0, totalMembers: 0, activeGroups: 0, recentActivity: 0 });
-        setGroups([]);
-        return;
-      }
-
-      const newStats = {
-        totalGroups: totalGroups || 0,
-        totalMembers: totalMembers || 0,
-        activeGroups: activeGroups || 0,
-        recentActivity: totalGroups || 0,
-        timestamp: Date.now()
-      };
-
-      setStats(newStats);
-      setGroups(groupsData || []);
-
-      // Salvar em cache para próxima vez
-      try {
-        localStorage.setItem('dashboard_stats_cache', JSON.stringify(newStats));
-        localStorage.setItem('dashboard_groups_cache', JSON.stringify(groupsData || []));
-      } catch (e) {
-        console.warn('Failed to cache dashboard data:', e);
-      }
-    } catch (error) {
-      console.error('Error loading dashboard data:', error);
-      toast({
-        title: "Erro inesperado",
-        description: "Ocorreu um erro ao carregar o painel.",
-        variant: "destructive",
-      });
-      setStats({ totalGroups: 0, totalMembers: 0, activeGroups: 0, recentActivity: 0 });
-      setGroups([]);
-    } finally {
-      setLoading(false);
-    }
-  }
-
+  // Show skeleton while loading (but show cached data immediately if available)
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="flex flex-col items-center gap-4">
-          <div className="flex items-end gap-1 h-10">
-            {[0, 1, 2, 3, 4].map((i) => (
-              <div
-                key={i}
-                className="w-2 bg-primary rounded-full animate-wave-bar"
-                style={{ animationDelay: `${i * 0.1}s` }}
-              />
-            ))}
+      <div className="space-y-6">
+        {/* Welcome Header Skeleton */}
+        <div className="text-center space-y-6">
+          <div className="flex items-center justify-center space-x-4 mb-6">
+            <Skeleton className="w-16 h-16 rounded-full" />
+            <Skeleton className="h-8 w-64" />
           </div>
-          <p className="text-sm text-muted-foreground animate-pulse">Carregando painel...</p>
+          <Skeleton className="h-4 w-96 mx-auto" />
+        </div>
+
+        {/* Stats Cards Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[0, 1, 2, 3].map((i) => (
+            <StatsCardSkeleton key={i} />
+          ))}
         </div>
       </div>
     );
@@ -195,21 +102,21 @@ export function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatsCard
           title="Total de Grupos"
-          value={stats.totalGroups}
+          value={stats?.totalGroups ?? 0}
           change="+2 este mês"
           changeType="positive"
           icon={Building}
         />
         <StatsCard
           title="Membros Ativos"
-          value={stats.totalMembers}
+          value={stats?.totalMembers ?? 0}
           change="+15 este mês"
           changeType="positive"
           icon={Users}
         />
         <StatsCard
           title="Grupos Ativos"
-          value={stats.activeGroups}
+          value={stats?.activeGroups ?? 0}
           icon={Activity}
         />
         <StatsCard

@@ -155,6 +155,9 @@ export function MemberPaymentDialog({
                 value={amountPaid}
                 onChange={(e) => setAmountPaid(e.target.value)}
                 placeholder="0.00"
+                disabled={!canEditPayment}
+                readOnly={!canEditPayment}
+                className={!canEditPayment ? "bg-muted cursor-not-allowed" : ""}
               />
             </div>
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,23 +22,45 @@ export function PaymentEventDetails({ event, groupId, onClose }: PaymentEventDet
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [loading, setLoading] = useState(true);
   const [categoryLeaders, setCategoryLeaders] = useState<any[]>([]);
+  const [leadersLoaded, setLeadersLoaded] = useState(false);
   const { toast } = useToast();
   const { user, isGroup, isMember } = useAuth();
 
-  // Verificar se é líder de categoria
-  const currentMemberId = isMember() && user?.type === 'member' ? (user.data as any).id : undefined;
-  const isCategoryLeader = event.category_id && categoryLeaders.some(leader => leader.member_id === currentMemberId && leader.category_id === event.category_id);
+  // Get current member ID safely
+  const currentMemberId = useMemo(() => {
+    if (isMember() && user?.type === 'member') {
+      return (user.data as any)?.id;
+    }
+    return undefined;
+  }, [user, isMember]);
+
+  // Check if current user is a category leader for this event's category
+  const isCategoryLeader = useMemo(() => {
+    if (!event.category_id || !currentMemberId || !leadersLoaded) {
+      return false;
+    }
+    return categoryLeaders.some(
+      leader => leader.member_id === currentMemberId && leader.category_id === event.category_id
+    );
+  }, [event.category_id, currentMemberId, categoryLeaders, leadersLoaded]);
+
+  // Can edit payment only if not group login and is category leader
   const canEditPayment = !isGroup?.() && isCategoryLeader;
 
   useEffect(() => {
     loadMemberPayments();
     if (event.category_id) {
       loadCategoryLeaders();
+    } else {
+      setLeadersLoaded(true);
     }
-  }, [event.id]);
+  }, [event.id, event.category_id]);
 
   const loadCategoryLeaders = async () => {
-    if (!event.category_id) return;
+    if (!event.category_id) {
+      setLeadersLoaded(true);
+      return;
+    }
     
     try {
       const { data, error } = await supabase
@@ -51,6 +73,9 @@ export function PaymentEventDetails({ event, groupId, onClose }: PaymentEventDet
       setCategoryLeaders(data || []);
     } catch (error) {
       console.error("Erro ao carregar líderes:", error);
+      setCategoryLeaders([]);
+    } finally {
+      setLeadersLoaded(true);
     }
   };
 

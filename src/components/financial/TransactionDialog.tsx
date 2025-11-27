@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface TransactionDialogProps {
   open: boolean;
@@ -25,15 +26,45 @@ export function TransactionDialog({ open, onOpenChange, categoryId, onTransactio
     description: "",
   });
   const { toast } = useToast();
+  const { user, isMember } = useAuth();
+
+  // Get current member ID
+  const currentMemberId = isMember() && user?.type === 'member' ? (user.data as any).id : null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!categoryId) return;
+    if (!categoryId) {
+      toast({
+        title: "Erro",
+        description: "ID da categoria não encontrado.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     if (!canCreate || isLocked) {
       toast({
         title: "Ação não permitida",
         description: "Você não tem permissão para criar transações nesta categoria.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const amount = parseFloat(formData.amount);
+    if (isNaN(amount) || amount <= 0) {
+      toast({
+        title: "Valor inválido",
+        description: "Por favor, insira um valor válido maior que zero.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.description.trim()) {
+      toast({
+        title: "Descrição obrigatória",
+        description: "Por favor, insira uma descrição para a transação.",
         variant: "destructive",
       });
       return;
@@ -46,11 +77,15 @@ export function TransactionDialog({ open, onOpenChange, categoryId, onTransactio
         .insert({
           category_id: categoryId,
           type: formData.type,
-          amount: parseFloat(formData.amount),
-          description: formData.description,
+          amount: amount,
+          description: formData.description.trim(),
+          created_by_member_id: currentMemberId, // Track who created the transaction
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Database error:", error);
+        throw new Error(error.message || "Erro ao salvar transação");
+      }
 
       toast({
         title: "Transação adicionada com sucesso!",
@@ -65,10 +100,11 @@ export function TransactionDialog({ open, onOpenChange, categoryId, onTransactio
 
       onTransactionAdded();
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao adicionar transação:", error);
       toast({
         title: "Erro ao adicionar transação",
+        description: error.message || "Tente novamente mais tarde.",
         variant: "destructive",
       });
     } finally {
