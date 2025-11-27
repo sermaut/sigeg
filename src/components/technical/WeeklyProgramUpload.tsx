@@ -354,6 +354,18 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
         description: "Programa semanal adicionado com sucesso! Será removido automaticamente após 6 dias.",
       });
 
+      // Clean up object URLs to prevent memory leaks
+      hymnsItems.forEach(item => {
+        if (item.audioPreview && item.audioPreview.startsWith('blob:')) {
+          URL.revokeObjectURL(item.audioPreview);
+        }
+      });
+      accompanimentItems.forEach(item => {
+        if (item.audioPreview && item.audioPreview.startsWith('blob:')) {
+          URL.revokeObjectURL(item.audioPreview);
+        }
+      });
+
       // Reset form
       setTitle("");
       setCategory("hino");
@@ -364,9 +376,20 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
       onUploadComplete();
     } catch (error: any) {
       console.error('Erro ao fazer upload:', error);
+      
+      // More specific error messages
+      let errorMessage = "Falha ao fazer upload. Tente novamente.";
+      if (error.message?.includes('storage')) {
+        errorMessage = "Erro ao enviar arquivos. Verifique sua conexão.";
+      } else if (error.message?.includes('database') || error.message?.includes('insert')) {
+        errorMessage = "Erro ao salvar dados. Tente novamente.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Erro",
-        description: error.message || "Falha ao fazer upload. Tente novamente.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

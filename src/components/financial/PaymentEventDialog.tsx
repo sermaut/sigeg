@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,53 +24,93 @@ export function PaymentEventDialog({ open, onOpenChange, groupId, onEventAdded }
   const { toast } = useToast();
   const { user, isMember } = useAuth();
   
+  // Get current member ID safely
+  const currentMemberId = useCallback(() => {
+    if (isMember() && user?.type === 'member') {
+      return (user.data as any)?.id;
+    }
+    return undefined;
+  }, [user, isMember]);
+  
   useEffect(() => {
     if (open && isMember()) {
       loadUserCategory();
     }
-  }, [open]);
+  }, [open, isMember]);
   
   const loadUserCategory = async () => {
-    const currentMemberId = isMember() && user?.type === 'member' ? (user.data as any).id : undefined;
-    if (!currentMemberId) return;
+    const memberId = currentMemberId();
+    if (!memberId) {
+      setUserCategoryId(null);
+      return;
+    }
     
     try {
       const { data, error } = await supabase
         .from("category_roles")
         .select("category_id")
-        .eq("member_id", currentMemberId)
+        .eq("member_id", memberId)
         .eq("is_active", true)
         .limit(1)
-        .single();
+        .maybeSingle(); // Use maybeSingle to handle no results gracefully
       
-      if (error) throw error;
+      if (error) {
+        console.warn("Erro ao carregar categoria:", error);
+        setUserCategoryId(null);
+        return;
+      }
+      
       setUserCategoryId(data?.category_id || null);
     } catch (error) {
-      console.error("Erro ao carregar categoria:", error);
+      console.warn("Erro ao carregar categoria:", error);
+      setUserCategoryId(null);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form data
+    if (!formData.title.trim()) {
+      toast({
+        title: "Título obrigatório",
+        description: "Por favor, insira um título para o evento.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const amount = parseFloat(formData.amount_to_pay);
+    if (isNaN(amount) || amount <= 0) {
+      toast({
+        title: "Valor inválido",
+        description: "Por favor, insira um valor válido maior que zero.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setLoading(true);
     try {
-      // Create payment event
-      const currentMemberId = isMember() && user?.type === 'member' ? (user.data as any).id : undefined;
+      const memberId = currentMemberId();
       
+      // Create payment event
       const { data: eventData, error: eventError } = await supabase
         .from("payment_events")
         .insert({
           group_id: groupId,
-          title: formData.title,
-          amount_to_pay: parseFloat(formData.amount_to_pay),
+          title: formData.title.trim(),
+          amount_to_pay: amount,
           category_id: userCategoryId, // Associar evento à categoria do líder
-          created_by_member_id: currentMemberId,
+          created_by_member_id: memberId,
         })
         .select()
         .single();
 
-      if (eventError) throw eventError;
+      if (eventError) {
+        console.error("Error creating event:", eventError);
+        throw new Error(eventError.message || "Erro ao criar evento");
+      }
 
       // Get all members of the group and create initial payment records
       const { data: members, error: membersError } = await supabase
@@ -79,7 +119,10 @@ export function PaymentEventDialog({ open, onOpenChange, groupId, onEventAdded }
         .eq("group_id", groupId)
         .eq("is_active", true);
 
-      if (membersError) throw membersError;
+      if (membersError) {
+        console.error("Error fetching members:", membersError);
+        throw new Error(membersError.message || "Erro ao buscar membros");
+      }
 
       // Create payment records for all members (initially with 0 amount)
       if (members && members.length > 0) {
@@ -93,7 +136,10 @@ export function PaymentEventDialog({ open, onOpenChange, groupId, onEventAdded }
           .from("member_payments")
           .insert(memberPayments);
 
-        if (paymentsError) throw paymentsError;
+        if (paymentsError) {
+          console.error("Error creating member payments:", paymentsError);
+          throw new Error(paymentsError.message || "Erro ao criar pagamentos");
+        }
       }
 
       toast({
@@ -108,11 +154,11 @@ export function PaymentEventDialog({ open, onOpenChange, groupId, onEventAdded }
       });
 
       onEventAdded();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao criar evento:", error);
       toast({
         title: "Erro ao criar evento",
-        description: error.message || "Ocorreu um erro inesperado",
+        description: error.message || "Ocorreu um erro inesperado. Tente novamente.",
         variant: "destructive",
       });
     } finally {
