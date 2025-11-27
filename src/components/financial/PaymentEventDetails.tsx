@@ -27,7 +27,7 @@ export function PaymentEventDetails({ event, groupId, onClose }: PaymentEventDet
 
   // Verificar se é líder de categoria
   const currentMemberId = isMember() && user?.type === 'member' ? (user.data as any).id : undefined;
-  const isCategoryLeader = categoryLeaders.some(leader => leader.member_id === currentMemberId);
+  const isCategoryLeader = event.category_id && categoryLeaders.some(leader => leader.member_id === currentMemberId && leader.category_id === event.category_id);
   const canEditPayment = !isGroup?.() && isCategoryLeader;
 
   useEffect(() => {

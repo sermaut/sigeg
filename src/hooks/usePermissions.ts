@@ -144,7 +144,7 @@ export function usePermissions(): PermissionChecks {
       canCreateGroup: false,
       canEditGroup: false,
       canDeleteGroup: false,
-      canAddMember: false,
+      canAddMember: true,
       canViewGroupFinancialInfo: true,
       canEditGroupDetails: false,
       canViewMonthlyPlans: false,

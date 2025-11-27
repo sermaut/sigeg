@@ -22,6 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { usePermissions } from "@/hooks/usePermissions";
 import { PermissionGuard } from "@/components/common/PermissionGuard";
+import { useAuth } from '@/contexts/AuthContext';
 
 interface PaymentEventsProps {
   groupId: string;
@@ -36,12 +37,34 @@ export function PaymentEvents({ groupId }: PaymentEventsProps) {
   const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<string | null>(null);
+  const [userCategoryLeadership, setUserCategoryLeadership] = useState<string[]>([]);
   const { toast } = useToast();
   const permissions = usePermissions();
+  const { user, isMember } = useAuth();
+  
+  const currentMemberId = isMember() && user?.type === 'member' ? (user.data as any).id : undefined;
 
   useEffect(() => {
     loadEvents();
+    loadUserCategoryLeadership();
   }, [groupId]);
+  
+  const loadUserCategoryLeadership = async () => {
+    if (!currentMemberId) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from("category_roles")
+        .select("category_id")
+        .eq("member_id", currentMemberId)
+        .eq("is_active", true);
+      
+      if (error) throw error;
+      setUserCategoryLeadership(data?.map(d => d.category_id) || []);
+    } catch (error) {
+      console.error("Erro ao carregar lideranças:", error);
+    }
+  };
 
   const loadEvents = async () => {
     try {
@@ -62,6 +85,11 @@ export function PaymentEvents({ groupId }: PaymentEventsProps) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const canManageEvent = (event: any) => {
+    if (!event.category_id) return permissions.canEditPaymentEvent;
+    return userCategoryLeadership.includes(event.category_id);
   };
 
   const handleEventAdded = () => {
@@ -179,7 +207,7 @@ export function PaymentEvents({ groupId }: PaymentEventsProps) {
                 </CardTitle>
                 <div className="flex items-center space-x-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                  {permissions.canEditPaymentEvent && (
+                  {canManageEvent(event) && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="sm" className="h-8 w-8 p-0">

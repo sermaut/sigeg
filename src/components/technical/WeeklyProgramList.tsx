@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trash2, Calendar, Music, FileText, Edit } from "lucide-react";
+import { Trash2, Calendar, Music, FileText, Edit, ChevronDown, ChevronUp } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
 import { WeeklyProgramEditDialog } from "./WeeklyProgramEditDialog";
 import { CustomAudioPlayer } from "./CustomAudioPlayer";
@@ -48,6 +49,7 @@ export function WeeklyProgramList({ groupId, refreshTrigger }: WeeklyProgramList
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
   const [editProgram, setEditProgram] = useState<WeeklyProgram | null>(null);
+  const [expandedPrograms, setExpandedPrograms] = useState<Record<string, boolean>>({});
   const { toast } = useToast();
   const permissions = usePermissions();
 
@@ -70,6 +72,13 @@ export function WeeklyProgramList({ groupId, refreshTrigger }: WeeklyProgramList
         items: Array.isArray(program.items) ? program.items as ProgramItem[] : []
       }));
       setPrograms(typedPrograms);
+      
+      // Inicializar todos os programas como expandidos
+      const initialExpanded: Record<string, boolean> = {};
+      typedPrograms.forEach(p => {
+        initialExpanded[p.id] = true;
+      });
+      setExpandedPrograms(initialExpanded);
     } catch (error) {
       console.error('Erro ao carregar programas:', error);
       toast({
@@ -138,18 +147,34 @@ export function WeeklyProgramList({ groupId, refreshTrigger }: WeeklyProgramList
     );
   }
 
+  const toggleProgram = (programId: string) => {
+    setExpandedPrograms(prev => ({
+      ...prev,
+      [programId]: !prev[programId]
+    }));
+  };
+
   const renderProgram = (program: WeeklyProgram) => {
     const daysRemaining = getDaysRemaining(program.expires_at);
+    const isExpanded = expandedPrograms[program.id] ?? true;
     
     return (
       <Card key={program.id} className="overflow-hidden border-primary/10 shadow-md hover:shadow-lg transition-shadow duration-300">
-        <div className="p-4 space-y-3 bg-gradient-to-br from-background to-accent/5">
-          <div className="flex items-start justify-between">
-            <h3 className="font-bold text-lg text-foreground flex items-center gap-2">
-              <FileText className="w-5 h-5 text-primary" />
-              {program.title}
-            </h3>
-            <div className="flex gap-2">
+        <Collapsible open={isExpanded} onOpenChange={() => toggleProgram(program.id)}>
+          <div className="p-4 space-y-3 bg-gradient-to-br from-background to-accent/5">
+            <div className="flex items-start justify-between">
+              <CollapsibleTrigger className="flex items-center gap-2 hover:opacity-70 transition-opacity">
+                <h3 className="font-bold text-lg text-foreground flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-primary" />
+                  {program.title}
+                </h3>
+                {isExpanded ? (
+                  <ChevronUp className="w-5 h-5 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                )}
+              </CollapsibleTrigger>
+              <div className="flex gap-2 flex-shrink-0">
               <PermissionGuard require="canEditWeeklyProgram">
                 <Button
                   variant="ghost"
@@ -173,8 +198,9 @@ export function WeeklyProgramList({ groupId, refreshTrigger }: WeeklyProgramList
             </div>
           </div>
 
-          {/* Renderizar items */}
-          {program.items && Array.isArray(program.items) && program.items.length > 0 && (
+          <CollapsibleContent>
+            {/* Renderizar items */}
+            {program.items && Array.isArray(program.items) && program.items.length > 0 && (
             <div className="space-y-4">
               {program.items.map((item: ProgramItem, index: number) => (
                 <div key={index} className="space-y-2 p-3 bg-background/50 rounded-lg border border-primary/10">
@@ -197,13 +223,7 @@ export function WeeklyProgramList({ groupId, refreshTrigger }: WeeklyProgramList
                   )}
 
                   {item.audio_url && (
-                    <div className="space-y-2">
-                      <div className="flex items-center text-sm font-medium text-foreground">
-                        <Music className="w-4 h-4 mr-2 text-primary" />
-                        Áudio
-                      </div>
-                      <CustomAudioPlayer audioUrl={item.audio_url} />
-                    </div>
+                    <CustomAudioPlayer audioUrl={item.audio_url} />
                   )}
                 </div>
               ))}
@@ -226,13 +246,7 @@ export function WeeklyProgramList({ groupId, refreshTrigger }: WeeklyProgramList
           )}
 
           {program.audio_url && (
-            <div className="space-y-2">
-              <div className="flex items-center text-sm font-medium text-foreground">
-                <Music className="w-4 h-4 mr-2 text-primary" />
-                Áudio do Programa
-              </div>
-              <CustomAudioPlayer audioUrl={program.audio_url} />
-            </div>
+            <CustomAudioPlayer audioUrl={program.audio_url} />
           )}
 
           <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-primary/10">
@@ -244,7 +258,9 @@ export function WeeklyProgramList({ groupId, refreshTrigger }: WeeklyProgramList
               {new Date(program.created_at).toLocaleDateString('pt-BR')}
             </span>
           </div>
-        </div>
+          </CollapsibleContent>
+          </div>
+        </Collapsible>
       </Card>
     );
   };
