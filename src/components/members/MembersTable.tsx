@@ -41,34 +41,36 @@ export function MembersTable({ members, onMemberView }: MembersTableProps) {
               <TableCell className="text-center font-semibold text-sm border-r border-primary/10 text-foreground">
                 {index + 1}
               </TableCell>
-              <TableCell className="text-center border-r border-primary/10 p-2">
+              <TableCell className="text-center border-r border-primary/10 py-2 px-3">
                 <Dialog>
                   <DialogTrigger asChild>
-                    <div className="cursor-pointer hover:scale-105 transition-transform">
-                      <Avatar className="w-14 h-14 mx-auto ring-2 ring-primary/20 hover:ring-primary/40 transition-all">
+                    <div className="cursor-pointer hover:scale-105 transition-transform flex justify-center">
+                      <Avatar className="w-12 h-12 ring-[2.5px] ring-primary/40 hover:ring-primary/60 transition-all">
                         <AvatarImage 
                           src={member.profile_image_url} 
                           alt={member.name}
                         />
-                        <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-teal-500 text-white text-base font-semibold">
+                        <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-teal-500 text-white text-sm font-semibold">
                           {getInitials(member.name)}
                         </AvatarFallback>
                       </Avatar>
                     </div>
                   </DialogTrigger>
-                  <DialogContent className="max-w-lg">
+                  <DialogContent className="max-w-[90vw] sm:max-w-md p-6">
                     <div className="flex justify-center">
-                      <Avatar className="w-64 h-64">
-                        <AvatarImage 
-                          src={member.profile_image_url} 
-                          alt={member.name}
-                        />
-                        <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-teal-500 text-white text-6xl">
-                          {getInitials(member.name)}
-                        </AvatarFallback>
-                      </Avatar>
+                      <div className="w-64 h-64 rounded-full overflow-hidden ring-4 ring-primary/30">
+                        <Avatar className="w-full h-full">
+                          <AvatarImage 
+                            src={member.profile_image_url} 
+                            alt={member.name}
+                          />
+                          <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-teal-500 text-white text-6xl">
+                            {getInitials(member.name)}
+                          </AvatarFallback>
+                        </Avatar>
+                      </div>
                     </div>
-                    <h3 className="text-2xl font-semibold text-center mt-4 px-6 w-full">
+                    <h3 className="text-2xl font-semibold text-center mt-4 px-4 w-full">
                       {member.name}
                     </h3>
                   </DialogContent>
