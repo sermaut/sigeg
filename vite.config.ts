@@ -65,7 +65,6 @@ export default defineConfig(({ mode }) => ({
             handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'supabase-api-v3',
-              networkTimeoutSeconds: 2, // Fast timeout
               expiration: {
                 maxEntries: 200,
                 maxAgeSeconds: 60 * 30, // 30 minutes
@@ -119,7 +118,6 @@ export default defineConfig(({ mode }) => ({
             handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'api-cache-v2',
-              networkTimeoutSeconds: 2,
               expiration: {
                 maxEntries: 100,
                 maxAgeSeconds: 60 * 10, // 10 minutes
