@@ -2,25 +2,39 @@ import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from '@/hooks/use-toast';
 
+// Key for storing last cache clear timestamp
+export const LAST_CACHE_CLEAR_KEY = 'last_cache_clear';
+
+/**
+ * Save timestamp of last cache clear
+ */
+export function saveLastCacheClearTimestamp(): void {
+  localStorage.setItem(LAST_CACHE_CLEAR_KEY, Date.now().toString());
+}
+
 /**
  * Clears all application caches including:
- * - localStorage (cache_ prefixed items)
+ * - localStorage (cache_ prefixed items, preserving last_cache_clear)
  * - sessionStorage
  * - Service Worker caches
  * - React Query cache
  */
-export async function clearAllApplicationCache(reload: boolean = true): Promise<void> {
+export async function clearAllApplicationCache(reload: boolean = true, isAuto: boolean = false): Promise<void> {
   try {
-    // Show starting toast
-    toast({
-      title: "🔄 Iniciando limpeza...",
-      description: "Removendo caches da aplicação",
-      duration: 1500,
-    });
+    // Show starting toast (only for manual clears)
+    if (!isAuto) {
+      toast({
+        title: "🔄 Iniciando limpeza...",
+        description: "Removendo caches da aplicação",
+        duration: 1500,
+      });
+    }
 
-    // 1. Clear localStorage cache items
+    // 1. Clear localStorage cache items (preserving last_cache_clear)
     const localStorageKeys = Object.keys(localStorage);
-    const cacheKeysCleared = localStorageKeys.filter(key => key.startsWith('cache_'));
+    const cacheKeysCleared = localStorageKeys.filter(key => 
+      key.startsWith('cache_') && key !== LAST_CACHE_CLEAR_KEY
+    );
     cacheKeysCleared.forEach(key => localStorage.removeItem(key));
     console.log('✅ localStorage cache cleared:', cacheKeysCleared.length, 'items');
 
@@ -39,9 +53,13 @@ export async function clearAllApplicationCache(reload: boolean = true): Promise<
       console.log('✅ Service Worker caches cleared:', cacheNames);
     }
 
+    // 4. Save new timestamp for auto-clear tracking
+    saveLastCacheClearTimestamp();
+    console.log('✅ Cache clear timestamp saved');
+
     // Show success toast with statistics
     toast({
-      title: "✨ Cache limpo com sucesso!",
+      title: isAuto ? "🔄 Cache atualizado (1h)" : "✨ Cache limpo com sucesso!",
       description: `${cacheKeysCleared.length} itens removidos. ${reload ? 'Recarregando página...' : 'Cache atualizado.'}`,
       duration: 2000,
     });
@@ -83,8 +101,8 @@ export function useCacheClearer() {
       queryClient.clear();
       console.log('✅ React Query cache cleared');
 
-      // Then clear all other caches
-      await clearAllApplicationCache(true);
+      // Then clear all other caches (manual clear, not auto)
+      await clearAllApplicationCache(true, false);
     } catch (error) {
       console.error('Error clearing cache:', error);
       setIsClearing(false);
