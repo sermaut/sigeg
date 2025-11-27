@@ -211,7 +211,7 @@ export function FinancialCategoryCard({
         onClick={handleCardClick}
       >
         <div className={`absolute inset-0 bg-gradient-to-br ${colorScheme.gradient} 
-                        ${!hasAccess ? 'opacity-3' : 'opacity-5 group-hover:opacity-10'} 
+                        ${!hasAccess ? 'opacity-10' : 'opacity-20 group-hover:opacity-30'} 
                         transition-opacity`} />
         
         <div className="relative p-6">
@@ -234,12 +234,32 @@ export function FinancialCategoryCard({
                 )}
               </div>
             </div>
-            {!hasAccess && <Lock className="w-5 h-5 text-muted-foreground flex-shrink-0" />}
+            
+            {/* Botão Gerir Líderes no canto superior direito */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleManageLeaders}
+              className="text-xs flex items-center gap-1 flex-shrink-0"
+            >
+              <Settings className="h-3 w-3" />
+              Gerir Líderes
+            </Button>
           </div>
           
           <div className="space-y-3">
+            {/* Saldo da categoria */}
+            <div className="flex items-center justify-between p-3 bg-background/40 rounded-lg">
+              <span className="text-sm font-medium text-muted-foreground">Saldo Actual</span>
+              <span className={`text-xl font-bold ${getBalanceColor()}`}>
+                {balance.toLocaleString('pt-AO', { 
+                  style: 'currency', 
+                  currency: 'AOA' 
+                })}
+              </span>
+            </div>
 
-            {/* Líderes ou Badge de aviso */}
+            {/* Líderes ou mensagem sem cor de fundo */}
             {leaders.length > 0 ? (
               <div className="mt-3 pt-3 border-t border-current/20">
                 <div className="flex items-center gap-1 flex-wrap">
@@ -263,23 +283,12 @@ export function FinancialCategoryCard({
                 </div>
               </div>
             ) : (
-              <div className="mt-3 pt-3 border-t border-destructive/20">
-                <Badge variant="destructive" className="text-xs w-full justify-center">
+              <div className="mt-3 pt-3 border-t border-muted/30">
+                <p className="text-xs text-muted-foreground text-center">
                   Sem líderes atribuídos
-                </Badge>
+                </p>
               </div>
             )}
-
-            {/* Botão de gestão */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleManageLeaders}
-              className="w-full mt-2 text-xs"
-            >
-              <Settings className="h-3 w-3 mr-1" />
-              Gerir Líderes
-            </Button>
           </div>
         </div>
       </Card>

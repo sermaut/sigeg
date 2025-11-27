@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface PaymentEventDialogProps {
   open: boolean;
@@ -19,7 +20,35 @@ export function PaymentEventDialog({ open, onOpenChange, groupId, onEventAdded }
     title: "",
     amount_to_pay: "",
   });
+  const [userCategoryId, setUserCategoryId] = useState<string | null>(null);
   const { toast } = useToast();
+  const { user, isMember } = useAuth();
+  
+  useEffect(() => {
+    if (open && isMember()) {
+      loadUserCategory();
+    }
+  }, [open]);
+  
+  const loadUserCategory = async () => {
+    const currentMemberId = isMember() && user?.type === 'member' ? (user.data as any).id : undefined;
+    if (!currentMemberId) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from("category_roles")
+        .select("category_id")
+        .eq("member_id", currentMemberId)
+        .eq("is_active", true)
+        .limit(1)
+        .single();
+      
+      if (error) throw error;
+      setUserCategoryId(data?.category_id || null);
+    } catch (error) {
+      console.error("Erro ao carregar categoria:", error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,13 +56,16 @@ export function PaymentEventDialog({ open, onOpenChange, groupId, onEventAdded }
     setLoading(true);
     try {
       // Create payment event
+      const currentMemberId = isMember() && user?.type === 'member' ? (user.data as any).id : undefined;
+      
       const { data: eventData, error: eventError } = await supabase
         .from("payment_events")
         .insert({
           group_id: groupId,
           title: formData.title,
           amount_to_pay: parseFloat(formData.amount_to_pay),
-          // created_by field removed - should reference member UUID, not name
+          category_id: userCategoryId, // Associar evento à categoria do líder
+          created_by_member_id: currentMemberId,
         })
         .select()
         .single();
