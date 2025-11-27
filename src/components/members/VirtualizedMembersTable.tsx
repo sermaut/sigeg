@@ -71,9 +71,9 @@ const VirtualRow = memo(({ index, style, data }: RowProps) => {
             checked={selectedMembers.has(member.id)}
             onCheckedChange={() => toggleMemberSelection(member.id)}
           />
-          <Avatar className="w-8 h-8">
+          <Avatar className="w-10 h-10">
             <AvatarImage src={member.profile_image_url} loading="lazy" />
-            <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+            <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-teal-500 text-white text-xs font-semibold">{initials}</AvatarFallback>
           </Avatar>
           <div>
             <div className="font-medium text-foreground">{member.name}</div>
