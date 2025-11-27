@@ -233,16 +233,16 @@ export const OptimizedMembersTable = memo(({
           <tbody>
             {memoizedMembers.map((member, index) => (
               <tr key={member.id} className="border-b border-border hover:bg-muted/50 transition-smooth">
-                <td className="px-2 py-1.5 text-center border-r border-border/50">
+                <td className="p-[5px] text-center border-r border-border/50">
                   <Checkbox
                     checked={selectedMembers.has(member.id)}
                     onCheckedChange={() => toggleMemberSelection(member.id)}
                   />
                 </td>
-                <td className="px-2 py-1.5 text-center text-sm text-muted-foreground border-r border-border/50">
+                <td className="p-[5px] text-center text-sm text-muted-foreground border-r border-border/50">
                   {index + 1}
                 </td>
-              <td className="px-3 py-2 text-center border-r border-border/50">
+              <td className="p-[5px] text-center border-r border-border/50">
                 <Avatar 
                   className="w-[50px] h-[50px] mx-auto cursor-pointer hover:scale-110 hover:shadow-lg transition-all duration-300 rounded-full ring-1 ring-primary/40 hover:ring-primary/60"
                   onClick={() => {
@@ -371,7 +371,7 @@ export const OptimizedMembersTable = memo(({
                   </AvatarFallback>
                 </Avatar>
               </td>
-              <td className="px-4 py-1.5">
+              <td className="p-[5px]">
                 <button
                   className="text-left hover:text-primary transition-colors font-medium"
                   onClick={() => onMemberView(member.id)}
