@@ -9,7 +9,7 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { GlobalErrorToast } from '@/components/common/GlobalErrorToast';
 import { PerformanceMonitor } from '@/components/common/PerformanceMonitor';
-import { StatsSkeleton } from '@/components/common/LoadingSkeleton';
+import { GlobalPageLoader } from '@/components/common/GlobalPageLoader';
 import { PWAUpdatePrompt } from '@/components/common/PWAUpdatePrompt';
 import { PWAInstallPrompt } from '@/components/common/PWAInstallPrompt';
 import { OfflineIndicator } from '@/components/common/OfflineIndicator';
@@ -32,12 +32,12 @@ const SheetMusic = lazy(() => import('@/pages/SheetMusic'));
 const AdminManagement = lazy(() => import('@/pages/AdminManagement'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 
-// ULTRA-AGGRESSIVE: Cache otimizado para máxima performance
+// ULTRA-AGGRESSIVE: Cache otimizado para máxima performance (30 dias)
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 30 * 60 * 1000, // 30 minutos - dados considerados frescos
-      gcTime: 60 * 60 * 1000, // 60 minutos - mantém em memória
+      staleTime: 7 * 24 * 60 * 60 * 1000, // 7 dias - dados considerados frescos
+      gcTime: 30 * 24 * 60 * 60 * 1000, // 30 dias - mantém em memória
       retry: (failureCount, error: any) => {
         if (error?.message?.includes('4')) return false;
         return failureCount < 1; // Apenas 1 retry
@@ -51,17 +51,6 @@ const queryClient = new QueryClient({
     },
   },
 });
-
-// Loading fallback component
-function PageLoader() {
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="w-full max-w-6xl p-6">
-        <StatsSkeleton />
-      </div>
-    </div>
-  );
-}
 
 function App() {
   return (
@@ -77,7 +66,7 @@ function App() {
                 <GlobalErrorToast />
                 <PerformanceMonitor />
                 
-                <Suspense fallback={<PageLoader />}>
+                <Suspense fallback={<GlobalPageLoader />}>
                   <Routes>
                     <Route path="/auth" element={<Auth />} />
                     
