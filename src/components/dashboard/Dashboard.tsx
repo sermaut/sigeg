@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { StatsCard } from "./StatsCard.memo";
 import { RecentGroups } from "./OptimizedDashboard";
 import { DashboardCharts } from "./DashboardCharts";
@@ -6,7 +8,7 @@ import { FinancialSummaryWidget } from "./FinancialSummaryWidget";
 import { Button } from "@/components/ui/button";
 import { Users, Building, UserPlus, Activity, Plus } from "@/lib/icons";
 import { PermissionGuard } from '@/components/common/PermissionGuard';
-import { useDashboardStats, useRecentGroups } from '@/hooks/useOptimizedQueries';
+import { useDashboardStats, useRecentGroups, useDashboardCharts, useFinancialSummary } from '@/hooks/useOptimizedQueries';
 import { Skeleton } from "@/components/ui/skeleton";
 import sigegLogo from "@/assets/sigeg-logo.png";
 
@@ -26,10 +28,28 @@ function StatsCardSkeleton() {
 
 export function Dashboard() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   
-  // Use React Query hooks for optimized data fetching
+  // Prefetch all dashboard data in parallel on mount
+  useEffect(() => {
+    // Prefetch charts and financial data while stats loads
+    queryClient.prefetchQuery({
+      queryKey: ['dashboard', 'charts'],
+      staleTime: 30 * 60 * 1000,
+    });
+    queryClient.prefetchQuery({
+      queryKey: ['dashboard', 'financialSummary'],
+      staleTime: 10 * 60 * 1000,
+    });
+  }, [queryClient]);
+  
+  // Use React Query hooks for optimized data fetching - all run in parallel
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
   const { data: groups = [], isLoading: groupsLoading } = useRecentGroups(5);
+  
+  // Pre-warm charts and financial hooks (they'll use cached data from prefetch)
+  useDashboardCharts();
+  useFinancialSummary();
 
   const loading = statsLoading && !stats;
 

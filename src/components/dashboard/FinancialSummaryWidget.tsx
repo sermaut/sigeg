@@ -1,84 +1,25 @@
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingDown, TrendingUp, AlertTriangle } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-
-interface FinancialSummary {
-  totalBalance: number;
-  monthlyRevenue: number;
-  monthlyExpenses: number;
-  negativeCategories: Array<{
-    id: string;
-    name: string;
-    balance: number;
-    groupName: string;
-  }>;
-}
+import { useFinancialSummary } from "@/hooks/useOptimizedQueries";
+import { useMemo } from "react";
 
 export function FinancialSummaryWidget() {
-  const [summary, setSummary] = useState<FinancialSummary | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: summary, isLoading } = useFinancialSummary();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    loadFinancialSummary();
-  }, []);
+  const chartData = useMemo(() => {
+    if (!summary) return [];
+    return [
+      { name: 'Receitas', value: summary.monthlyRevenue },
+      { name: 'Despesas', value: summary.monthlyExpenses }
+    ];
+  }, [summary]);
 
-  const loadFinancialSummary = async () => {
-    try {
-      // Get all categories for total balance
-      const { data: categories } = await supabase
-        .from('financial_categories')
-        .select('total_balance, id, name, groups(name)');
-
-      const totalBalance = categories?.reduce((sum, cat) => sum + Number(cat.total_balance), 0) || 0;
-
-      // Get current month transactions
-      const startOfMonth = new Date();
-      startOfMonth.setDate(1);
-      startOfMonth.setHours(0, 0, 0, 0);
-
-      const { data: transactions } = await supabase
-        .from('financial_transactions')
-        .select('amount, type')
-        .gte('created_at', startOfMonth.toISOString());
-
-      const monthlyRevenue = transactions?.filter(t => t.type === 'entrada')
-        .reduce((sum, t) => sum + Number(t.amount), 0) || 0;
-      
-      const monthlyExpenses = transactions?.filter(t => t.type === 'saida')
-        .reduce((sum, t) => sum + Number(t.amount), 0) || 0;
-
-      // Get negative categories
-      const negativeCategories = categories
-        ?.filter(cat => Number(cat.total_balance) < 0)
-        .sort((a, b) => Number(a.total_balance) - Number(b.total_balance))
-        .slice(0, 5)
-        .map(cat => ({
-          id: cat.id,
-          name: cat.name,
-          balance: Number(cat.total_balance),
-          groupName: (cat.groups as any)?.name || 'N/A'
-        })) || [];
-
-      setSummary({
-        totalBalance,
-        monthlyRevenue,
-        monthlyExpenses,
-        negativeCategories
-      });
-    } catch (error) {
-      console.error('Erro ao carregar resumo financeiro:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[1, 2, 3].map(i => (
@@ -92,11 +33,6 @@ export function FinancialSummaryWidget() {
   }
 
   if (!summary) return null;
-
-  const chartData = [
-    { name: 'Receitas', value: summary.monthlyRevenue },
-    { name: 'Despesas', value: summary.monthlyExpenses }
-  ];
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -137,7 +73,7 @@ export function FinancialSummaryWidget() {
       </Card>
 
       {/* Negative Categories Alert */}
-      {summary.negativeCategories.length > 0 && (
+      {summary.negativeCategories && summary.negativeCategories.length > 0 && (
         <Card className="md:col-span-3 border-destructive/50 bg-destructive/5">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-destructive">
