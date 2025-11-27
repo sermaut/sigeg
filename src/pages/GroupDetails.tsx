@@ -100,22 +100,9 @@ export default function GroupDetails() {
 
   const loading = groupLoading || membersLoading;
 
-  // Try to load from localStorage cache first for instant display
-  const getCachedData = (key: string) => {
-    try {
-      const cached = localStorage.getItem(`cache_${key}`);
-      if (cached) {
-        const { data, timestamp } = JSON.parse(cached);
-        if (Date.now() - timestamp < 30 * 60 * 1000) return data;
-      }
-    } catch {}
-    return null;
-  };
-
-  const cachedGroup = getCachedData(`group_${id}`);
-  const cachedMembers = getCachedData(`members_${id}`);
-  const displayGroup = group || cachedGroup;
-  const displayMembers = members.length > 0 ? members : (cachedMembers || []);
+  // React Query handles caching automatically - no need for manual localStorage cache
+  const displayGroup = group;
+  const displayMembers = members;
 
   // Obter ID do membro atual se for membro
   const currentMemberId = isMember() && user?.type === 'member' ? (user.data as any).id : undefined;
@@ -222,13 +209,7 @@ export default function GroupDetails() {
     );
   }
 
-  // Cache data for instant subsequent loads
-  if (group && !loading) {
-    localStorage.setItem(`cache_group_${id}`, JSON.stringify({ data: group, timestamp: Date.now() }));
-  }
-  if (members.length > 0 && !loading) {
-    localStorage.setItem(`cache_members_${id}`, JSON.stringify({ data: members, timestamp: Date.now() }));
-  }
+  // React Query handles caching automatically with staleTime/gcTime
 
   return (
     <MainLayout>

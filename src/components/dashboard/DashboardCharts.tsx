@@ -1,25 +1,10 @@
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer 
 } from "recharts";
-
-interface MemberGrowthData {
-  month: string;
-  members: number;
-}
-
-interface PartitionData {
-  name: string;
-  value: number;
-}
-
-interface TopGroupData {
-  name: string;
-  members: number;
-}
+import { useDashboardCharts } from "@/hooks/useOptimizedQueries";
 
 const PARTITION_COLORS = {
   "Soprano": "hsl(var(--primary))",
@@ -30,92 +15,17 @@ const PARTITION_COLORS = {
 };
 
 export function DashboardCharts() {
-  const [memberGrowth, setMemberGrowth] = useState<MemberGrowthData[]>([]);
-  const [partitionData, setPartitionData] = useState<PartitionData[]>([]);
-  const [topGroups, setTopGroups] = useState<TopGroupData[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: chartsData, isLoading } = useDashboardCharts();
 
-  useEffect(() => {
-    loadChartsData();
-  }, []);
-
-  async function loadChartsData() {
-    try {
-      setLoading(true);
-
-      // Fetch members data
-      const { data: members } = await supabase
-        .from('members')
-        .select('created_at, partition, group_id, groups(name)')
-        .eq('is_active', true);
-
-      if (members) {
-        // Calculate member growth (last 6 months)
-        const growthMap = new Map<string, number>();
-        const now = new Date();
-        
-        for (let i = 5; i >= 0; i--) {
-          const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-          const monthKey = date.toLocaleDateString('pt-AO', { month: 'short', year: '2-digit' });
-          growthMap.set(monthKey, 0);
-        }
-
-        members.forEach(member => {
-          const createdDate = new Date(member.created_at);
-          const monthKey = createdDate.toLocaleDateString('pt-AO', { month: 'short', year: '2-digit' });
-          if (growthMap.has(monthKey)) {
-            growthMap.set(monthKey, (growthMap.get(monthKey) || 0) + 1);
-          }
-        });
-
-        const growthData: MemberGrowthData[] = [];
-        let cumulative = 0;
-        growthMap.forEach((count, month) => {
-          cumulative += count;
-          growthData.push({ month, members: cumulative });
-        });
-        setMemberGrowth(growthData);
-
-        // Calculate partition distribution
-        const partitionMap = new Map<string, number>();
-        members.forEach(member => {
-          if (member.partition) {
-            const partition = member.partition.charAt(0).toUpperCase() + member.partition.slice(1).toLowerCase();
-            partitionMap.set(partition, (partitionMap.get(partition) || 0) + 1);
-          }
-        });
-
-        const partitions: PartitionData[] = Array.from(partitionMap.entries())
-          .map(([name, value]) => ({ name, value }))
-          .sort((a, b) => b.value - a.value);
-        setPartitionData(partitions);
-
-        // Calculate top groups by member count
-        const groupMap = new Map<string, number>();
-        members.forEach(member => {
-          if (member.groups && typeof member.groups === 'object' && 'name' in member.groups) {
-            const groupName = (member.groups as { name: string }).name;
-            groupMap.set(groupName, (groupMap.get(groupName) || 0) + 1);
-          }
-        });
-
-        const topGroupsData: TopGroupData[] = Array.from(groupMap.entries())
-          .map(([name, members]) => ({ 
-            name: name.length > 20 ? name.substring(0, 20) + '...' : name, 
-            members 
-          }))
-          .sort((a, b) => b.members - a.members)
-          .slice(0, 5);
-        setTopGroups(topGroupsData);
-      }
-    } catch (error) {
-      console.error('Error loading charts data:', error);
-    } finally {
-      setLoading(false);
+  // Memoize processed data
+  const { memberGrowth, partitionData, topGroups } = useMemo(() => {
+    if (!chartsData) {
+      return { memberGrowth: [], partitionData: [], topGroups: [] };
     }
-  }
+    return chartsData;
+  }, [chartsData]);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {[1, 2, 3].map((i) => (
