@@ -242,7 +242,7 @@ export const OptimizedMembersTable = memo(({
                 <td className="p-[5px] text-center text-sm text-muted-foreground border-r border-border/50">
                   {index + 1}
                 </td>
-              <td className="p-[1px] text-center border-r border-border/50">
+              <td className="p-[4px] text-center border-r border-border/50">
                 <Avatar 
                   className="w-[50px] h-[50px] mx-auto cursor-pointer hover:scale-110 hover:shadow-lg transition-all duration-300 rounded-full ring-1 ring-primary/40 hover:ring-primary/60"
                   onClick={() => {
