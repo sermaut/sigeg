@@ -1,6 +1,7 @@
 import { useQuery, UseQueryOptions } from '@tanstack/react-query';
 
-const CACHE_DURATION = 60 * 60 * 1000; // 60 minutos (1 hora) - cache otimizado para performance
+// ULTRA-AGGRESSIVE: 30 dias de cache para máxima performance
+const CACHE_DURATION = 30 * 24 * 60 * 60 * 1000; // 30 dias
 
 interface CachedData<T> {
   data: T;

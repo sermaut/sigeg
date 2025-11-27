@@ -19,8 +19,8 @@ export function useDashboardStats() {
         recentActivity: totalGroupsResult.count || 0
       };
     },
-    staleTime: 30 * 60 * 1000, // 30 minutes
-    gcTime: 60 * 60 * 1000, // 1 hour
+    staleTime: 7 * 24 * 60 * 60 * 1000, // 7 dias
+    gcTime: 30 * 24 * 60 * 60 * 1000, // 30 dias
   });
 }
 
@@ -38,8 +38,8 @@ export function useRecentGroups(limit = 5) {
       if (error) throw error;
       return data || [];
     },
-    staleTime: 30 * 60 * 1000,
-    gcTime: 60 * 60 * 1000,
+    staleTime: 7 * 24 * 60 * 60 * 1000, // 7 dias
+    gcTime: 30 * 24 * 60 * 60 * 1000, // 30 dias
   });
 }
 
@@ -58,7 +58,8 @@ export function useFinancialCategories(groupId: string) {
       return data || [];
     },
     enabled: !!groupId,
-    staleTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 7 * 24 * 60 * 60 * 1000, // 7 dias
+    gcTime: 30 * 24 * 60 * 60 * 1000, // 30 dias
   });
 }
 
@@ -97,7 +98,8 @@ export function useCategoryLeaders(groupId: string) {
       return leadersByCategory;
     },
     enabled: !!groupId,
-    staleTime: 10 * 60 * 1000,
+    staleTime: 7 * 24 * 60 * 60 * 1000, // 7 dias
+    gcTime: 30 * 24 * 60 * 60 * 1000, // 30 dias
   });
 }
 
@@ -118,7 +120,8 @@ export function useWeeklyPrograms(groupId: string) {
       return data || [];
     },
     enabled: !!groupId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 24 * 60 * 60 * 1000, // 1 dia
+    gcTime: 7 * 24 * 60 * 60 * 1000, // 7 dias
   });
 }
 
@@ -145,7 +148,8 @@ export function usePaymentEvents(groupId: string) {
       return data || [];
     },
     enabled: !!groupId,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 24 * 60 * 60 * 1000, // 1 dia
+    gcTime: 7 * 24 * 60 * 60 * 1000, // 7 dias
   });
 }
 
@@ -166,7 +170,7 @@ export function usePrefetchGroupDetails() {
         if (error) throw error;
         return data;
       },
-      staleTime: 30 * 60 * 1000,
+      staleTime: 7 * 24 * 60 * 60 * 1000, // 7 dias
     });
 
     // Prefetch members
@@ -181,7 +185,7 @@ export function usePrefetchGroupDetails() {
         if (error) throw error;
         return data;
       },
-      staleTime: 30 * 60 * 1000,
+      staleTime: 7 * 24 * 60 * 60 * 1000, // 7 dias
     });
   };
 
@@ -242,8 +246,8 @@ export function useFinancialSummary() {
         totalCategories: categories.length
       };
     },
-    staleTime: 10 * 60 * 1000,
-    gcTime: 30 * 60 * 1000,
+    staleTime: 7 * 24 * 60 * 60 * 1000, // 7 dias
+    gcTime: 30 * 24 * 60 * 60 * 1000, // 30 dias
   });
 }
 
@@ -319,7 +323,7 @@ export function useDashboardCharts() {
 
       return { memberGrowth, partitionData, topGroups };
     },
-    staleTime: 30 * 60 * 1000,
-    gcTime: 60 * 60 * 1000,
+    staleTime: 7 * 24 * 60 * 60 * 1000, // 7 dias
+    gcTime: 30 * 24 * 60 * 60 * 1000, // 30 dias
   });
 }

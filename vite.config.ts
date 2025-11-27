@@ -60,14 +60,14 @@ export default defineConfig(({ mode }) => ({
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
         runtimeCaching: [
           {
-            // ULTRA-AGGRESSIVE: StaleWhileRevalidate for instant Supabase responses
+            // ULTRA-AGGRESSIVE: CacheFirst for instant Supabase responses (7 dias)
             urlPattern: /^https:\/\/udgqabvondahhzqphyzb\.supabase\.co\/rest\/.*/i,
-            handler: 'StaleWhileRevalidate',
+            handler: 'CacheFirst',
             options: {
-              cacheName: 'supabase-api-v3',
+              cacheName: 'supabase-api-v4',
               expiration: {
-                maxEntries: 200,
-                maxAgeSeconds: 60 * 30, // 30 minutes
+                maxEntries: 500,
+                maxAgeSeconds: 60 * 60 * 24 * 7, // 7 dias
               },
               cacheableResponse: {
                 statuses: [0, 200],
