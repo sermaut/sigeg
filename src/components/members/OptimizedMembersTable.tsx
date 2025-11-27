@@ -244,7 +244,7 @@ export const OptimizedMembersTable = memo(({
                 </td>
               <td className="px-3 py-2 text-center border-r border-border/50">
                 <Avatar 
-                  className="w-12 h-12 mx-auto cursor-pointer hover:scale-110 hover:shadow-lg transition-all duration-300 rounded-full ring-[2.5px] ring-primary/40 hover:ring-primary/60 shadow-sm"
+                  className="w-12 h-12 mx-auto cursor-pointer hover:scale-110 hover:shadow-lg transition-all duration-300 rounded-full ring-1 ring-primary/40 hover:ring-primary/60 shadow-sm"
                   onClick={() => {
                     if (member.profile_image_url) {
                       const overlay = document.createElement('div');
@@ -266,8 +266,8 @@ export const OptimizedMembersTable = memo(({
                       const img = document.createElement('img');
                       img.src = member.profile_image_url;
                       img.style.cssText = `
-                        width: 280px;
-                        height: 280px;
+                        width: 390px;
+                        height: 390px;
                         object-fit: cover;
                         border-radius: 50%;
                         border: 4px solid rgba(255, 255, 255, 0.3);
