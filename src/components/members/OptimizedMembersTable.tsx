@@ -242,9 +242,9 @@ export const OptimizedMembersTable = memo(({
                 <td className="px-2 py-1.5 text-center text-sm text-muted-foreground border-r border-border/50">
                   {index + 1}
                 </td>
-              <td className="px-3 py-1.5 text-center border-r border-border/50">
+              <td className="px-3 py-2 text-center border-r border-border/50">
                 <Avatar 
-                  className="w-9 h-9 mx-auto cursor-pointer hover:scale-110 hover:shadow-lg transition-all duration-300 rounded-md border-2 border-border/50 hover:border-primary/50 shadow-sm"
+                  className="w-12 h-12 mx-auto cursor-pointer hover:scale-110 hover:shadow-lg transition-all duration-300 rounded-full ring-[2.5px] ring-primary/40 hover:ring-primary/60 shadow-sm"
                   onClick={() => {
                     if (member.profile_image_url) {
                       const overlay = document.createElement('div');
@@ -266,10 +266,11 @@ export const OptimizedMembersTable = memo(({
                       const img = document.createElement('img');
                       img.src = member.profile_image_url;
                       img.style.cssText = `
-                        max-width: 90%;
-                        max-height: 90%;
-                        object-fit: contain;
-                        border-radius: 8px;
+                        width: 280px;
+                        height: 280px;
+                        object-fit: cover;
+                        border-radius: 50%;
+                        border: 4px solid rgba(255, 255, 255, 0.3);
                         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
                         animation: zoomIn 0.3s ease-out;
                       `;
@@ -307,12 +308,15 @@ export const OptimizedMembersTable = memo(({
                         bottom: 30px;
                         left: 50%;
                         transform: translateX(-50%);
+                        width: 90%;
+                        max-width: 400px;
+                        text-align: center;
                         color: white;
-                        font-size: 18px;
-                        font-weight: 500;
-                        background: rgba(0, 0, 0, 0.5);
-                        padding: 10px 20px;
-                        border-radius: 20px;
+                        font-size: 20px;
+                        font-weight: 600;
+                        background: rgba(0, 0, 0, 0.6);
+                        padding: 12px 24px;
+                        border-radius: 24px;
                         backdrop-filter: blur(10px);
                       `;
                       
@@ -356,8 +360,8 @@ export const OptimizedMembersTable = memo(({
                     }
                   }}
                 >
-                  <AvatarImage src={member.profile_image_url} className="object-cover" />
-                  <AvatarFallback className="text-xs rounded-md bg-gradient-to-br from-primary/20 to-primary/10">
+                  <AvatarImage src={member.profile_image_url} className="object-cover rounded-full" />
+                  <AvatarFallback className="text-sm rounded-full bg-gradient-to-br from-cyan-500 to-teal-500 text-white font-semibold">
                     {member.name
                       .split(' ')
                       .map(n => n[0])
