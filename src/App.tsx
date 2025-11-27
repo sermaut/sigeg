@@ -13,7 +13,6 @@ import { GlobalPageLoader } from '@/components/common/GlobalPageLoader';
 import { PWAUpdatePrompt } from '@/components/common/PWAUpdatePrompt';
 import { PWAInstallPrompt } from '@/components/common/PWAInstallPrompt';
 import { OfflineIndicator } from '@/components/common/OfflineIndicator';
-import { useAutoCacheClear } from '@/hooks/useAutoCacheClear';
 import '@/i18n';
 
 // Lazy load pages for code splitting
@@ -53,17 +52,11 @@ const queryClient = new QueryClient({
   },
 });
 
-// Component that initializes auto cache clear (must be inside QueryClientProvider)
-function AutoCacheClearInitializer() {
-  useAutoCacheClear();
-  return null;
-}
 
 function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <AutoCacheClearInitializer />
         <TooltipProvider>
           <AuthProvider>
             <PWAUpdatePrompt />
