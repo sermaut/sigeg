@@ -108,7 +108,7 @@ export function useMembers(groupId?: string, limit?: number, fields?: string) {
       let query = supabase
         .from('members')
         .select(selectFields)
-        .order('created_at', { ascending: false });
+        .order('name', { ascending: true });
       
       if (groupId) {
         query = query.eq('group_id', groupId);
