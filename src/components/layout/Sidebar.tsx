@@ -6,14 +6,12 @@ import {
   Settings, 
   Music, 
   UserPlus, 
-  BarChart3,
   LogOut,
   X,
   Shield,
-  CreditCard,
   FileText,
   Briefcase,
-  BookOpen
+  MessageCircle
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -42,11 +40,10 @@ export function Sidebar({ className, isOpen, onOpenChange }: SidebarProps) {
   };
 
   const navigationItems = [
-    { icon: Home, label: "Dashboard", href: "/", show: true },
+    { icon: Home, label: "Página Inicial", href: "/", show: true },
     { icon: Users, label: "Grupos", href: "/groups", show: true },
     { icon: UserPlus, label: "Novo Membro", href: "/members/new", show: permissions.canAccessNewMember },
     { icon: Briefcase, label: "Serviços Musicais", href: "/services", show: true },
-    { icon: BookOpen, label: "Partituras", href: "/sheet-music", show: true },
     { 
       icon: FileText, 
       label: "Relatórios", 
@@ -71,6 +68,7 @@ export function Sidebar({ className, isOpen, onOpenChange }: SidebarProps) {
       restricted: !permissions.canAccessSettings,
       onClick: !permissions.canAccessSettings ? () => handleRestrictedClick("Configurações") : undefined
     },
+    { icon: MessageCircle, label: "Contacto", href: "/contact", show: true },
   ].filter(item => item.show);
 
   return (
@@ -92,11 +90,11 @@ export function Sidebar({ className, isOpen, onOpenChange }: SidebarProps) {
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-cyan-400/30 bg-cyan-900/40">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center">
-              <Music className="w-5 h-5 text-white" />
+            <div className="w-9 h-9 gradient-primary rounded-lg flex items-center justify-center">
+              <Music className="w-6 h-6 text-white" />
             </div>
             <div className="flex flex-col">
-              <span className="font-bold text-lg text-white">SIGEG</span>
+              <span className="font-bold text-xl text-white">SIGEG</span>
               <span className="text-xs text-cyan-100">Sistema de Gestão</span>
             </div>
           </div>
@@ -106,7 +104,7 @@ export function Sidebar({ className, isOpen, onOpenChange }: SidebarProps) {
             onClick={() => onOpenChange(false)}
             className="transition-smooth lg:hidden"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </Button>
         </div>
 
@@ -117,7 +115,7 @@ export function Sidebar({ className, isOpen, onOpenChange }: SidebarProps) {
               key={item.href}
               variant={location.pathname === item.href ? "secondary" : "ghost"}
               className={cn(
-                "w-full justify-start transition-smooth hover:bg-cyan-800/35 px-4 text-white border-l-4 border-transparent",
+                "w-full justify-start transition-smooth hover:bg-cyan-800/35 px-4 text-white border-l-4 border-transparent text-base",
                 location.pathname === item.href && "bg-cyan-700/50 border-l-4 border-cyan-400 text-white font-medium"
               )}
               onClick={() => {
@@ -129,8 +127,8 @@ export function Sidebar({ className, isOpen, onOpenChange }: SidebarProps) {
                 }
               }}
             >
-              <item.icon className="w-5 h-5 flex-shrink-0" />
-              <span className="ml-3">{item.label}</span>
+              <item.icon className="w-6 h-6 flex-shrink-0" />
+              <span className="ml-3 text-base">{item.label}</span>
             </Button>
           ))}
         </nav>
@@ -140,10 +138,10 @@ export function Sidebar({ className, isOpen, onOpenChange }: SidebarProps) {
           <Button
             variant="ghost"
             onClick={logout}
-            className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10 px-4"
+            className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10 px-4 text-base"
           >
-            <LogOut className="w-5 h-5 flex-shrink-0" />
-            <span className="ml-3">Sair</span>
+            <LogOut className="w-6 h-6 flex-shrink-0" />
+            <span className="ml-3 text-base">Sair</span>
           </Button>
         </div>
       </div>

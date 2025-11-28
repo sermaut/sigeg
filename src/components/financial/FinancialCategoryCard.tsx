@@ -260,17 +260,6 @@ export function FinancialCategoryCard({
           </div>
           
           <div className="space-y-3">
-            {/* Saldo da categoria */}
-            <div className="flex items-center justify-between p-3 bg-background/40 rounded-lg">
-              <span className="text-sm font-medium text-muted-foreground">Saldo Actual</span>
-              <span className={`text-xl font-bold ${getBalanceColor()}`}>
-                {balance.toLocaleString('pt-AO', { 
-                  style: 'currency', 
-                  currency: 'AOA' 
-                })}
-              </span>
-            </div>
-
             {/* Líderes ou mensagem sem cor de fundo */}
             {leaders.length > 0 ? (
               <div className="mt-3 pt-3 border-t border-current/20">

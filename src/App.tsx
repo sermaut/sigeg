@@ -30,6 +30,7 @@ const ServicesPage = lazy(() => import('@/components/services/ServicesPage'));
 const MonthlyPlans = lazy(() => import('@/pages/MonthlyPlans'));
 const SheetMusic = lazy(() => import('@/pages/SheetMusic'));
 const AdminManagement = lazy(() => import('@/pages/AdminManagement'));
+const Contact = lazy(() => import('@/pages/Contact'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 
 // ULTRA-AGGRESSIVE: Cache otimizado para máxima performance (30 dias)
@@ -194,6 +195,15 @@ function App() {
                       element={
                         <ProtectedRoute permission="manage_admins">
                           <AdminManagement />
+                        </ProtectedRoute>
+                      }
+                    />
+                    
+                    <Route
+                      path="/contact"
+                      element={
+                        <ProtectedRoute>
+                          <Contact />
                         </ProtectedRoute>
                       }
                     />

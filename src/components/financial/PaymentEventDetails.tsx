@@ -137,21 +137,16 @@ export function PaymentEventDetails({ event, groupId, onClose }: PaymentEventDet
   }
 
   return (
-    <Card className="w-full h-full flex flex-col max-w-none">
+    <Card className="w-full h-full flex flex-col max-w-none border-0 shadow-none">
       <CardHeader className="flex-shrink-0">
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Calendar className="h-4 w-4" />
-              {event.title}
-            </CardTitle>
-            <CardDescription className="mt-2">
-              Criado em {format(new Date(event.created_at), "dd/MM/yyyy")}
-            </CardDescription>
-          </div>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <X className="h-4 w-4" />
-          </Button>
+        <div>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Calendar className="h-4 w-4" />
+            {event.title}
+          </CardTitle>
+          <CardDescription className="mt-2">
+            Criado em {format(new Date(event.created_at), "dd/MM/yyyy")}
+          </CardDescription>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
