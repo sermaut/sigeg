@@ -11,6 +11,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { Wand2, Loader2 } from "lucide-react";
+import { generateUniqueGroupCode, isGroupCodeUnique } from "@/lib/codeGenerator";
 
 const groupSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
@@ -47,6 +49,7 @@ const provinces = [
 
 export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [isGeneratingCode, setIsGeneratingCode] = useState(false);
   const [groupMembers, setGroupMembers] = useState<Array<{ id: string; name: string }>>([]);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -111,9 +114,40 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
     }
   }
 
+  const handleGenerateGroupCode = async () => {
+    setIsGeneratingCode(true);
+    try {
+      const code = await generateUniqueGroupCode(groupId);
+      form.setValue("access_code", code);
+      toast({ title: "Código gerado com sucesso!" });
+    } catch (error) {
+      toast({
+        title: "Erro ao gerar código",
+        description: "Tente novamente",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingCode(false);
+    }
+  };
+
   const onSubmit = async (data: GroupFormData) => {
     setIsLoading(true);
     console.log("Form data being submitted:", data);
+
+    // Validar unicidade do código de acesso
+    if (data.access_code) {
+      const isUnique = await isGroupCodeUnique(data.access_code, groupId);
+      if (!isUnique) {
+        toast({
+          title: "Código já existe",
+          description: "Este código de acesso já está em uso. Gere um novo código ou digite outro.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+    }
     
     try {
       // Prepare data for database
@@ -560,9 +594,25 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Código de Acesso (Opcional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Digite o código de acesso" {...field} />
-                  </FormControl>
+                  <div className="flex gap-2">
+                    <FormControl>
+                      <Input placeholder="Ex: X7@MN5" {...field} className="flex-1" />
+                    </FormControl>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleGenerateGroupCode}
+                      disabled={isGeneratingCode}
+                      className="shrink-0"
+                    >
+                      {isGeneratingCode ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Wand2 className="w-4 h-4" />
+                      )}
+                      <span className="ml-2 hidden sm:inline">Gerar</span>
+                    </Button>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
