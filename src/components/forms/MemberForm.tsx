@@ -11,10 +11,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Camera, Upload } from "lucide-react";
+import { Camera, Upload, Wand2, Loader2 } from "lucide-react";
 import { ImageCropper } from "./ImageCropper";
 import { compressImage } from "@/lib/imageOptimization";
-
+import { generateUniqueMemberCode, isMemberCodeUnique } from "@/lib/codeGenerator";
 const memberSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
   group_id: z.string().min(1, "Grupo é obrigatório"),
@@ -71,6 +71,7 @@ interface MemberFormProps {
 
 export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSuccess }: MemberFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [isGeneratingCode, setIsGeneratingCode] = useState(false);
   const [profileImageUrl, setProfileImageUrl] = useState<string>("");
   const [tempImageUrl, setTempImageUrl] = useState<string>("");
   const [showCropper, setShowCropper] = useState(false);
@@ -185,6 +186,23 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
     setProfileImageUrl(croppedImage);
   };
 
+  const handleGenerateMemberCode = async () => {
+    setIsGeneratingCode(true);
+    try {
+      const code = await generateUniqueMemberCode(memberId);
+      form.setValue("member_code", code);
+      toast({ title: "Código gerado com sucesso!" });
+    } catch (error) {
+      toast({
+        title: "Erro ao gerar código",
+        description: "Tente novamente",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingCode(false);
+    }
+  };
+
   const onSubmit = async (data: MemberFormData) => {
     setIsLoading(true);
     
@@ -201,6 +219,19 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
       }
     }
 
+    // Validar unicidade do código de membro
+    if (data.member_code) {
+      const isUnique = await isMemberCodeUnique(data.member_code, memberId);
+      if (!isUnique) {
+        toast({
+          title: "Código já existe",
+          description: "Este código de membro já está em uso. Gere um novo código ou digite outro.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+    }
     try {
       const memberData = {
         ...data,
@@ -540,9 +571,25 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Código de Membro</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Digite o código de membro" {...field} />
-                  </FormControl>
+                  <div className="flex gap-2">
+                    <FormControl>
+                      <Input placeholder="Ex: AB3@K7" {...field} className="flex-1" />
+                    </FormControl>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleGenerateMemberCode}
+                      disabled={isGeneratingCode}
+                      className="shrink-0"
+                    >
+                      {isGeneratingCode ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Wand2 className="w-4 h-4" />
+                      )}
+                      <span className="ml-2 hidden sm:inline">Gerar</span>
+                    </Button>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
