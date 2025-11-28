@@ -73,27 +73,27 @@ export function CustomAudioPlayer({ audioUrl }: CustomAudioPlayerProps) {
   };
 
   return (
-    <div className="bg-gradient-to-br from-primary/5 via-primary/3 to-accent/5 rounded-xl p-4 border-2 border-primary/10 shadow-md">
+    <div className="bg-gradient-to-br from-primary/5 via-primary/3 to-accent/5 rounded-xl p-[5px] border-2 border-primary/10 shadow-md">
       <audio ref={audioRef} src={audioUrl} preload="metadata" />
       
-      {/* Controles principais */}
-      <div className="flex items-center gap-3 mb-3">
+      {/* Controles em linha única */}
+      <div className="flex items-center gap-2 px-2">
         {/* Botão Play/Pause */}
         <Button
           variant="default"
           size="icon"
           onClick={togglePlay}
-          className="h-10 w-10 rounded-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg"
+          className="h-9 w-9 rounded-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg flex-shrink-0"
         >
           {isPlaying ? (
-            <Pause className="w-5 h-5 fill-white" />
+            <Pause className="w-4 h-4 fill-white" />
           ) : (
-            <Play className="w-5 h-5 fill-white ml-0.5" />
+            <Play className="w-4 h-4 fill-white ml-0.5" />
           )}
         </Button>
 
         {/* Tempo atual */}
-        <span className="text-sm font-medium text-foreground min-w-[45px]">
+        <span className="text-xs font-medium text-foreground min-w-[35px]">
           {formatTime(currentTime)}
         </span>
 
@@ -108,19 +108,11 @@ export function CustomAudioPlayer({ audioUrl }: CustomAudioPlayerProps) {
           />
         </div>
 
-        {/* Duração total */}
-        <span className="text-sm text-muted-foreground min-w-[45px] text-right">
-          {formatTime(duration)}
-        </span>
-      </div>
-
-      {/* Controles secundários */}
-      <div className="flex items-center justify-end gap-2">
         {/* Velocidade de reprodução */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-2 border-primary/20">
-              <Settings className="w-3.5 h-3.5" />
+            <Button variant="outline" size="sm" className="gap-1 border-primary/20 h-8 px-2">
+              <Settings className="w-3 h-3" />
               <span className="text-xs font-medium">{playbackRate}x</span>
             </Button>
           </DropdownMenuTrigger>

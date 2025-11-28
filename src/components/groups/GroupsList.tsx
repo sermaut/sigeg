@@ -34,12 +34,14 @@ export function GroupsList() {
   const [groupToDelete, setGroupToDelete] = useState<string | null>(null);
   const permissions = usePermissions();
 
-
-  const filteredGroups = groups.filter(group =>
-    group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    group.municipality.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    group.province.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filtrar apenas grupos ativos para usuários não-admin e aplicar busca
+  const filteredGroups = groups
+    .filter(group => permissions.canAccessAdmins || group.is_active !== false)
+    .filter(group =>
+      group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      group.municipality.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      group.province.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
   // Prefetch group and members data on hover for instant navigation
   const handleGroupHover = useCallback((groupId: string) => {

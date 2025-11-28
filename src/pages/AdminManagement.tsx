@@ -8,17 +8,18 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Plus, Edit, Lock, Unlock, RefreshCw } from "lucide-react";
+import { Plus, Edit, Lock, Unlock, RefreshCw, Users, Shield, Power, PowerOff } from "lucide-react";
 
 interface SystemAdmin {
   id: string;
   name: string;
   email: string;
   access_code: string;
-  permission_level: string; // Allow any permission level from database
+  permission_level: string;
   is_active: boolean;
   last_login_at?: string;
   created_by_admin_id?: string;
@@ -27,10 +28,21 @@ interface SystemAdmin {
   created_at: string;
 }
 
+interface Group {
+  id: string;
+  name: string;
+  province: string;
+  municipality: string;
+  access_code: string;
+  is_active: boolean;
+  created_at: string;
+}
+
 export default function AdminManagement() {
   const { user, hasPermission } = useAuth();
   const { toast } = useToast();
   const [admins, setAdmins] = useState<SystemAdmin[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingAdmin, setEditingAdmin] = useState<SystemAdmin | null>(null);
@@ -56,6 +68,7 @@ export default function AdminManagement() {
 
   useEffect(() => {
     loadAdmins();
+    loadGroups();
   }, []);
 
   async function loadAdmins() {
@@ -76,6 +89,20 @@ export default function AdminManagement() {
       });
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function loadGroups() {
+    try {
+      const { data, error } = await supabase
+        .from('groups')
+        .select('id, name, province, municipality, access_code, is_active, created_at')
+        .order('name', { ascending: true });
+
+      if (error) throw error;
+      setGroups(data || []);
+    } catch (error) {
+      console.error('Erro ao carregar grupos:', error);
     }
   }
 
@@ -176,6 +203,39 @@ export default function AdminManagement() {
     }
   }
 
+  async function toggleGroupStatus(group: Group) {
+    try {
+      const { error } = await supabase
+        .from('groups')
+        .update({ is_active: !group.is_active })
+        .eq('id', group.id);
+
+      if (error) throw error;
+      
+      toast({ 
+        title: `Grupo ${group.is_active ? 'desativado' : 'ativado'} com sucesso!`,
+        description: group.is_active 
+          ? "O grupo não poderá mais ser acessado até ser ativado novamente."
+          : "O grupo agora pode ser acessado normalmente."
+      });
+
+      // Log audit action
+      await supabase.from('admin_audit_log').insert({
+        admin_id: user?.data?.id,
+        action: group.is_active ? 'DEACTIVATE_GROUP' : 'ACTIVATE_GROUP',
+        details: { group_id: group.id, group_name: group.name, previous_status: group.is_active }
+      });
+
+      loadGroups();
+    } catch (error) {
+      console.error('Erro ao alterar status do grupo:', error);
+      toast({
+        title: "Erro ao alterar status do grupo",
+        variant: "destructive",
+      });
+    }
+  }
+
   function resetForm() {
     setFormData({ name: "", email: "", permission_level: "admin_adjunto" });
     setEditingAdmin(null);
@@ -224,157 +284,242 @@ export default function AdminManagement() {
   return (
     <MainLayout>
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">
-              Gestão de Administradores
-            </h1>
-            <p className="text-muted-foreground">
-              Gerir códigos e permissões dos administradores do sistema
-            </p>
-          </div>
-
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={resetForm}>
-                <Plus className="w-4 h-4 mr-2" />
-                Novo Administrador
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>
-                  {editingAdmin ? "Editar Administrador" : "Novo Administrador"}
-                </DialogTitle>
-                <DialogDescription>
-                  {editingAdmin 
-                    ? "Atualize as informações do administrador."
-                    : "Crie um novo administrador do sistema. Um código de acesso será gerado automaticamente."
-                  }
-                </DialogDescription>
-              </DialogHeader>
-              
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="name">Nome</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="Nome completo"
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="email@exemplo.com"
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="permission_level">Nível de Permissão</Label>
-                  <Select value={formData.permission_level} onValueChange={(value) => setFormData({ ...formData, permission_level: value })}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="admin_supervisor">Administrador Supervisor</SelectItem>
-                      <SelectItem value="admin_adjunto">Administrador Adjunto</SelectItem>
-                      <SelectItem value="admin_principal">Administrador Principal</SelectItem>
-                      {user?.data && (user.data as any).permission_level === 'super_admin' && (
-                        <SelectItem value="super_admin">Super Administrador</SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button onClick={handleSubmit} disabled={!formData.name || !formData.email}>
-                  {editingAdmin ? "Atualizar" : "Criar"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+        <div>
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            Administração do Sistema
+          </h1>
+          <p className="text-muted-foreground">
+            Gerir administradores e grupos do sistema SIGEG
+          </p>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Administradores do Sistema</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Código de Acesso</TableHead>
-                  <TableHead>Nível</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Último Acesso</TableHead>
-                  <TableHead>Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {admins.map((admin) => (
-                  <TableRow key={admin.id}>
-                    <TableCell className="font-medium">{admin.name}</TableCell>
-                    <TableCell>{admin.email}</TableCell>
-                    <TableCell>
-                      <code className="bg-muted px-2 py-1 rounded text-sm">
-                        {admin.access_code}
-                      </code>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getPermissionLevelColor(admin.permission_level)}>
-                        {getPermissionLevelLabel(admin.permission_level)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={admin.is_active ? "default" : "secondary"}>
-                        {admin.is_active ? "Ativo" : "Inativo"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {admin.last_login_at 
-                        ? new Date(admin.last_login_at).toLocaleDateString('pt-AO')
-                        : "Nunca"
+        <Tabs defaultValue="admins" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 max-w-md">
+            <TabsTrigger value="admins" className="flex items-center gap-2">
+              <Shield className="w-4 h-4" />
+              Administradores
+            </TabsTrigger>
+            <TabsTrigger value="groups" className="flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              Grupos
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Tab: Administradores */}
+          <TabsContent value="admins" className="space-y-4">
+            <div className="flex justify-end">
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button onClick={resetForm}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Novo Administrador
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>
+                      {editingAdmin ? "Editar Administrador" : "Novo Administrador"}
+                    </DialogTitle>
+                    <DialogDescription>
+                      {editingAdmin 
+                        ? "Atualize as informações do administrador."
+                        : "Crie um novo administrador do sistema. Um código de acesso será gerado automaticamente."
                       }
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openEditDialog(admin)}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        {admin.permission_level !== 'super_admin' && (
+                    </DialogDescription>
+                  </DialogHeader>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="name">Nome</Label>
+                      <Input
+                        id="name"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        placeholder="Nome completo"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        placeholder="email@exemplo.com"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="permission_level">Nível de Permissão</Label>
+                      <Select value={formData.permission_level} onValueChange={(value) => setFormData({ ...formData, permission_level: value })}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="admin_supervisor">Administrador Supervisor</SelectItem>
+                          <SelectItem value="admin_adjunto">Administrador Adjunto</SelectItem>
+                          <SelectItem value="admin_principal">Administrador Principal</SelectItem>
+                          {user?.data && (user.data as any).permission_level === 'super_admin' && (
+                            <SelectItem value="super_admin">Super Administrador</SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                      Cancelar
+                    </Button>
+                    <Button onClick={handleSubmit} disabled={!formData.name || !formData.email}>
+                      {editingAdmin ? "Atualizar" : "Criar"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Administradores do Sistema</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nome</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Código de Acesso</TableHead>
+                      <TableHead>Nível</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Último Acesso</TableHead>
+                      <TableHead>Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {admins.map((admin) => (
+                      <TableRow key={admin.id}>
+                        <TableCell className="font-medium">{admin.name}</TableCell>
+                        <TableCell>{admin.email}</TableCell>
+                        <TableCell>
+                          <code className="bg-muted px-2 py-1 rounded text-sm">
+                            {admin.access_code}
+                          </code>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={getPermissionLevelColor(admin.permission_level)}>
+                            {getPermissionLevelLabel(admin.permission_level)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={admin.is_active ? "default" : "secondary"}>
+                            {admin.is_active ? "Ativo" : "Inativo"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {admin.last_login_at 
+                            ? new Date(admin.last_login_at).toLocaleDateString('pt-AO')
+                            : "Nunca"
+                          }
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openEditDialog(admin)}
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            {admin.permission_level !== 'super_admin' && (
+                              <Button
+                                variant={admin.is_active ? "destructive" : "default"}
+                                size="sm"
+                                onClick={() => toggleAdminStatus(admin)}
+                              >
+                                {admin.is_active ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tab: Grupos */}
+          <TabsContent value="groups" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="w-5 h-5" />
+                  Gestão de Grupos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nome do Grupo</TableHead>
+                      <TableHead>Província</TableHead>
+                      <TableHead>Município</TableHead>
+                      <TableHead>Código de Acesso</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Data de Criação</TableHead>
+                      <TableHead>Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {groups.map((group) => (
+                      <TableRow key={group.id} className={!group.is_active ? "opacity-60" : ""}>
+                        <TableCell className="font-medium">{group.name}</TableCell>
+                        <TableCell>{group.province}</TableCell>
+                        <TableCell>{group.municipality}</TableCell>
+                        <TableCell>
+                          <code className="bg-muted px-2 py-1 rounded text-sm">
+                            {group.access_code}
+                          </code>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={group.is_active ? "default" : "destructive"}>
+                            {group.is_active ? "Ativo" : "Desativado"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {new Date(group.created_at).toLocaleDateString('pt-AO')}
+                        </TableCell>
+                        <TableCell>
                           <Button
-                            variant={admin.is_active ? "destructive" : "default"}
+                            variant={group.is_active ? "destructive" : "default"}
                             size="sm"
-                            onClick={() => toggleAdminStatus(admin)}
+                            onClick={() => toggleGroupStatus(group)}
+                            className="flex items-center gap-2"
                           >
-                            {admin.is_active ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+                            {group.is_active ? (
+                              <>
+                                <PowerOff className="w-4 h-4" />
+                                Desativar
+                              </>
+                            ) : (
+                              <>
+                                <Power className="w-4 h-4" />
+                                Ativar
+                              </>
+                            )}
                           </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </MainLayout>
   );
