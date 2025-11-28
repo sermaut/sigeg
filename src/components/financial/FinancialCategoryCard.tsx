@@ -37,54 +37,63 @@ interface CategoryLeader {
   };
 }
 
+// Cores vibrantes e ativas para as categorias financeiras
 const categoryColors = [
   {
-    gradient: "from-blue-500 to-blue-600",
-    icon: "bg-blue-500/10 text-blue-600",
-    shadow: "hover:shadow-[0_0_20px_rgba(59,130,246,0.3)]",
-    border: "border-blue-500/20"
+    gradient: "from-blue-600 to-indigo-700",
+    bg: "bg-gradient-to-br from-blue-500/40 to-indigo-600/40",
+    icon: "bg-blue-500/30 text-blue-100",
+    shadow: "hover:shadow-[0_8px_30px_rgba(59,130,246,0.5)]",
+    border: "border-blue-400/40"
   },
   {
-    gradient: "from-emerald-500 to-emerald-600",
-    icon: "bg-emerald-500/10 text-emerald-600",
-    shadow: "hover:shadow-[0_0_20px_rgba(16,185,129,0.3)]",
-    border: "border-emerald-500/20"
+    gradient: "from-emerald-600 to-teal-700",
+    bg: "bg-gradient-to-br from-emerald-500/40 to-teal-600/40",
+    icon: "bg-emerald-500/30 text-emerald-100",
+    shadow: "hover:shadow-[0_8px_30px_rgba(16,185,129,0.5)]",
+    border: "border-emerald-400/40"
   },
   {
-    gradient: "from-amber-500 to-amber-600",
-    icon: "bg-amber-500/10 text-amber-600",
-    shadow: "hover:shadow-[0_0_20px_rgba(245,158,11,0.3)]",
-    border: "border-amber-500/20"
+    gradient: "from-amber-500 to-orange-600",
+    bg: "bg-gradient-to-br from-amber-500/40 to-orange-600/40",
+    icon: "bg-amber-500/30 text-amber-100",
+    shadow: "hover:shadow-[0_8px_30px_rgba(245,158,11,0.5)]",
+    border: "border-amber-400/40"
   },
   {
-    gradient: "from-purple-500 to-purple-600",
-    icon: "bg-purple-500/10 text-purple-600",
-    shadow: "hover:shadow-[0_0_20px_rgba(168,85,247,0.3)]",
-    border: "border-purple-500/20"
+    gradient: "from-violet-600 to-purple-700",
+    bg: "bg-gradient-to-br from-violet-500/40 to-purple-600/40",
+    icon: "bg-violet-500/30 text-violet-100",
+    shadow: "hover:shadow-[0_8px_30px_rgba(168,85,247,0.5)]",
+    border: "border-violet-400/40"
   },
   {
-    gradient: "from-rose-500 to-rose-600",
-    icon: "bg-rose-500/10 text-rose-600",
-    shadow: "hover:shadow-[0_0_20px_rgba(244,63,94,0.3)]",
-    border: "border-rose-500/20"
+    gradient: "from-rose-500 to-pink-600",
+    bg: "bg-gradient-to-br from-rose-500/40 to-pink-600/40",
+    icon: "bg-rose-500/30 text-rose-100",
+    shadow: "hover:shadow-[0_8px_30px_rgba(244,63,94,0.5)]",
+    border: "border-rose-400/40"
   },
   {
-    gradient: "from-orange-500 to-orange-600",
-    icon: "bg-orange-500/10 text-orange-600",
-    shadow: "hover:shadow-[0_0_20px_rgba(249,115,22,0.3)]",
-    border: "border-orange-500/20"
+    gradient: "from-orange-500 to-red-600",
+    bg: "bg-gradient-to-br from-orange-500/40 to-red-600/40",
+    icon: "bg-orange-500/30 text-orange-100",
+    shadow: "hover:shadow-[0_8px_30px_rgba(249,115,22,0.5)]",
+    border: "border-orange-400/40"
   },
   {
-    gradient: "from-pink-500 to-pink-600",
-    icon: "bg-pink-500/10 text-pink-600",
-    shadow: "hover:shadow-[0_0_20px_rgba(236,72,153,0.3)]",
-    border: "border-pink-500/20"
+    gradient: "from-pink-500 to-fuchsia-600",
+    bg: "bg-gradient-to-br from-pink-500/40 to-fuchsia-600/40",
+    icon: "bg-pink-500/30 text-pink-100",
+    shadow: "hover:shadow-[0_8px_30px_rgba(236,72,153,0.5)]",
+    border: "border-pink-400/40"
   },
   {
-    gradient: "from-cyan-500 to-cyan-600",
-    icon: "bg-cyan-500/10 text-cyan-600",
-    shadow: "hover:shadow-[0_0_20px_rgba(6,182,212,0.3)]",
-    border: "border-cyan-500/20"
+    gradient: "from-cyan-500 to-sky-600",
+    bg: "bg-gradient-to-br from-cyan-500/40 to-sky-600/40",
+    icon: "bg-cyan-500/30 text-cyan-100",
+    shadow: "hover:shadow-[0_8px_30px_rgba(6,182,212,0.5)]",
+    border: "border-cyan-400/40"
   },
 ];
 
@@ -207,12 +216,13 @@ export function FinancialCategoryCard({
       <Card 
         className={`group transition-all duration-500 border-2 ${colorScheme.border} 
                     backdrop-blur-sm relative overflow-hidden
-                    ${hasAccess ? 'cursor-pointer hover:-translate-y-2 hover:shadow-2xl ' + colorScheme.shadow : 'opacity-60 cursor-not-allowed'}`}
+                    ${hasAccess ? 'cursor-pointer hover:-translate-y-3 hover:shadow-2xl ' + colorScheme.shadow : 'opacity-50 cursor-not-allowed'}`}
         onClick={handleCardClick}
       >
+        {/* Fundo com gradiente vibrante */}
         <div className={`absolute inset-0 bg-gradient-to-br ${colorScheme.gradient} 
-                        ${!hasAccess ? 'opacity-10' : 'opacity-20 group-hover:opacity-30'} 
-                        transition-opacity`} />
+                        ${!hasAccess ? 'opacity-20' : 'opacity-40 group-hover:opacity-55'} 
+                        transition-all duration-500`} />
         
         <div className="relative p-6">
           <div className="flex items-start justify-between mb-4">
@@ -235,16 +245,18 @@ export function FinancialCategoryCard({
               </div>
             </div>
             
-            {/* Botão Gerir Líderes no canto superior direito */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleManageLeaders}
-              className="text-xs flex items-center gap-1 flex-shrink-0"
-            >
-              <Settings className="h-3 w-3" />
-              Gerir Líderes
-            </Button>
+            {/* Botão Gerir Líderes - apenas para líderes do grupo (Presidente, VP, Secretário) */}
+            {isGroupLeader && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleManageLeaders}
+                className="text-xs flex items-center gap-1 flex-shrink-0 hover:bg-white/20"
+              >
+                <Settings className="h-3 w-3" />
+                Gerir Líderes
+              </Button>
+            )}
           </div>
           
           <div className="space-y-3">

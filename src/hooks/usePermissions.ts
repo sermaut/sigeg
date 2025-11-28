@@ -27,6 +27,7 @@ export interface PermissionChecks {
   canToggleMemberStatus: boolean;
   canViewMemberPhone: boolean;
   canViewMemberCode: boolean;
+  canViewMemberBirthDate: boolean;
   
   // Financial - Registros
   canAccessCategoryModal: boolean;
@@ -75,6 +76,7 @@ export function usePermissions(): PermissionChecks {
       canToggleMemberStatus: true,
       canViewMemberPhone: true,
       canViewMemberCode: true,
+      canViewMemberBirthDate: true,
       canAccessCategoryModal: true,
       canAddTransaction: true,
       canDeleteTransaction: true,
@@ -113,6 +115,7 @@ export function usePermissions(): PermissionChecks {
       canToggleMemberStatus: false,
       canViewMemberPhone: false,
       canViewMemberCode: false,
+      canViewMemberBirthDate: false,
       canAccessCategoryModal: false,
       canAddTransaction: false,
       canDeleteTransaction: false,
@@ -154,6 +157,7 @@ export function usePermissions(): PermissionChecks {
       canToggleMemberStatus: true,
       canViewMemberPhone: true,
       canViewMemberCode: true,
+      canViewMemberBirthDate: true,
       canAccessCategoryModal: true,
       canAddTransaction: true,
       canDeleteTransaction: true,
@@ -192,6 +196,7 @@ export function usePermissions(): PermissionChecks {
       canToggleMemberStatus: false,
       canViewMemberPhone: false,
       canViewMemberCode: false,
+      canViewMemberBirthDate: true,
       canAccessCategoryModal: false,
       canAddTransaction: false,
       canDeleteTransaction: false,
@@ -230,6 +235,7 @@ export function usePermissions(): PermissionChecks {
       canToggleMemberStatus: false,
       canViewMemberPhone: true,
       canViewMemberCode: false,
+      canViewMemberBirthDate: true,
       canAccessCategoryModal: false,
       canAddTransaction: false,
       canDeleteTransaction: false,
@@ -268,6 +274,7 @@ export function usePermissions(): PermissionChecks {
       canToggleMemberStatus: false,
       canViewMemberPhone: true,
       canViewMemberCode: false,
+      canViewMemberBirthDate: true,
       canAccessCategoryModal: false,
       canAddTransaction: false,
       canDeleteTransaction: false,
@@ -306,6 +313,7 @@ export function usePermissions(): PermissionChecks {
       canToggleMemberStatus: false,
       canViewMemberPhone: false,
       canViewMemberCode: false,
+      canViewMemberBirthDate: true,
       canAccessCategoryModal: false,
       canAddTransaction: false,
       canDeleteTransaction: false,
@@ -323,7 +331,7 @@ export function usePermissions(): PermissionChecks {
     };
   }
   
-  // Nível 6: Financeiro (Líder de Categoria)
+  // Nível 6: Financeiro (Líder de Categoria) - NÃO pode ver data de nascimento e telefone
   if (level === 6) {
     return {
       canAccessNewMember: false,
@@ -342,8 +350,9 @@ export function usePermissions(): PermissionChecks {
       canViewAccessCode: false,
       canEditMember: false,
       canToggleMemberStatus: false,
-      canViewMemberPhone: false,
+      canViewMemberPhone: false, // Não pode ver telefone
       canViewMemberCode: false,
+      canViewMemberBirthDate: false, // Não pode ver data de nascimento
       canAccessCategoryModal: true, // Só categoria onde é líder
       canAddTransaction: true, // Na sua categoria
       canDeleteTransaction: true, // Na sua categoria
@@ -361,7 +370,7 @@ export function usePermissions(): PermissionChecks {
     };
   }
   
-  // Nível 7: Membro Simples (sem permissões especiais)
+  // Nível 7: Membro Simples (sem permissões especiais) - NÃO pode ver data de nascimento e telefone
   return {
     canAccessNewMember: false,
     canAccessReports: false,
@@ -379,8 +388,9 @@ export function usePermissions(): PermissionChecks {
     canViewAccessCode: false,
     canEditMember: false,
     canToggleMemberStatus: false,
-    canViewMemberPhone: false,
+    canViewMemberPhone: false, // Não pode ver telefone
     canViewMemberCode: false,
+    canViewMemberBirthDate: false, // Não pode ver data de nascimento
     canAccessCategoryModal: false,
     canAddTransaction: false,
     canDeleteTransaction: false,

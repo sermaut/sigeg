@@ -226,7 +226,8 @@ export default function MemberDetails() {
     );
   }
 
-  if (!displayMember || !group) {
+  // Só mostrar "não encontrado" se já carregou e realmente não existe
+  if (!memberLoading && !displayMember) {
     return (
       <MainLayout>
         <div className="text-center py-12">
@@ -234,6 +235,17 @@ export default function MemberDetails() {
           <Button onClick={() => navigate('/groups')}>
             Voltar para Grupos
           </Button>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // Aguardar dados do grupo sem mostrar erro
+  if (!displayMember || (displayMember && !group && groupLoading)) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       </MainLayout>
     );
@@ -326,7 +338,7 @@ export default function MemberDetails() {
                 </h3>
                 
                 <div className="space-y-4">
-                  {member.birth_date && (
+                  {permissions.canViewMemberBirthDate && member.birth_date && (
                     <div className="flex items-center space-x-3">
                       <Calendar className="w-4 h-4 text-muted-foreground" />
                       <div>

@@ -21,6 +21,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { usePermissions } from "@/hooks/usePermissions";
 import { PermissionGuard } from "@/components/common/PermissionGuard";
+import { usePersistedTab } from "@/hooks/usePersistedTab";
 import { 
   Building, 
   MapPin, 
@@ -89,6 +90,9 @@ export default function GroupDetails() {
   const [refreshPrograms, setRefreshPrograms] = useState(0);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [memberToToggle, setMemberToToggle] = useState<{ id: string; isActive: boolean } | null>(null);
+
+  // Hook para persistir a aba selecionada
+  const { activeTab, changeTab } = usePersistedTab(id || '', 'info');
 
   // Use React Query hooks with cache - queries run in parallel
   const { data: group, isLoading: groupLoading, refetch: refetchGroup } = useGroup(id || '');
@@ -255,8 +259,8 @@ export default function GroupDetails() {
 
         {/* Stats Cards - removed as requested */}
 
-        {/* Tabs modernizadas */}
-        <Tabs defaultValue="info" className="flex-1">
+        {/* Tabs modernizadas com persistência */}
+        <Tabs value={activeTab} onValueChange={changeTab} className="flex-1">
           <TabsList className="grid w-full grid-cols-4 h-10 p-0.5 bg-gradient-to-r from-muted/60 to-muted/40 rounded-xl border-2 border-primary/15 shadow-sm backdrop-blur-sm">
             <TabsTrigger value="info"
                          className="rounded-lg data-[state=active]:gradient-primary 
