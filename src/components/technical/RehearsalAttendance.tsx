@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Calendar as CalendarIcon, Users, Save, Music, Crown, Shield, ChevronDown, Eye, Loader2 } from "lucide-react";
-import { format } from "date-fns";
+import { format, startOfMonth, endOfMonth, getWeek, startOfWeek, endOfWeek } from "date-fns";
 import { pt } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { useEffect } from "react";
 import { usePermissions } from "@/hooks/usePermissions";
 import { PermissionGuard } from "@/components/common/PermissionGuard";
+import { invalidateSpecificCache } from "@/lib/cacheUtils";
 
 interface Member {
   id: string;
@@ -38,6 +39,19 @@ interface RehearsalAttendanceProps {
   groupLeaders?: GroupLeaders;
 }
 
+interface DayRecord {
+  date: string;
+  membersByPartition: Record<string, { id: string; name: string }[]>;
+  totalCount: number;
+}
+
+interface WeekRecord {
+  weekNumber: number;
+  weekLabel: string;
+  days: DayRecord[];
+  totalCount: number;
+}
+
 export function RehearsalAttendance({ groupId, members, groupLeaders }: RehearsalAttendanceProps) {
   const [date, setDate] = useState<Date>();
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set());
@@ -46,6 +60,8 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
   const [showRecordsDialog, setShowRecordsDialog] = useState(false);
   const [monthlyRecords, setMonthlyRecords] = useState<any[]>([]);
   const [loadingRecords, setLoadingRecords] = useState(false);
+  const [expandedWeeks, setExpandedWeeks] = useState<Set<number>>(new Set());
+  const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
   const { toast } = useToast();
   const permissions = usePermissions();
 
@@ -153,7 +169,6 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
     try {
       const currentMonth = format(new Date(), 'yyyy-MM');
       
-      // 1. Buscar registros de presença sem JOIN para evitar problemas com RLS
       const { data: attendanceData, error: attendanceError } = await supabase
         .from('rehearsal_attendance')
         .select('*')
@@ -163,18 +178,15 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
 
       if (attendanceError) throw attendanceError;
       
-      // 2. Criar mapa de member_id -> member data usando os dados já disponíveis
       const memberMap = new Map(
         members.map(m => [m.id, { name: m.name, partition: m.partition }])
       );
       
-      // 3. Enriquecer dados de presença com informações dos membros
       const enrichedData = attendanceData.map(record => ({
         ...record,
         member: memberMap.get(record.member_id) || { name: 'Desconhecido', partition: null }
       }));
       
-      // 4. Agrupar por data
       const groupedByDate = enrichedData.reduce((acc: any, record: any) => {
         const dateKey = record.rehearsal_date;
         if (!acc[dateKey]) {
@@ -201,9 +213,103 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
     }
   };
 
+  // Process monthly records into weeks and days with partition grouping
+  const processedRecords = useMemo((): WeekRecord[] => {
+    if (monthlyRecords.length === 0) return [];
+
+    const weekMap = new Map<number, DayRecord[]>();
+
+    monthlyRecords.forEach((record) => {
+      const recordDate = new Date(record.date);
+      const weekNum = getWeek(recordDate, { locale: pt, weekStartsOn: 0 });
+      
+      // Group members by partition for this day
+      const membersByPart: Record<string, { id: string; name: string }[]> = {};
+      
+      record.records.forEach((r: any) => {
+        const partition = r.member?.partition || "Sem Partição";
+        if (!membersByPart[partition]) {
+          membersByPart[partition] = [];
+        }
+        membersByPart[partition].push({
+          id: r.member_id,
+          name: r.member?.name || 'Desconhecido'
+        });
+      });
+
+      // Sort members alphabetically within each partition
+      Object.keys(membersByPart).forEach(partition => {
+        membersByPart[partition].sort((a, b) => a.name.localeCompare(b.name));
+      });
+
+      const dayRecord: DayRecord = {
+        date: record.date,
+        membersByPartition: membersByPart,
+        totalCount: record.count
+      };
+
+      if (!weekMap.has(weekNum)) {
+        weekMap.set(weekNum, []);
+      }
+      weekMap.get(weekNum)!.push(dayRecord);
+    });
+
+    // Convert to array and sort
+    const weeks: WeekRecord[] = [];
+    weekMap.forEach((days, weekNum) => {
+      // Sort days within week (most recent first)
+      days.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      
+      const totalCount = days.reduce((sum, d) => sum + d.totalCount, 0);
+      
+      // Get week date range
+      const firstDayOfWeek = days[days.length - 1]?.date;
+      const lastDayOfWeek = days[0]?.date;
+      
+      const weekLabel = firstDayOfWeek && lastDayOfWeek
+        ? `Semana ${weekNum} (${format(new Date(firstDayOfWeek), 'dd')}-${format(new Date(lastDayOfWeek), 'dd MMM', { locale: pt })})`
+        : `Semana ${weekNum}`;
+
+      weeks.push({
+        weekNumber: weekNum,
+        weekLabel,
+        days,
+        totalCount
+      });
+    });
+
+    // Sort weeks (most recent first)
+    weeks.sort((a, b) => b.weekNumber - a.weekNumber);
+
+    return weeks;
+  }, [monthlyRecords]);
+
+  const toggleWeekExpansion = (weekNum: number) => {
+    const newExpanded = new Set(expandedWeeks);
+    if (newExpanded.has(weekNum)) {
+      newExpanded.delete(weekNum);
+    } else {
+      newExpanded.add(weekNum);
+    }
+    setExpandedWeeks(newExpanded);
+  };
+
+  const toggleDayExpansion = (date: string) => {
+    const newExpanded = new Set(expandedDays);
+    if (newExpanded.has(date)) {
+      newExpanded.delete(date);
+    } else {
+      newExpanded.add(date);
+    }
+    setExpandedDays(newExpanded);
+  };
+
   useEffect(() => {
     if (showRecordsDialog) {
       loadMonthlyRecords();
+      // Reset expansion state when dialog opens
+      setExpandedWeeks(new Set());
+      setExpandedDays(new Set());
     }
   }, [showRecordsDialog]);
 
@@ -243,6 +349,9 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
         .insert(attendanceRecords);
 
       if (error) throw error;
+
+      // Invalidate cache for instant update
+      invalidateSpecificCache([`rehearsal_${groupId}`]);
 
       toast({
         title: "Sucesso",
@@ -322,7 +431,7 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
               const isExpanded = expandedPartitions.has(partition);
               const partitionLeaders = getPartitionLeaders(partition);
 
-              // Ordenar membros: selecionados primeiro, depois por nome
+              // Sort members: selected first, then alphabetically
               const sortedMembers = [...partitionMembers].sort((a, b) => {
                 const aSelected = selectedMembers.has(a.id);
                 const bSelected = selectedMembers.has(b.id);
@@ -331,7 +440,6 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
                 return a.name.localeCompare(b.name);
               });
 
-              // Contar quantos membros estão selecionados nesta partição
               const selectedInPartition = partitionMembers.filter(m => selectedMembers.has(m.id)).length;
 
               return (
@@ -459,7 +567,7 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
         </CardContent>
       </Card>
 
-      {/* Dialog de Registros Mensais */}
+      {/* Dialog de Registros Mensais - Reorganized */}
       <Dialog open={showRecordsDialog} onOpenChange={setShowRecordsDialog}>
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
@@ -468,7 +576,7 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
               Registros de {format(new Date(), 'MMMM yyyy', { locale: pt })}
             </DialogTitle>
             <DialogDescription>
-              Visualize todos os registros de presença deste mês
+              Visualize todos os registros de presença deste mês, agrupados por semana e partição
             </DialogDescription>
           </DialogHeader>
           
@@ -476,39 +584,97 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
             <div className="text-center py-8">
               <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
             </div>
-          ) : monthlyRecords.length === 0 ? (
+          ) : processedRecords.length === 0 ? (
             <div className="text-center py-12">
               <Music className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
               <p className="text-muted-foreground">Nenhum registro encontrado neste mês</p>
             </div>
           ) : (
             <div className="space-y-4">
-              {monthlyRecords.map((record) => (
-                <Card key={record.date} className="border-primary/10">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-sm">
-                        {format(new Date(record.date), "dd 'de' MMMM 'de' yyyy", { locale: pt })}
-                      </CardTitle>
-                      <Badge variant="outline" className="border-primary/20">
-                        {record.count} {record.count === 1 ? 'presente' : 'presentes'}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                      {record.records.map((r: any) => (
-                        <div 
-                          key={r.id}
-                          className="flex items-center gap-2 p-2 bg-primary/5 rounded-lg text-sm"
-                        >
-                          <Users className="w-3 h-3 text-primary flex-shrink-0" />
-                          <span className="truncate">{r.member.name}</span>
+              {processedRecords.map((week) => (
+                <Collapsible
+                  key={week.weekNumber}
+                  open={expandedWeeks.has(week.weekNumber)}
+                  onOpenChange={() => toggleWeekExpansion(week.weekNumber)}
+                >
+                  <Card className="border-primary/10">
+                    <CollapsibleTrigger asChild>
+                      <CardHeader className="pb-3 cursor-pointer hover:bg-primary/5 transition-colors">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-sm flex items-center gap-2">
+                            <ChevronDown 
+                              className={`w-4 h-4 text-primary transition-transform ${expandedWeeks.has(week.weekNumber) ? 'rotate-180' : ''}`}
+                            />
+                            {week.weekLabel}
+                          </CardTitle>
+                          <Badge variant="outline" className="border-primary/20">
+                            {week.totalCount} {week.totalCount === 1 ? 'presença' : 'presenças'}
+                          </Badge>
                         </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+                      </CardHeader>
+                    </CollapsibleTrigger>
+                    
+                    <CollapsibleContent>
+                      <CardContent className="pt-0 space-y-3">
+                        {week.days.map((day) => (
+                          <Collapsible
+                            key={day.date}
+                            open={expandedDays.has(day.date)}
+                            onOpenChange={() => toggleDayExpansion(day.date)}
+                          >
+                            <Card className="border-border/50">
+                              <CollapsibleTrigger asChild>
+                                <CardHeader className="py-2 px-3 cursor-pointer hover:bg-muted/50 transition-colors">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2 text-sm font-medium">
+                                      <ChevronDown 
+                                        className={`w-3 h-3 text-muted-foreground transition-transform ${expandedDays.has(day.date) ? 'rotate-180' : ''}`}
+                                      />
+                                      {format(new Date(day.date), "dd 'de' MMMM", { locale: pt })}
+                                    </div>
+                                    <Badge variant="secondary" className="text-xs">
+                                      {day.totalCount} {day.totalCount === 1 ? 'presente' : 'presentes'}
+                                    </Badge>
+                                  </div>
+                                </CardHeader>
+                              </CollapsibleTrigger>
+                              
+                              <CollapsibleContent>
+                                <CardContent className="pt-0 pb-3 px-3">
+                                  <div className="space-y-2">
+                                    {partitionOrder
+                                      .filter(p => day.membersByPartition[p]?.length > 0)
+                                      .map((partition) => (
+                                        <div key={partition} className="flex flex-wrap items-center gap-2 p-2 bg-primary/5 rounded-lg">
+                                          <Badge variant="outline" className="border-primary/30 text-xs shrink-0">
+                                            {getPartitionLabel(partition)} ({day.membersByPartition[partition].length})
+                                          </Badge>
+                                          <span className="text-xs text-muted-foreground">
+                                            {day.membersByPartition[partition].map(m => m.name).join(', ')}
+                                          </span>
+                                        </div>
+                                      ))}
+                                    {/* Handle "Sem Partição" */}
+                                    {day.membersByPartition["Sem Partição"]?.length > 0 && (
+                                      <div className="flex flex-wrap items-center gap-2 p-2 bg-muted/50 rounded-lg">
+                                        <Badge variant="outline" className="border-muted-foreground/30 text-xs shrink-0">
+                                          Sem Partição ({day.membersByPartition["Sem Partição"].length})
+                                        </Badge>
+                                        <span className="text-xs text-muted-foreground">
+                                          {day.membersByPartition["Sem Partição"].map(m => m.name).join(', ')}
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </CardContent>
+                              </CollapsibleContent>
+                            </Card>
+                          </Collapsible>
+                        ))}
+                      </CardContent>
+                    </CollapsibleContent>
+                  </Card>
+                </Collapsible>
               ))}
             </div>
           )}

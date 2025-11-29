@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +12,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Plus, Edit, Lock, Unlock, RefreshCw, Users, Shield, Power, PowerOff } from "lucide-react";
+import { Plus, Edit, Lock, Unlock, Users, Shield, Power, PowerOff, Settings, Upload, Trash2, User, Loader2 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { compressImage } from "@/lib/imageOptimization";
 
 interface SystemAdmin {
   id: string;
@@ -38,6 +40,13 @@ interface Group {
   created_at: string;
 }
 
+interface CreatorInfo {
+  name: string;
+  whatsapp: string;
+  email: string;
+  photo_url: string | null;
+}
+
 export default function AdminManagement() {
   const { user, hasPermission } = useAuth();
   const { toast } = useToast();
@@ -51,6 +60,17 @@ export default function AdminManagement() {
     email: "",
     permission_level: "admin_adjunto",
   });
+
+  // Creator settings state
+  const [creatorInfo, setCreatorInfo] = useState<CreatorInfo>({
+    name: "Manuel Bemvindo Mendes",
+    whatsapp: "+244 927 800 658",
+    email: "manuelbmendes01@gmail.com",
+    photo_url: null,
+  });
+  const [savingCreator, setSavingCreator] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Check if user has permission to access this page
   if (!user || !hasPermission('manage_admins')) {
@@ -69,6 +89,7 @@ export default function AdminManagement() {
   useEffect(() => {
     loadAdmins();
     loadGroups();
+    loadCreatorInfo();
   }, []);
 
   async function loadAdmins() {
@@ -103,6 +124,23 @@ export default function AdminManagement() {
       setGroups(data || []);
     } catch (error) {
       console.error('Erro ao carregar grupos:', error);
+    }
+  }
+
+  async function loadCreatorInfo() {
+    try {
+      const { data, error } = await supabase
+        .from('system_settings')
+        .select('value')
+        .eq('key', 'creator_info')
+        .single();
+
+      if (error) throw error;
+      if (data?.value) {
+        setCreatorInfo(data.value as unknown as CreatorInfo);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar informações do criador:', error);
     }
   }
 
@@ -236,6 +274,136 @@ export default function AdminManagement() {
     }
   }
 
+  // Creator info functions
+  async function handlePhotoUpload(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      toast({
+        title: "Erro",
+        description: "Apenas imagens PNG, JPG ou WebP são permitidas",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploadingPhoto(true);
+
+    try {
+      // Compress image
+      const compressedFile = await compressImage(file, 512, 0.8);
+
+      // Delete old photo if exists
+      if (creatorInfo.photo_url) {
+        const oldPath = creatorInfo.photo_url.split('/').pop();
+        if (oldPath) {
+          await supabase.storage.from('member-photos').remove([`creator/${oldPath}`]);
+        }
+      }
+
+      // Upload new photo
+      const fileName = `creator_${Date.now()}.webp`;
+      const { error: uploadError } = await supabase.storage
+        .from('member-photos')
+        .upload(`creator/${fileName}`, compressedFile, {
+          cacheControl: '3600',
+          upsert: true
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('member-photos')
+        .getPublicUrl(`creator/${fileName}`);
+
+      const newPhotoUrl = urlData.publicUrl;
+
+      // Update creator info
+      const updatedInfo = { ...creatorInfo, photo_url: newPhotoUrl };
+      await saveCreatorInfo(updatedInfo);
+      setCreatorInfo(updatedInfo);
+
+      toast({
+        title: "Foto atualizada com sucesso!",
+      });
+    } catch (error) {
+      console.error('Erro ao fazer upload:', error);
+      toast({
+        title: "Erro ao fazer upload da foto",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingPhoto(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  }
+
+  async function handleRemovePhoto() {
+    if (!creatorInfo.photo_url) return;
+
+    setUploadingPhoto(true);
+    try {
+      // Delete photo from storage
+      const oldPath = creatorInfo.photo_url.split('/').pop();
+      if (oldPath) {
+        await supabase.storage.from('member-photos').remove([`creator/${oldPath}`]);
+      }
+
+      // Update creator info
+      const updatedInfo = { ...creatorInfo, photo_url: null };
+      await saveCreatorInfo(updatedInfo);
+      setCreatorInfo(updatedInfo);
+
+      toast({
+        title: "Foto removida com sucesso!",
+      });
+    } catch (error) {
+      console.error('Erro ao remover foto:', error);
+      toast({
+        title: "Erro ao remover foto",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingPhoto(false);
+    }
+  }
+
+  async function saveCreatorInfo(info: CreatorInfo) {
+    const { error } = await supabase
+      .from('system_settings')
+      .update({ 
+        value: JSON.parse(JSON.stringify(info)),
+        updated_at: new Date().toISOString(),
+        updated_by: user?.data?.id
+      })
+      .eq('key', 'creator_info');
+
+    if (error) throw error;
+  }
+
+  async function handleSaveCreatorInfo() {
+    setSavingCreator(true);
+    try {
+      await saveCreatorInfo(creatorInfo);
+      toast({
+        title: "Informações salvas com sucesso!",
+      });
+    } catch (error) {
+      console.error('Erro ao salvar informações:', error);
+      toast({
+        title: "Erro ao salvar informações",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingCreator(false);
+    }
+  }
+
   function resetForm() {
     setFormData({ name: "", email: "", permission_level: "admin_adjunto" });
     setEditingAdmin(null);
@@ -289,19 +457,23 @@ export default function AdminManagement() {
             Administração do Sistema
           </h1>
           <p className="text-muted-foreground">
-            Gerir administradores e grupos do sistema SIGEG
+            Gerir administradores, grupos e configurações do sistema SIGEG
           </p>
         </div>
 
         <Tabs defaultValue="admins" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 max-w-md">
+          <TabsList className="grid w-full grid-cols-3 max-w-lg">
             <TabsTrigger value="admins" className="flex items-center gap-2">
               <Shield className="w-4 h-4" />
-              Administradores
+              Admins
             </TabsTrigger>
             <TabsTrigger value="groups" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               Grupos
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="flex items-center gap-2">
+              <Settings className="w-4 h-4" />
+              Configurações
             </TabsTrigger>
           </TabsList>
 
@@ -516,6 +688,116 @@ export default function AdminManagement() {
                     ))}
                   </TableBody>
                 </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tab: Configurações */}
+          <TabsContent value="settings" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="w-5 h-5" />
+                  Informações do Criador do SIGEG
+                </CardTitle>
+                <CardDescription>
+                  Gerir foto e contactos exibidos na página de contacto
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Photo Section */}
+                <div className="flex flex-col items-center gap-4">
+                  <Avatar className="w-32 h-32 border-4 border-primary/20">
+                    {creatorInfo.photo_url ? (
+                      <AvatarImage src={creatorInfo.photo_url} alt={creatorInfo.name} />
+                    ) : null}
+                    <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white text-4xl">
+                      <User className="w-16 h-16" />
+                    </AvatarFallback>
+                  </Avatar>
+                  
+                  <div className="flex gap-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/png,image/jpeg,image/jpg,image/webp"
+                      className="hidden"
+                      onChange={handlePhotoUpload}
+                    />
+                    <Button
+                      variant="outline"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadingPhoto}
+                    >
+                      {uploadingPhoto ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Upload className="w-4 h-4 mr-2" />
+                      )}
+                      {creatorInfo.photo_url ? 'Substituir Foto' : 'Adicionar Foto'}
+                    </Button>
+                    
+                    {creatorInfo.photo_url && (
+                      <Button
+                        variant="destructive"
+                        onClick={handleRemovePhoto}
+                        disabled={uploadingPhoto}
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Remover
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Contact Info */}
+                <div className="grid gap-4 max-w-md mx-auto">
+                  <div className="space-y-2">
+                    <Label htmlFor="creator_name">Nome</Label>
+                    <Input
+                      id="creator_name"
+                      value={creatorInfo.name}
+                      onChange={(e) => setCreatorInfo({ ...creatorInfo, name: e.target.value })}
+                      placeholder="Nome completo"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="creator_whatsapp">WhatsApp</Label>
+                    <Input
+                      id="creator_whatsapp"
+                      value={creatorInfo.whatsapp}
+                      onChange={(e) => setCreatorInfo({ ...creatorInfo, whatsapp: e.target.value })}
+                      placeholder="+244 XXX XXX XXX"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="creator_email">Email</Label>
+                    <Input
+                      id="creator_email"
+                      type="email"
+                      value={creatorInfo.email}
+                      onChange={(e) => setCreatorInfo({ ...creatorInfo, email: e.target.value })}
+                      placeholder="email@exemplo.com"
+                    />
+                  </div>
+
+                  <Button
+                    onClick={handleSaveCreatorInfo}
+                    disabled={savingCreator}
+                    className="mt-4"
+                  >
+                    {savingCreator ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Salvando...
+                      </>
+                    ) : (
+                      'Salvar Alterações'
+                    )}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

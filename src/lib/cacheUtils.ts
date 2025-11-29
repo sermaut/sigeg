@@ -3,6 +3,39 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from '@/hooks/use-toast';
 
 /**
+ * Invalidate specific cache keys from localStorage
+ * Used for instant updates after write operations
+ */
+export function invalidateSpecificCache(keys: string[]): void {
+  const localStorageKeys = Object.keys(localStorage);
+  
+  keys.forEach(key => {
+    // Find and remove all cache keys that match the pattern
+    localStorageKeys.forEach(lsKey => {
+      if (lsKey.startsWith(`cache_${key}`) || lsKey === `cache_${key}`) {
+        localStorage.removeItem(lsKey);
+        console.log(`✅ Cache invalidated: ${lsKey}`);
+      }
+    });
+  });
+}
+
+/**
+ * Invalidate all caches related to a specific group
+ */
+export function invalidateGroupCache(groupId: string): void {
+  invalidateSpecificCache([
+    `members_${groupId}`,
+    `members`,
+    `members_count`,
+    `rehearsal_${groupId}`,
+    `programs_${groupId}`,
+    `financial_${groupId}`,
+    `groups`,
+  ]);
+}
+
+/**
  * Clears all application caches including:
  * - localStorage (cache_ prefixed items)
  * - sessionStorage

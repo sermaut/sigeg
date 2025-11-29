@@ -1,11 +1,62 @@
+import { useEffect, useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { MessageCircle, Mail, User, ExternalLink, Phone } from "lucide-react";
+import { MessageCircle, Mail, User, ExternalLink, Phone, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+interface CreatorInfo {
+  name: string;
+  whatsapp: string;
+  email: string;
+  photo_url: string | null;
+}
 
 export default function Contact() {
-  const whatsappLink = "https://wa.me/244927800658";
-  const emailLink = "mailto:manuelbmendes01@gmail.com";
+  const [creatorInfo, setCreatorInfo] = useState<CreatorInfo>({
+    name: "Manuel Bemvindo Mendes",
+    whatsapp: "+244 927 800 658",
+    email: "manuelbmendes01@gmail.com",
+    photo_url: null,
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadCreatorInfo();
+  }, []);
+
+  async function loadCreatorInfo() {
+    try {
+      const { data, error } = await supabase
+        .from('system_settings')
+        .select('value')
+        .eq('key', 'creator_info')
+        .single();
+
+      if (error) throw error;
+      if (data?.value) {
+        setCreatorInfo(data.value as unknown as CreatorInfo);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar informações:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const whatsappNumber = creatorInfo.whatsapp.replace(/\D/g, '');
+  const whatsappLink = `https://wa.me/${whatsappNumber}`;
+  const emailLink = `mailto:${creatorInfo.email}`;
+
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
@@ -21,10 +72,15 @@ export default function Contact() {
         {/* Creator Card */}
         <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-accent/5">
           <CardHeader className="text-center pb-2">
-            <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-4">
-              <User className="w-10 h-10 text-white" />
-            </div>
-            <CardTitle className="text-2xl">Manuel Bemvindo Mendes</CardTitle>
+            <Avatar className="w-24 h-24 mx-auto mb-4 border-4 border-primary/20">
+              {creatorInfo.photo_url ? (
+                <AvatarImage src={creatorInfo.photo_url} alt={creatorInfo.name} />
+              ) : null}
+              <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white text-2xl">
+                <User className="w-10 h-10" />
+              </AvatarFallback>
+            </Avatar>
+            <CardTitle className="text-2xl">{creatorInfo.name}</CardTitle>
             <CardDescription className="text-base">
               Criador e Desenvolvedor do SIGEG-BV
             </CardDescription>
@@ -46,7 +102,7 @@ export default function Contact() {
                     <p className="font-semibold text-foreground">WhatsApp</p>
                     <p className="text-sm text-muted-foreground flex items-center gap-1">
                       <Phone className="w-3 h-3" />
-                      +244 927 800 658
+                      {creatorInfo.whatsapp}
                     </p>
                   </div>
                   <ExternalLink className="w-5 h-5 text-muted-foreground group-hover:text-green-500 transition-colors" />
@@ -67,7 +123,7 @@ export default function Contact() {
                   <div className="flex-1">
                     <p className="font-semibold text-foreground">Email</p>
                     <p className="text-sm text-muted-foreground break-all">
-                      manuelbmendes01@gmail.com
+                      {creatorInfo.email}
                     </p>
                   </div>
                   <ExternalLink className="w-5 h-5 text-muted-foreground group-hover:text-blue-500 transition-colors" />
