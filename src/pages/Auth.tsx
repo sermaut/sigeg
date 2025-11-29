@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
-import { Music, Shield, Users, Loader2 } from 'lucide-react';
+import { Music, Shield, Users, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import sigegLogo from '@/assets/sigeg-logo-seal.png';
 
@@ -17,17 +17,18 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
+  // Password visibility states - hidden by default
+  const [showMemberCode, setShowMemberCode] = useState(false);
+  const [showGroupCode, setShowGroupCode] = useState(false);
+  const [showAdminCode, setShowAdminCode] = useState(false);
+  
   const { login, user } = useAuth();
   const { toast } = useToast();
   const location = useLocation();
   
   const from = location.state?.from?.pathname || '/';
 
-  useEffect(() => {
-    // Sessão persistente - não limpar ao montar
-  }, []);
-
-  // Redirect if already authenticated - sempre para Dashboard
+  // Redirect if already authenticated
   if (user) {
     return <Navigate to="/" replace />;
   }
@@ -38,7 +39,6 @@ export default function Auth() {
       return;
     }
 
-    // Normalizar código
     const normalizedCode = code.trim().toUpperCase();
     
     setLoading(true);
@@ -54,11 +54,10 @@ export default function Auth() {
     } else {
       setError(result.error || 'Erro ao fazer login');
       
-      // Sugerir limpar cache se for erro de verificação
-      if (result.error?.includes('verificar código')) {
+      if (result.error?.includes('Tempo esgotado')) {
         toast({
-          title: "Erro ao fazer login",
-          description: "Se o problema persistir, tente limpar o cache do navegador.",
+          title: "Conexão lenta",
+          description: "Verifique sua internet e tente novamente.",
           variant: "destructive",
         });
       }
@@ -70,14 +69,14 @@ export default function Auth() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-accent/10 
                     relative overflow-hidden flex items-center justify-center p-4">
-      {/* Elementos decorativos animados */}
+      {/* Decorative elements */}
       <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl 
                       animate-pulse" />
       <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/10 rounded-full blur-3xl 
                       animate-pulse" style={{ animationDelay: '1s' }} />
       
       <div className="relative w-full max-w-md space-y-8 z-10">
-        {/* Logo com animação de entrada */}
+        {/* Logo */}
         <div className="text-center space-y-4 animate-fade-in">
           <div className="relative w-24 h-24 mx-auto group">
             <div className="absolute inset-0 gradient-primary rounded-full blur-xl opacity-50 
@@ -96,10 +95,9 @@ export default function Auth() {
           </div>
         </div>
 
-        {/* Card de login com glass effect */}
+        {/* Login card */}
         <Card className="card-glass shadow-strong border-2 border-white/20 
                          animate-scale-in overflow-hidden">
-          {/* Brilho decorativo */}
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent 
                           via-primary to-transparent opacity-50" />
           
@@ -140,17 +138,32 @@ export default function Auth() {
                 </Alert>
               )}
 
+              {/* MEMBER TAB */}
               <TabsContent value="member" className="space-y-4">
-                <div className="space-y-2">
+                <div className="relative">
                   <Input
-                    type="text"
+                    type={showMemberCode ? "text" : "password"}
                     placeholder="Digite seu código de membro"
                     value={memberCode}
                     onChange={(e) => setMemberCode(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleLogin(memberCode, 'member')}
                     disabled={loading}
-                    className="input-modern h-12 text-base"
+                    className="input-modern h-12 text-base pr-12"
                   />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10 p-0 hover:bg-muted/50"
+                    onClick={() => setShowMemberCode(!showMemberCode)}
+                    tabIndex={-1}
+                  >
+                    {showMemberCode ? (
+                      <EyeOff className="h-5 w-5 text-muted-foreground" />
+                    ) : (
+                      <Eye className="h-5 w-5 text-muted-foreground" />
+                    )}
+                  </Button>
                 </div>
                 <Button
                   onClick={() => handleLogin(memberCode, 'member')}
@@ -160,34 +173,49 @@ export default function Auth() {
                   className="w-full"
                 >
                   {loading ? (
-                    <>
-                      <div className="flex items-center gap-1 mr-2">
-                        <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse-bounce" 
-                             style={{ animationDelay: "0s" }} />
-                        <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse-bounce" 
-                             style={{ animationDelay: "0.15s" }} />
-                        <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse-bounce" 
-                             style={{ animationDelay: "0.3s" }} />
-                      </div>
-                    </>
+                    <div className="flex items-center gap-1">
+                      <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse-bounce" 
+                           style={{ animationDelay: "0s" }} />
+                      <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse-bounce" 
+                           style={{ animationDelay: "0.15s" }} />
+                      <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse-bounce" 
+                           style={{ animationDelay: "0.3s" }} />
+                    </div>
                   ) : (
-                    <Users className="w-5 h-5 mr-2" />
+                    <>
+                      <Users className="w-5 h-5 mr-2" />
+                      Entrar como Membro
+                    </>
                   )}
-                  Entrar como Membro
                 </Button>
               </TabsContent>
 
+              {/* GROUP TAB */}
               <TabsContent value="group" className="space-y-4">
-                <div className="space-y-2">
+                <div className="relative">
                   <Input
-                    type="text"
+                    type={showGroupCode ? "text" : "password"}
                     placeholder="Digite o código do grupo (ex: ABCD-EF)"
                     value={groupCode}
                     onChange={(e) => setGroupCode(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleLogin(groupCode, 'group')}
                     disabled={loading}
-                    className="input-modern h-12 text-base"
+                    className="input-modern h-12 text-base pr-12"
                   />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10 p-0 hover:bg-muted/50"
+                    onClick={() => setShowGroupCode(!showGroupCode)}
+                    tabIndex={-1}
+                  >
+                    {showGroupCode ? (
+                      <EyeOff className="h-5 w-5 text-muted-foreground" />
+                    ) : (
+                      <Eye className="h-5 w-5 text-muted-foreground" />
+                    )}
+                  </Button>
                 </div>
                 <Button
                   onClick={() => handleLogin(groupCode, 'group')}
@@ -197,34 +225,49 @@ export default function Auth() {
                   className="w-full"
                 >
                   {loading ? (
-                    <>
-                      <div className="flex items-center gap-1 mr-2">
-                        <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse-bounce" 
-                             style={{ animationDelay: "0s" }} />
-                        <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse-bounce" 
-                             style={{ animationDelay: "0.15s" }} />
-                        <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse-bounce" 
-                             style={{ animationDelay: "0.3s" }} />
-                      </div>
-                    </>
+                    <div className="flex items-center gap-1">
+                      <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse-bounce" 
+                           style={{ animationDelay: "0s" }} />
+                      <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse-bounce" 
+                           style={{ animationDelay: "0.15s" }} />
+                      <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse-bounce" 
+                           style={{ animationDelay: "0.3s" }} />
+                    </div>
                   ) : (
-                    <Music className="w-5 h-5 mr-2" />
+                    <>
+                      <Music className="w-5 h-5 mr-2" />
+                      Entrar como Grupo
+                    </>
                   )}
-                  Entrar como Grupo
                 </Button>
               </TabsContent>
 
+              {/* ADMIN TAB */}
               <TabsContent value="admin" className="space-y-4">
-                <div className="space-y-2">
+                <div className="relative">
                   <Input
-                    type="text"
+                    type={showAdminCode ? "text" : "password"}
                     placeholder="Digite seu código de administrador"
                     value={adminCode}
                     onChange={(e) => setAdminCode(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleLogin(adminCode, 'admin')}
                     disabled={loading}
-                    className="input-modern h-12 text-base"
+                    className="input-modern h-12 text-base pr-12"
                   />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10 p-0 hover:bg-muted/50"
+                    onClick={() => setShowAdminCode(!showAdminCode)}
+                    tabIndex={-1}
+                  >
+                    {showAdminCode ? (
+                      <EyeOff className="h-5 w-5 text-muted-foreground" />
+                    ) : (
+                      <Eye className="h-5 w-5 text-muted-foreground" />
+                    )}
+                  </Button>
                 </div>
                 <Button
                   onClick={() => handleLogin(adminCode, 'admin')}
@@ -234,20 +277,20 @@ export default function Auth() {
                   className="w-full"
                 >
                   {loading ? (
-                    <>
-                      <div className="flex items-center gap-1 mr-2">
-                        <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse-bounce" 
-                             style={{ animationDelay: "0s" }} />
-                        <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse-bounce" 
-                             style={{ animationDelay: "0.15s" }} />
-                        <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse-bounce" 
-                             style={{ animationDelay: "0.3s" }} />
-                      </div>
-                    </>
+                    <div className="flex items-center gap-1">
+                      <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse-bounce" 
+                           style={{ animationDelay: "0s" }} />
+                      <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse-bounce" 
+                           style={{ animationDelay: "0.15s" }} />
+                      <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse-bounce" 
+                           style={{ animationDelay: "0.3s" }} />
+                    </div>
                   ) : (
-                    <Shield className="w-5 h-5 mr-2" />
+                    <>
+                      <Shield className="w-5 h-5 mr-2" />
+                      Entrar como Administrador
+                    </>
                   )}
-                  Entrar como Administrador
                 </Button>
               </TabsContent>
             </Tabs>

@@ -1,129 +1,86 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from '@/hooks/use-toast';
 
 /**
- * Invalidate specific cache keys from localStorage
- * Used for instant updates after write operations
- */
-export function invalidateSpecificCache(keys: string[]): void {
-  const localStorageKeys = Object.keys(localStorage);
-  
-  keys.forEach(key => {
-    // Find and remove all cache keys that match the pattern
-    localStorageKeys.forEach(lsKey => {
-      if (lsKey.startsWith(`cache_${key}`) || lsKey === `cache_${key}`) {
-        localStorage.removeItem(lsKey);
-        console.log(`✅ Cache invalidated: ${lsKey}`);
-      }
-    });
-  });
-}
-
-/**
- * Invalidate all caches related to a specific group
- */
-export function invalidateGroupCache(groupId: string): void {
-  invalidateSpecificCache([
-    `members_${groupId}`,
-    `members`,
-    `members_count`,
-    `rehearsal_${groupId}`,
-    `programs_${groupId}`,
-    `financial_${groupId}`,
-    `groups`,
-  ]);
-}
-
-/**
- * Clears all application caches including:
- * - localStorage (cache_ prefixed items)
+ * Clear all application caches including:
+ * - localStorage (cache_ prefixed items and sigeg items)
  * - sessionStorage
  * - Service Worker caches
- * - React Query cache
+ * - IndexedDB
  */
 export async function clearAllApplicationCache(reload: boolean = true): Promise<void> {
   try {
-    // Show starting toast
     toast({
-      title: "🔄 Iniciando limpeza...",
-      description: "Removendo caches da aplicação",
+      title: "🔄 Limpando cache...",
+      description: "Aguarde um momento",
       duration: 1500,
     });
 
-    // 1. Clear localStorage cache items
-    const localStorageKeys = Object.keys(localStorage);
-    const cacheKeysCleared = localStorageKeys.filter(key => key.startsWith('cache_'));
-    cacheKeysCleared.forEach(key => localStorage.removeItem(key));
-    console.log('✅ localStorage cache cleared:', cacheKeysCleared.length, 'items');
+    // 1. Clear localStorage (preserve sigeg_user)
+    const userBackup = localStorage.getItem('sigeg_user');
+    const keys = Object.keys(localStorage);
+    let clearedCount = 0;
+    keys.forEach(key => {
+      if (key.startsWith('cache_') || (key.startsWith('sigeg') && key !== 'sigeg_user')) {
+        localStorage.removeItem(key);
+        clearedCount++;
+      }
+    });
+    if (userBackup) {
+      localStorage.setItem('sigeg_user', userBackup);
+    }
 
     // 2. Clear sessionStorage
     sessionStorage.clear();
-    console.log('✅ sessionStorage cleared');
 
     // 3. Clear Service Worker caches
-    let swCachesCleared = 0;
     if ('caches' in window) {
       const cacheNames = await caches.keys();
-      await Promise.all(
-        cacheNames.map(cacheName => caches.delete(cacheName))
-      );
-      swCachesCleared = cacheNames.length;
-      console.log('✅ Service Worker caches cleared:', cacheNames);
+      await Promise.all(cacheNames.map(name => caches.delete(name)));
     }
 
-    // Show success toast with statistics
+    // 4. Clear IndexedDB
+    if ('indexedDB' in window && indexedDB.databases) {
+      const databases = await indexedDB.databases();
+      databases.forEach(db => {
+        if (db.name) indexedDB.deleteDatabase(db.name);
+      });
+    }
+
     toast({
-      title: "✨ Cache limpo com sucesso!",
-      description: `${cacheKeysCleared.length} itens removidos. ${reload ? 'Recarregando página...' : 'Cache atualizado.'}`,
+      title: "✨ Cache limpo!",
+      description: `${clearedCount} itens removidos`,
       duration: 2000,
     });
 
-    // 4. Reload page to fetch fresh data
     if (reload) {
-      setTimeout(() => {
-        window.location.reload();
-      }, 1200);
+      setTimeout(() => window.location.reload(), 800);
     }
-
-    return Promise.resolve();
   } catch (error) {
-    console.error('❌ Error clearing cache:', error);
-    toast({
-      title: "❌ Erro ao limpar cache",
-      description: "Ocorreu um erro. Tente novamente.",
-      variant: "destructive",
-      duration: 3000,
-    });
-    return Promise.reject(error);
+    console.error('Error clearing cache:', error);
+    if (reload) window.location.reload();
   }
 }
 
 /**
- * Hook-based cache clearer that also clears React Query cache
+ * Hook to clear all caches including React Query
  */
 export function useCacheClearer() {
   const queryClient = useQueryClient();
   const [isClearing, setIsClearing] = useState(false);
 
-  const clearCache = async () => {
-    if (isClearing) return; // Prevent multiple simultaneous clears
-    
+  const clearCache = useCallback(async () => {
+    if (isClearing) return;
     setIsClearing(true);
-    
     try {
-      // Clear React Query cache first
       queryClient.clear();
-      console.log('✅ React Query cache cleared');
-
-      // Then clear all other caches
       await clearAllApplicationCache(true);
     } catch (error) {
       console.error('Error clearing cache:', error);
       setIsClearing(false);
     }
-    // Note: setIsClearing(false) not needed if page reloads
-  };
+  }, [queryClient, isClearing]);
 
   return { clearCache, isClearing };
 }
