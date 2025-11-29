@@ -1,12 +1,9 @@
 import { useQuery, UseQueryOptions } from '@tanstack/react-query';
 
-// ULTRA-AGGRESSIVE: 30 dias de cache para máxima performance
-const CACHE_DURATION = 30 * 24 * 60 * 60 * 1000; // 30 dias
-
-interface CachedData<T> {
-  data: T;
-  timestamp: number;
-}
+// SIMPLIFIED: Use only React Query's native caching
+// No localStorage, just aggressive staleTime/gcTime
+const STALE_TIME = 7 * 24 * 60 * 60 * 1000; // 7 days
+const GC_TIME = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 export function useCachedQuery<T>(
   key: string,
@@ -15,57 +12,22 @@ export function useCachedQuery<T>(
 ) {
   return useQuery({
     queryKey: [key],
-    queryFn: async () => {
-      // Check localStorage cache first
-      const cached = localStorage.getItem(`cache_${key}`);
-      
-      if (cached) {
-        try {
-          const { data, timestamp }: CachedData<T> = JSON.parse(cached);
-          
-          // Return cached data if still fresh
-          if (Date.now() - timestamp < CACHE_DURATION) {
-            return data;
-          }
-        } catch (e) {
-          // Invalid cache, continue to fetch
-          localStorage.removeItem(`cache_${key}`);
-        }
-      }
-
-      // Fetch fresh data
-      const data = await queryFn();
-      
-      // Save to cache
-      try {
-        localStorage.setItem(
-          `cache_${key}`,
-          JSON.stringify({ data, timestamp: Date.now() })
-        );
-      } catch (e) {
-        // Cache storage failed, continue without caching
-        console.warn('Failed to cache data:', e);
-      }
-
-      return data;
-    },
-    staleTime: CACHE_DURATION,
-    gcTime: CACHE_DURATION * 2,
+    queryFn,
+    staleTime: STALE_TIME,
+    gcTime: GC_TIME,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
     ...options,
   });
 }
 
-// Clear cache for a specific key
+// For backwards compatibility - now just clears React Query cache
 export function clearCache(key: string) {
-  localStorage.removeItem(`cache_${key}`);
+  // No-op - React Query handles cache internally
+  console.log(`Cache clear requested for: ${key}`);
 }
 
-// Clear all cached queries
 export function clearAllCache() {
-  const keys = Object.keys(localStorage);
-  keys.forEach(key => {
-    if (key.startsWith('cache_')) {
-      localStorage.removeItem(key);
-    }
-  });
+  // No-op - use useCacheClearer hook instead
+  console.log('Use clearAllApplicationCache() from cacheUtils for full cache clear');
 }

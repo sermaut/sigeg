@@ -21,7 +21,7 @@ export interface Member {
   name: string;
   member_code: string;
   group_id: string;
-  role: string; // Aceita qualquer role do sistema
+  role: string;
   is_active: boolean;
   profile_image_url?: string;
 }
@@ -66,15 +66,18 @@ const ADMIN_PERMISSION_LEVELS: Record<string, number> = {
 };
 
 const PERMISSION_MAP: Record<number, string[]> = {
-  0: ['*'], // Admins - acesso total (manage_groups, manage_admins, etc)
-  1: ['manage_group_members', 'update_group_info', 'view_group_data', 'manage_finances', 'manage_technical', 'manage_groups'], // Dirigentes
-  2: ['view_group_data', 'manage_technical'], // Inspector/Coordenador
-  3: ['view_group_data', 'manage_technical'], // Dirigente Técnico
-  4: ['view_group_data'], // Chefe Partição/Categoria
-  5: ['view_group_data'], // Protocolo, etc
-  6: ['view_group_data', 'manage_category_finances'], // Financeiro (Líder Categoria)
-  7: ['view_group_data'], // Membro Simples
+  0: ['*'],
+  1: ['manage_group_members', 'update_group_info', 'view_group_data', 'manage_finances', 'manage_technical', 'manage_groups'],
+  2: ['view_group_data', 'manage_technical'],
+  3: ['view_group_data', 'manage_technical'],
+  4: ['view_group_data'],
+  5: ['view_group_data'],
+  6: ['view_group_data', 'manage_category_finances'],
+  7: ['view_group_data'],
 };
+
+// Timeout for login requests (8 seconds)
+const LOGIN_TIMEOUT = 8000;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -96,42 +99,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (code: string, type: 'admin' | 'member' | 'group') => {
     try {
       setLoading(true);
+      const normalizedCode = code.trim().toUpperCase();
+
+      // Create timeout promise
+      const timeoutPromise = new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error('TIMEOUT')), LOGIN_TIMEOUT)
+      );
 
       if (type === 'admin') {
-        // Normalizar o código
-        const normalizedCode = code.trim().toUpperCase();
-        
-        console.log('Tentando login de admin com código:', normalizedCode);
-        
-        const { data, error } = await supabase
+        const queryPromise = supabase
           .from('system_admins')
           .select('*')
           .eq('access_code', normalizedCode)
           .eq('is_active', true)
-          .maybeSingle();
+          .maybeSingle()
+          .then(res => res);
+
+        const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
 
         if (error) {
-          console.error('Admin login error:', error);
-          console.error('Error details:', JSON.stringify(error));
-          
-          // Verificar se é erro de conexão
-          if (error.message.includes('fetch') || error.message.includes('network')) {
-            return { success: false, error: 'Erro de conexão. Verifique sua internet e tente novamente.' };
+          if (error.message?.includes('fetch') || error.message?.includes('network')) {
+            return { success: false, error: 'Erro de conexão. Verifique sua internet.' };
           }
-          
-          return { success: false, error: 'Erro ao verificar código de administrador. Por favor, tente novamente.' };
+          return { success: false, error: 'Erro ao verificar código. Tente novamente.' };
         }
 
         if (!data) {
-          console.log('Nenhum admin encontrado com o código:', normalizedCode);
           return { success: false, error: 'Código de administrador inválido ou inativo' };
         }
-        
-        console.log('Admin encontrado:', data.name);
 
-        // Validate required fields
         if (!data.id || !data.name || !data.email || !data.permission_level) {
-          console.error('Invalid admin data structure:', data);
           return { success: false, error: 'Dados de administrador incompletos' };
         }
 
@@ -148,61 +145,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: true };
 
       } else if (type === 'member') {
-        // Normalizar o código de membro
-        const normalizedCode = code.trim().toUpperCase();
-        
-        console.log('Tentando login de membro com código:', normalizedCode);
-        
-        // OTIMIZAÇÃO: Buscar membro e grupo em paralelo
-        const [memberResult, groupResult] = await Promise.all([
-          supabase
-            .from('members')
-            .select('*')
-            .eq('member_code', normalizedCode)
-            .eq('is_active', true)
-            .maybeSingle(),
-          // Pre-fetch group info para evitar segunda query
-          supabase
-            .from('groups')
-            .select('id, name, is_active')
-            .limit(1000) // Cache all active groups
-        ]);
+        // OPTIMIZED: Parallel queries for member + groups
+        const memberPromise = supabase
+          .from('members')
+          .select('*')
+          .eq('member_code', normalizedCode)
+          .eq('is_active', true)
+          .maybeSingle()
+          .then(res => res);
+
+        const groupsPromise = supabase
+          .from('groups')
+          .select('id, name, is_active')
+          .limit(1000)
+          .then(res => res);
+
+        const [memberResult, groupResult] = await Promise.race([
+          Promise.all([memberPromise, groupsPromise]),
+          timeoutPromise.then(() => { throw new Error('TIMEOUT'); })
+        ]) as [typeof memberResult, typeof groupResult];
 
         const { data: memberData, error: memberError } = memberResult;
 
         if (memberError) {
-          console.error('Member login error:', memberError);
-          
-          if (memberError.message.includes('fetch') || memberError.message.includes('network')) {
-            return { success: false, error: 'Erro de conexão. Verifique sua internet e tente novamente.' };
+          if (memberError.message?.includes('fetch') || memberError.message?.includes('network')) {
+            return { success: false, error: 'Erro de conexão. Verifique sua internet.' };
           }
-          
-          return { success: false, error: 'Erro ao verificar código de membro. Por favor, tente novamente.' };
+          return { success: false, error: 'Erro ao verificar código. Tente novamente.' };
         }
 
         if (!memberData) {
-          console.log('Nenhum membro encontrado com o código:', normalizedCode);
           return { success: false, error: 'Código de membro inválido ou inativo' };
         }
-        
-        console.log('Membro encontrado:', memberData.name);
 
-        // Validate required member fields
         if (!memberData.id || !memberData.name || !memberData.group_id) {
-          console.error('Invalid member data structure:', memberData);
           return { success: false, error: 'Dados de membro incompletos' };
         }
 
         if (!memberData.role) {
-          console.error('Member without role:', memberData);
           return { success: false, error: 'Dados de membro incompletos: função não definida' };
         }
 
-        // Verificar grupo do cache paralelo
         const { data: groupsData, error: groupError } = groupResult;
         
         if (groupError) {
-          console.error('Group verification error:', groupError);
           return { success: false, error: 'Erro ao verificar grupo' };
         }
 
@@ -212,11 +198,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return { success: false, error: 'Grupo inativo ou não encontrado' };
         }
 
-        // Obter nível baseado na função usando getRoleLevel
         const roleLevel = getRoleLevel(memberData.role);
         const permissions = PERMISSION_MAP[roleLevel] || PERMISSION_MAP[7];
-
-        console.log(`Membro ${memberData.name} - Role: ${memberData.role}, Level: ${roleLevel}`);
 
         const authUser: AuthUser = {
           type: 'member',
@@ -227,8 +210,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(authUser);
         localStorage.setItem('sigeg_user', JSON.stringify(authUser));
 
-        // OTIMIZAÇÃO: Notificações completamente assíncronas (não bloqueia login)
-        (async () => {
+        // Async notifications (non-blocking)
+        setTimeout(async () => {
           try {
             const { data: notifications } = await supabase
               .from('category_role_notifications')
@@ -266,39 +249,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           } catch (err) {
             console.warn('Failed to load notifications:', err);
           }
-        })();
+        }, 0);
 
         return { success: true };
+
       } else if (type === 'group') {
-        const normalizedCode = code.trim().toUpperCase();
-        
-        console.log('Tentando login de grupo com código:', normalizedCode);
-        
-        const { data: groupData, error: groupError } = await supabase
+        const queryPromise = supabase
           .from('groups')
           .select('*')
           .eq('access_code', normalizedCode)
           .eq('is_active', true)
-          .maybeSingle();
+          .maybeSingle()
+          .then(res => res);
+
+        const { data: groupData, error: groupError } = await Promise.race([queryPromise, timeoutPromise]);
 
         if (groupError) {
-          console.error('Group login error:', groupError);
-          
-          if (groupError.message.includes('fetch') || groupError.message.includes('network')) {
-            return { success: false, error: 'Erro de conexão. Verifique sua internet e tente novamente.' };
+          if (groupError.message?.includes('fetch') || groupError.message?.includes('network')) {
+            return { success: false, error: 'Erro de conexão. Verifique sua internet.' };
           }
-          
-          return { success: false, error: 'Erro ao verificar código de grupo. Por favor, tente novamente.' };
+          return { success: false, error: 'Erro ao verificar código. Tente novamente.' };
         }
 
         if (!groupData) {
-          console.log('Nenhum grupo encontrado com o código:', normalizedCode);
           return { success: false, error: 'Código de grupo inválido ou grupo inativo' };
         }
-        
-        console.log('Grupo encontrado:', groupData.name);
 
-        // Grupos têm permissões de visualização ampla
         const permissions = ['view_group_data', 'view_all_members', 'view_finances'];
 
         const authUser: AuthUser = {
@@ -311,7 +287,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('sigeg_user', JSON.stringify(authUser));
         return { success: true };
       }
-    } catch (error) {
+
+      return { success: false, error: 'Tipo de login inválido' };
+    } catch (error: any) {
+      if (error.message === 'TIMEOUT') {
+        return { success: false, error: 'Tempo esgotado. Verifique sua conexão e tente novamente.' };
+      }
       console.error('Login error:', error);
       return { success: false, error: 'Erro interno do sistema' };
     } finally {
@@ -326,9 +307,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const hasPermission = (permission: string): boolean => {
     if (!user || !user.permissions) return false;
-    // Admins têm acesso completo
     if (user.permissions.includes('*')) return true;
-    // Verificar se a permissão existe
     if (!permission) return true;
     return user.permissions.includes(permission);
   };
@@ -341,7 +320,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) return 999;
     
     if (user.type === 'admin') {
-      return 0; // Todos admins têm nível 0
+      return 0;
     } else {
       const memberData = user.data as Member;
       return getRoleLevel(memberData.role);

@@ -16,7 +16,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { useEffect } from "react";
 import { usePermissions } from "@/hooks/usePermissions";
 import { PermissionGuard } from "@/components/common/PermissionGuard";
-import { invalidateSpecificCache } from "@/lib/cacheUtils";
 
 interface Member {
   id: string;
@@ -349,9 +348,6 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
         .insert(attendanceRecords);
 
       if (error) throw error;
-
-      // Invalidate cache for instant update
-      invalidateSpecificCache([`rehearsal_${groupId}`]);
 
       toast({
         title: "Sucesso",
