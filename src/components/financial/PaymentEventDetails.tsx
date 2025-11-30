@@ -3,12 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { X, Calendar, DollarSign, User } from "lucide-react";
+import { Calendar, DollarSign, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { MemberPaymentDialog } from "./MemberPaymentDialog";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 interface PaymentEventDetailsProps {
   event: any;
@@ -25,8 +25,8 @@ export function PaymentEventDetails({ event, groupId, onClose }: PaymentEventDet
   const [leadersLoaded, setLeadersLoaded] = useState(false);
   const { toast } = useToast();
   const { user, isGroup, isMember } = useAuth();
+  const { t } = useTranslation();
 
-  // Get current member ID safely
   const currentMemberId = useMemo(() => {
     if (isMember() && user?.type === 'member') {
       return (user.data as any)?.id;
@@ -34,7 +34,6 @@ export function PaymentEventDetails({ event, groupId, onClose }: PaymentEventDet
     return undefined;
   }, [user, isMember]);
 
-  // Check if current user is a category leader for this event's category
   const isCategoryLeader = useMemo(() => {
     if (!event.category_id || !currentMemberId || !leadersLoaded) {
       return false;
@@ -44,7 +43,6 @@ export function PaymentEventDetails({ event, groupId, onClose }: PaymentEventDet
     );
   }, [event.category_id, currentMemberId, categoryLeaders, leadersLoaded]);
 
-  // Can edit payment only if not group login and is category leader
   const canEditPayment = !isGroup?.() && isCategoryLeader;
 
   useEffect(() => {
@@ -98,7 +96,7 @@ export function PaymentEventDetails({ event, groupId, onClose }: PaymentEventDet
     } catch (error) {
       console.error("Erro ao carregar pagamentos:", error);
       toast({
-        title: "Erro ao carregar dados dos pagamentos",
+        title: t('common.error'),
         variant: "destructive",
       });
     } finally {
@@ -116,7 +114,6 @@ export function PaymentEventDetails({ event, groupId, onClose }: PaymentEventDet
     setShowPaymentDialog(false);
   };
 
-  // Categorize members based on payment status and sort alphabetically
   const completedPayments = memberPayments
     .filter(mp => Number(mp.amount_paid) >= Number(event.amount_to_pay))
     .sort((a, b) => a.members.name.localeCompare(b.members.name));
@@ -133,7 +130,7 @@ export function PaymentEventDetails({ event, groupId, onClose }: PaymentEventDet
   const expectedTotal = memberPayments.length * Number(event.amount_to_pay);
 
   if (loading) {
-    return <div className="text-center py-8">Carregando detalhes do evento...</div>;
+    return <div className="text-center py-8">{t('paymentDetails.loadingDetails')}</div>;
   }
 
   return (
@@ -145,7 +142,7 @@ export function PaymentEventDetails({ event, groupId, onClose }: PaymentEventDet
             {event.title}
           </CardTitle>
           <CardDescription className="mt-2">
-            Criado em {format(new Date(event.created_at), "dd/MM/yyyy")}
+            {t('paymentDetails.createdOn')} {format(new Date(event.created_at), "dd/MM/yyyy")}
           </CardDescription>
         </div>
         
@@ -153,7 +150,7 @@ export function PaymentEventDetails({ event, groupId, onClose }: PaymentEventDet
           <div className="flex items-center gap-2">
             <DollarSign className="h-4 w-4 text-muted-foreground" />
             <div>
-              <p className="text-sm text-muted-foreground">Valor por membro</p>
+              <p className="text-sm text-muted-foreground">{t('paymentDetails.amountPerMember')}</p>
               <p className="font-semibold">
                 {Number(event.amount_to_pay).toLocaleString('pt-AO', { 
                   style: 'currency', 
@@ -166,13 +163,13 @@ export function PaymentEventDetails({ event, groupId, onClose }: PaymentEventDet
           <div className="flex items-center gap-2">
             <User className="h-4 w-4 text-muted-foreground" />
             <div>
-              <p className="text-sm text-muted-foreground">Total de membros</p>
+              <p className="text-sm text-muted-foreground">{t('paymentDetails.totalMembers')}</p>
               <p className="font-semibold">{memberPayments.length}</p>
             </div>
           </div>
           
           <div>
-            <p className="text-sm text-muted-foreground">Total arrecadado</p>
+            <p className="text-sm text-muted-foreground">{t('paymentDetails.totalCollected')}</p>
             <p className="font-semibold text-green-600">
               {totalCollected.toLocaleString('pt-AO', { 
                 style: 'currency', 
@@ -180,7 +177,7 @@ export function PaymentEventDetails({ event, groupId, onClose }: PaymentEventDet
               })}
             </p>
             <p className="text-xs text-muted-foreground">
-              de {expectedTotal.toLocaleString('pt-AO', { 
+              {t('paymentDetails.of')} {expectedTotal.toLocaleString('pt-AO', { 
                 style: 'currency', 
                 currency: 'AOA' 
               })}
@@ -193,15 +190,15 @@ export function PaymentEventDetails({ event, groupId, onClose }: PaymentEventDet
         <Tabs defaultValue="completed" className="w-full h-full flex flex-col">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="completed" className="relative">
-              Concluído
+              {t('paymentDetails.completed')}
               <Badge variant="secondary" className="ml-2">{completedPayments.length}</Badge>
             </TabsTrigger>
             <TabsTrigger value="partial" className="relative">
-              Parcial
+              {t('paymentDetails.partial')}
               <Badge variant="secondary" className="ml-2">{partialPayments.length}</Badge>
             </TabsTrigger>
             <TabsTrigger value="none" className="relative">
-              Pendente
+              {t('paymentDetails.pending')}
               <Badge variant="secondary" className="ml-2">{noPayments.length}</Badge>
             </TabsTrigger>
           </TabsList>
@@ -209,7 +206,7 @@ export function PaymentEventDetails({ event, groupId, onClose }: PaymentEventDet
           <TabsContent value="completed" className="space-y-2">
             {completedPayments.length === 0 ? (
               <p className="text-center py-4 text-muted-foreground">
-                Nenhum membro concluiu o pagamento ainda.
+                {t('paymentDetails.noMemberCompleted')}
               </p>
             ) : (
               completedPayments.map((memberPayment) => (
@@ -233,7 +230,7 @@ export function PaymentEventDetails({ event, groupId, onClose }: PaymentEventDet
           <TabsContent value="partial" className="space-y-2">
             {partialPayments.length === 0 ? (
               <p className="text-center py-4 text-muted-foreground">
-                Nenhum membro com pagamento parcial.
+                {t('paymentDetails.noPartialPayment')}
               </p>
             ) : (
               partialPayments.map((memberPayment) => (
@@ -257,7 +254,7 @@ export function PaymentEventDetails({ event, groupId, onClose }: PaymentEventDet
           <TabsContent value="none" className="space-y-2">
             {noPayments.length === 0 ? (
               <p className="text-center py-4 text-muted-foreground">
-                Todos os membros já contribuíram!
+                {t('paymentDetails.allMembersContributed')}
               </p>
             ) : (
               noPayments.map((memberPayment) => (
@@ -267,7 +264,7 @@ export function PaymentEventDetails({ event, groupId, onClose }: PaymentEventDet
                   onClick={() => handleMemberClick(memberPayment)}
                 >
                   <span className="font-medium">{memberPayment.members.name}</span>
-                  <Badge variant="destructive">Pendente</Badge>
+                  <Badge variant="destructive">{t('paymentDetails.pending')}</Badge>
                 </div>
               ))
             )}
@@ -275,7 +272,6 @@ export function PaymentEventDetails({ event, groupId, onClose }: PaymentEventDet
         </Tabs>
       </CardContent>
 
-      {/* Member Payment Dialog */}
       <MemberPaymentDialog
         open={showPaymentDialog}
         onOpenChange={setShowPaymentDialog}
