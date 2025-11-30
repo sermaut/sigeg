@@ -74,21 +74,26 @@ export const GroupCard = memo(function GroupCard({
     }
   };
 
+  const isInactive = group.is_active === false;
+
   return (
     <Card 
-      className="card-elevated hover:scale-105 transition-all duration-300"
+      className={`card-elevated hover:scale-105 transition-all duration-300 ${isInactive ? 'opacity-75 border-destructive/50' : ''}`}
       onMouseEnter={handleMouseEnter}
     >
       <CardHeader>
         <div className="flex justify-between items-start">
           <div className="flex-1">
-            <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
-              <Building className="w-5 h-5 text-primary" />
+            <CardTitle className={`text-lg font-semibold flex items-center gap-2 ${isInactive ? 'text-muted-foreground' : 'text-foreground'}`}>
+              <Building className={`w-5 h-5 ${isInactive ? 'text-muted-foreground' : 'text-primary'}`} />
               {group.name}
             </CardTitle>
           </div>
           {group.is_active !== undefined && (
-            <Badge variant={group.is_active ? "default" : "secondary"}>
+            <Badge 
+              variant={group.is_active ? "default" : "destructive"}
+              className={isInactive ? 'animate-pulse' : ''}
+            >
               {group.is_active ? "Ativo" : "Inativo"}
             </Badge>
           )}
