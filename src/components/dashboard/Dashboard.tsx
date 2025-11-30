@@ -93,7 +93,7 @@ export function Dashboard() {
           </h1>
         </div>
         <div>
-          <p className="text-muted-foreground max-w-2xl mx-auto text-sm leading-relaxed">
+          <p className="text-muted-foreground max-w-2xl mx-auto text-sm leading-relaxed text-justify">
             O SIGEG-BV (Sistema de Gestão de Grupos - Boa Vista) é uma plataforma completa para gestão de grupos musicais, oferecendo funcionalidades de gestão de membros, finanças, programas semanais e muito mais. Este sistema foi desenvolvido com dedicação para facilitar a organização e administração de grupos. Administre membros, organize eventos, solicite serviços como: Arranjos Musicais Automatizados, Acompanhamentos de Hinos, Revisão de Arranjos, e gere relatórios detalhados com segurança e praticidade.
           </p>
         </div>
