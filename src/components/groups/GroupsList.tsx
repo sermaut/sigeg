@@ -33,10 +33,21 @@ export function GroupsList() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [groupToDelete, setGroupToDelete] = useState<string | null>(null);
   const permissions = usePermissions();
+  
+  // Get current user's group_id from localStorage
+  const currentUserGroupId = localStorage.getItem('group_id');
 
-  // Filtrar apenas grupos ativos para usuários não-admin e aplicar busca
+  // Filtrar grupos: admins veem todos, membros veem ativos + seu próprio grupo inativo
   const filteredGroups = groups
-    .filter(group => permissions.canAccessAdmins || group.is_active !== false)
+    .filter(group => {
+      // Admins veem todos os grupos
+      if (permissions.canAccessAdmins) return true;
+      // Grupos ativos são visíveis para todos
+      if (group.is_active !== false) return true;
+      // Membros podem ver seu próprio grupo mesmo que inativo
+      if (currentUserGroupId && group.id === currentUserGroupId) return true;
+      return false;
+    })
     .filter(group =>
       group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       group.municipality.toLowerCase().includes(searchTerm.toLowerCase()) ||
