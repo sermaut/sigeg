@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { 
   Crown, 
   Users, 
@@ -68,6 +69,7 @@ export default function MonthlyPlans() {
   const [selectedPlan, setSelectedPlan] = useState<MonthlyPlan | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
   const { isAdmin, hasPermission } = useAuth();
   const { groupId } = useParams();
 
@@ -221,11 +223,11 @@ export default function MonthlyPlans() {
     <MainLayout>
       <div className="space-y-6">
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-foreground">Planos Mensais</h1>
+          <h1 className="text-3xl font-bold text-foreground">{t('plans.title')}</h1>
           <p className="text-muted-foreground">
             {groupId && group 
-              ? `Selecione um plano para o grupo: ${group.name}`
-              : 'Escolha o plano ideal para o seu grupo'
+              ? `${t('plans.selectPlanFor')} ${group.name}`
+              : t('plans.choosePlan')
             }
           </p>
         </div>

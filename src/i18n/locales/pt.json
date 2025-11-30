@@ -146,7 +146,8 @@
     "deleteMembers": "Eliminar Membros",
     "deleteConfirmation": "Tem a certeza que deseja eliminar {count} membro(s)? Esta ação não pode ser desfeita.",
     "membersDeleted": "membro(s) eliminado(s) com sucesso.",
-    "errorDeleting": "Erro ao eliminar membros"
+    "errorDeleting": "Erro ao eliminar membros",
+    "noMembers": "Nenhum membro cadastrado neste grupo"
   },
   "financial": {
     "title": "Gestão Financeira",
@@ -155,7 +156,10 @@
     "paymentEvents": "Eventos de Pagamento",
     "newCategory": "Nova Categoria",
     "newTransaction": "Nova Transação",
+    "newEvent": "Novo Evento",
     "newPaymentEvent": "Novo Evento de Pagamento",
+    "noPaymentEvents": "Nenhum evento de pagamento criado.",
+    "createFirstEvent": "Criar primeiro evento",
     "balance": "Saldo",
     "income": "Entrada",
     "expense": "Saída",
@@ -182,7 +186,26 @@
     "enterDescription": "Por favor, insira uma descrição para a transação.",
     "actionNotAllowed": "Ação não permitida",
     "noPermission": "Você não tem permissão para criar transações nesta categoria.",
-    "adding": "Adicionando..."
+    "adding": "Adicionando...",
+    "restrictedAccess": "Acesso restrito",
+    "onlyLeadersAccess": "Apenas Dirigentes e Líderes de Categoria têm acesso aos registros financeiros."
+  },
+  "transactions": {
+    "newTransaction": "Nova Transação",
+    "categoryLocked": "Esta categoria está bloqueada. Apenas líderes podem criar transações.",
+    "addTransaction": "Adicione uma entrada ou saída financeira para esta categoria.",
+    "type": "Tipo",
+    "income": "Entrada",
+    "expense": "Saída",
+    "amount": "Valor (AOA)",
+    "description": "Descrição",
+    "descriptionPlaceholder": "Descreva o motivo desta transação..."
+  },
+  "membersTable": {
+    "number": "Nº",
+    "photo": "FOTO",
+    "fullName": "NOME COMPLETO",
+    "noMembers": "Nenhum membro cadastrado neste grupo"
   },
   "header": {
     "sessionInfo": "Informações da Sessão",

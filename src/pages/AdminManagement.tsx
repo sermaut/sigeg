@@ -15,6 +15,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Plus, Edit, Lock, Unlock, Users, Shield, Power, PowerOff, Settings, Upload, Trash2, User, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { compressImage } from "@/lib/imageOptimization";
+import { useTranslation } from "react-i18next";
 
 interface SystemAdmin {
   id: string;
@@ -50,6 +51,7 @@ interface CreatorInfo {
 export default function AdminManagement() {
   const { user, hasPermission } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [admins, setAdmins] = useState<SystemAdmin[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
@@ -78,8 +80,8 @@ export default function AdminManagement() {
       <MainLayout>
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-destructive mb-2">Acesso Negado</h1>
-            <p className="text-muted-foreground">Você não tem permissão para acessar esta página.</p>
+            <h1 className="text-2xl font-bold text-destructive mb-2">{t('admin.accessDenied')}</h1>
+            <p className="text-muted-foreground">{t('admin.noPermission')}</p>
           </div>
         </div>
       </MainLayout>
@@ -420,13 +422,13 @@ export default function AdminManagement() {
   }
 
   const getPermissionLevelLabel = (level: string) => {
-    const labels = {
-      'super_admin': 'Super Administrador',
-      'admin_principal': 'Administrador Principal',
-      'admin_adjunto': 'Administrador Adjunto',
-      'admin_supervisor': 'Administrador Supervisor',
+    const labels: Record<string, string> = {
+      'super_admin': t('admin.superAdmin'),
+      'admin_principal': t('admin.mainAdmin'),
+      'admin_adjunto': t('admin.adjunctAdmin'),
+      'admin_supervisor': t('admin.supervisorAdmin'),
     };
-    return labels[level as keyof typeof labels] || level;
+    return labels[level] || level;
   };
 
   const getPermissionLevelColor = (level: string) => {
@@ -454,10 +456,10 @@ export default function AdminManagement() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-foreground mb-2">
-            Administração do Sistema
+            {t('admin.title')}
           </h1>
           <p className="text-muted-foreground">
-            Gerir administradores, grupos e configurações do sistema SIGEG
+            {t('admin.description')}
           </p>
         </div>
 
@@ -465,15 +467,15 @@ export default function AdminManagement() {
           <TabsList className="grid w-full grid-cols-3 max-w-lg">
             <TabsTrigger value="admins" className="flex items-center gap-2">
               <Shield className="w-4 h-4" />
-              Admins
+              {t('admin.admins')}
             </TabsTrigger>
             <TabsTrigger value="groups" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
-              Grupos
+              {t('admin.groups')}
             </TabsTrigger>
             <TabsTrigger value="settings" className="flex items-center gap-2">
               <Settings className="w-4 h-4" />
-              Configurações
+              {t('admin.settings')}
             </TabsTrigger>
           </TabsList>
 

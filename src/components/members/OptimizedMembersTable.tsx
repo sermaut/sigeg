@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 interface Member {
   id: string;
@@ -135,6 +136,7 @@ export const OptimizedMembersTable = memo(({
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set());
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const toggleMemberSelection = (memberId: string) => {
     const newSelection = new Set(selectedMembers);
@@ -186,7 +188,7 @@ export const OptimizedMembersTable = memo(({
     return (
       <div className="text-center py-12">
         <User className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-        <p className="text-muted-foreground">Nenhum membro encontrado</p>
+        <p className="text-muted-foreground">{t('membersTable.noMembers')}</p>
       </div>
     );
   }

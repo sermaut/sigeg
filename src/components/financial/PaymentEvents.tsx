@@ -23,6 +23,7 @@ import { format } from "date-fns";
 import { usePermissions } from "@/hooks/usePermissions";
 import { PermissionGuard } from "@/components/common/PermissionGuard";
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from "react-i18next";
 
 interface PaymentEventsProps {
   groupId: string;
@@ -52,6 +53,7 @@ export function PaymentEvents({ groupId }: PaymentEventsProps) {
   const [userCategoryLeadership, setUserCategoryLeadership] = useState<string[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const { toast } = useToast();
+  const { t } = useTranslation();
   const permissions = usePermissions();
   const { user, isMember } = useAuth();
   
@@ -192,7 +194,7 @@ export function PaymentEvents({ groupId }: PaymentEventsProps) {
   };
 
   if (loading) {
-    return <div className="text-center py-8">Carregando eventos de pagamento...</div>;
+    return <div className="text-center py-8">{t('common.loading')}</div>;
   }
 
   return (
@@ -200,7 +202,7 @@ export function PaymentEvents({ groupId }: PaymentEventsProps) {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h3 className="text-lg font-semibold">Eventos de Pagamento</h3>
+          <h3 className="text-lg font-semibold">{t('financial.paymentEvents')}</h3>
         </div>
         <PermissionGuard require="canCreatePaymentEvent">
           <Button 
@@ -208,7 +210,7 @@ export function PaymentEvents({ groupId }: PaymentEventsProps) {
             className="flex items-center gap-2 text-sm py-[5px] px-3 h-auto"
           >
             <Plus className="h-3.5 w-3.5" />
-            Novo Evento
+            {t('financial.newEvent')}
           </Button>
         </PermissionGuard>
       </div>
@@ -217,13 +219,13 @@ export function PaymentEvents({ groupId }: PaymentEventsProps) {
       {events.length === 0 ? (
         <Card>
           <CardContent className="text-center py-8">
-            <p className="text-muted-foreground">Nenhum evento de pagamento criado.</p>
+            <p className="text-muted-foreground">{t('financial.noPaymentEvents')}</p>
             <Button 
               onClick={() => setShowEventDialog(true)}
               className="mt-4"
               variant="outline"
             >
-              Criar primeiro evento
+              {t('financial.createFirstEvent')}
             </Button>
           </CardContent>
         </Card>

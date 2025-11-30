@@ -146,7 +146,8 @@
     "deleteMembers": "Delete Members",
     "deleteConfirmation": "Are you sure you want to delete {count} member(s)? This action cannot be undone.",
     "membersDeleted": "member(s) deleted successfully.",
-    "errorDeleting": "Error deleting members"
+    "errorDeleting": "Error deleting members",
+    "noMembers": "No members registered in this group"
   },
   "financial": {
     "title": "Financial Management",
@@ -155,7 +156,10 @@
     "paymentEvents": "Payment Events",
     "newCategory": "New Category",
     "newTransaction": "New Transaction",
+    "newEvent": "New Event",
     "newPaymentEvent": "New Payment Event",
+    "noPaymentEvents": "No payment events created.",
+    "createFirstEvent": "Create first event",
     "balance": "Balance",
     "income": "Income",
     "expense": "Expense",
@@ -182,7 +186,26 @@
     "enterDescription": "Please enter a description for the transaction.",
     "actionNotAllowed": "Action not allowed",
     "noPermission": "You do not have permission to create transactions in this category.",
-    "adding": "Adding..."
+    "adding": "Adding...",
+    "restrictedAccess": "Restricted access",
+    "onlyLeadersAccess": "Only Directors and Category Leaders have access to financial records."
+  },
+  "transactions": {
+    "newTransaction": "New Transaction",
+    "categoryLocked": "This category is locked. Only leaders can create transactions.",
+    "addTransaction": "Add an income or expense transaction for this category.",
+    "type": "Type",
+    "income": "Income",
+    "expense": "Expense",
+    "amount": "Amount (AOA)",
+    "description": "Description",
+    "descriptionPlaceholder": "Describe the reason for this transaction..."
+  },
+  "membersTable": {
+    "number": "No.",
+    "photo": "PHOTO",
+    "fullName": "FULL NAME",
+    "noMembers": "No members registered in this group"
   },
   "header": {
     "sessionInfo": "Session Information",
