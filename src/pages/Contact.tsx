@@ -139,10 +139,7 @@ export default function Contact() {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              O SIGEG-BV (Sistema de Gestão de Grupos - Boa Vontade) é uma plataforma completa 
-              para gestão de grupos musicais, oferecendo funcionalidades de gestão de membros, 
-              finanças, programas semanais e muito mais. Desenvolvido com dedicação para 
-              facilitar a organização e administração de grupos corais em Angola.
+              O SIGEG-BV (Sistema de Gestão de Grupos - Boa Vista) é uma plataforma completa para gestão de grupos musicais, oferecendo funcionalidades de gestão de membros, finanças, programas semanais e muito mais. Este sistema foi desenvolvido com dedicação para facilitar a organização e administração de grupos. Administre membros, organize eventos, solicite serviços como: Arranjos Musicais Automatizados, Acompanhamentos de Hinos, Revisão de Arranjos, e gere relatórios detalhados com segurança e praticidade.
             </p>
           </CardContent>
         </Card>
