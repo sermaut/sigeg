@@ -146,7 +146,8 @@
     "deleteMembers": "Supprimer les Membres",
     "deleteConfirmation": "Êtes-vous sûr de vouloir supprimer {count} membre(s) ? Cette action est irréversible.",
     "membersDeleted": "membre(s) supprimé(s) avec succès.",
-    "errorDeleting": "Erreur lors de la suppression des membres"
+    "errorDeleting": "Erreur lors de la suppression des membres",
+    "noMembers": "Aucun membre inscrit dans ce groupe"
   },
   "financial": {
     "title": "Gestion Financière",
@@ -155,7 +156,10 @@
     "paymentEvents": "Événements de Paiement",
     "newCategory": "Nouvelle Catégorie",
     "newTransaction": "Nouvelle Transaction",
+    "newEvent": "Nouvel Événement",
     "newPaymentEvent": "Nouvel Événement de Paiement",
+    "noPaymentEvents": "Aucun événement de paiement créé.",
+    "createFirstEvent": "Créer le premier événement",
     "balance": "Solde",
     "income": "Revenu",
     "expense": "Dépense",
@@ -182,7 +186,26 @@
     "enterDescription": "Veuillez entrer une description pour la transaction.",
     "actionNotAllowed": "Action non autorisée",
     "noPermission": "Vous n'avez pas la permission de créer des transactions dans cette catégorie.",
-    "adding": "Ajout en cours..."
+    "adding": "Ajout en cours...",
+    "restrictedAccess": "Accès restreint",
+    "onlyLeadersAccess": "Seuls les Directeurs et les Leaders de Catégorie ont accès aux registres financiers."
+  },
+  "transactions": {
+    "newTransaction": "Nouvelle Transaction",
+    "categoryLocked": "Cette catégorie est verrouillée. Seuls les leaders peuvent créer des transactions.",
+    "addTransaction": "Ajoutez une entrée ou une sortie financière pour cette catégorie.",
+    "type": "Type",
+    "income": "Revenu",
+    "expense": "Dépense",
+    "amount": "Montant (AOA)",
+    "description": "Description",
+    "descriptionPlaceholder": "Décrivez la raison de cette transaction..."
+  },
+  "membersTable": {
+    "number": "N°",
+    "photo": "PHOTO",
+    "fullName": "NOM COMPLET",
+    "noMembers": "Aucun membre inscrit dans ce groupe"
   },
   "header": {
     "sessionInfo": "Informations de Session",

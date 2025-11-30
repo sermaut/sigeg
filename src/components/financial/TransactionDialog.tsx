@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 
 interface TransactionDialogProps {
   open: boolean;
@@ -26,6 +27,7 @@ export function TransactionDialog({ open, onOpenChange, categoryId, onTransactio
     description: "",
   });
   const { toast } = useToast();
+  const { t } = useTranslation();
   const { user, isMember } = useAuth();
 
   // Get current member ID
@@ -116,32 +118,32 @@ export function TransactionDialog({ open, onOpenChange, categoryId, onTransactio
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Nova Transação</DialogTitle>
+          <DialogTitle>{t('transactions.newTransaction')}</DialogTitle>
           <DialogDescription>
             {isLocked ? (
-              <span className="text-destructive">Esta categoria está bloqueada. Apenas líderes podem criar transações.</span>
+              <span className="text-destructive">{t('transactions.categoryLocked')}</span>
             ) : (
-              "Adicione uma entrada ou saída financeira para esta categoria."
+              t('transactions.addTransaction')
             )}
           </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="type">Tipo</Label>
+            <Label htmlFor="type">{t('transactions.type')}</Label>
             <Select value={formData.type} onValueChange={(value) => setFormData({...formData, type: value})}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="entrada">Entrada</SelectItem>
-                <SelectItem value="saida">Saída</SelectItem>
+                <SelectItem value="entrada">{t('transactions.income')}</SelectItem>
+                <SelectItem value="saida">{t('transactions.expense')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="amount">Valor (AOA)</Label>
+            <Label htmlFor="amount">{t('transactions.amount')}</Label>
             <Input
               id="amount"
               type="number"
@@ -155,22 +157,22 @@ export function TransactionDialog({ open, onOpenChange, categoryId, onTransactio
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Descrição</Label>
+            <Label htmlFor="description">{t('transactions.description')}</Label>
             <Textarea
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({...formData, description: e.target.value})}
-              placeholder="Descreva o motivo desta transação..."
+              placeholder={t('transactions.descriptionPlaceholder')}
               required
             />
           </div>
 
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancelar
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={loading || !canCreate || isLocked}>
-              {loading ? "Adicionando..." : "Adicionar"}
+              {loading ? t('common.loading') : t('common.add')}
             </Button>
           </div>
         </form>

@@ -44,6 +44,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { usePermissions } from "@/hooks/usePermissions";
 import { PermissionGuard } from "@/components/common/PermissionGuard";
 import { PageLoadingOverlay } from "@/components/common/LoadingIndicators";
+import { useTranslation } from "react-i18next";
 
 interface Member {
   id: string;
@@ -78,6 +79,7 @@ export default function MemberDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const permissions = usePermissions();
   
   const [showMemberCode, setShowMemberCode] = useState(false);

@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Wand2, Loader2 } from "lucide-react";
 import { generateUniqueGroupCode, isGroupCodeUnique } from "@/lib/codeGenerator";
+import { useTranslation } from "react-i18next";
 
 const groupSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
@@ -52,6 +53,7 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
   const [isGeneratingCode, setIsGeneratingCode] = useState(false);
   const [groupMembers, setGroupMembers] = useState<Array<{ id: string; name: string }>>([]);
   const { toast } = useToast();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   
   const form = useForm<GroupFormData>({

@@ -15,6 +15,7 @@ import { Camera, Upload, Wand2, Loader2 } from "lucide-react";
 import { ImageCropper } from "./ImageCropper";
 import { compressImage } from "@/lib/imageOptimization";
 import { generateUniqueMemberCode, isMemberCodeUnique } from "@/lib/codeGenerator";
+import { useTranslation } from "react-i18next";
 const memberSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
   group_id: z.string().min(1, "Grupo é obrigatório"),
@@ -82,6 +83,7 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
   } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
 
