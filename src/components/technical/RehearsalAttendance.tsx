@@ -78,14 +78,13 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
   }, {} as Record<string, Member[]>);
 
   const partitionOrder = [
-    "soprano_1",
-    "soprano_2", 
-    "contralto_1",
-    "contralto_2",
-    "tenor_1",
-    "tenor_2",
-    "baixo_1",
-    "baixo_2",
+    "soprano",
+    "alto",
+    "contralto",
+    "tenor",
+    "baixo",
+    "base",
+    "instrumental",
     "Sem Partição"
   ];
 
@@ -100,14 +99,13 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
 
   const getPartitionLabel = (partition: string) => {
     const labels: Record<string, string> = {
-      soprano_1: "Soprano 1",
-      soprano_2: "Soprano 2",
-      contralto_1: "Contralto 1",
-      contralto_2: "Contralto 2",
-      tenor_1: "Tenor 1",
-      tenor_2: "Tenor 2",
-      baixo_1: "Baixo 1",
-      baixo_2: "Baixo 2",
+      soprano: "Soprano",
+      alto: "Alto/Contralto",
+      contralto: "Contralto",
+      tenor: "Tenor",
+      baixo: "Baixo",
+      base: "Baixo/Base",
+      instrumental: "Instrumental",
     };
     return labels[partition] || partition;
   };
