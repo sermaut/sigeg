@@ -7,15 +7,26 @@
     "login": "Entrar",
     "logout": "Sair",
     "member": "Membro",
-    "admin": "Administrador",
+    "group": "Grupo",
+    "admin": "Admin",
     "welcome": "Bem-vindo ao SIGEG",
     "accessCode": "Código de acesso",
     "enterMemberCode": "Digite seu código de membro",
+    "enterGroupCode": "Digite o código do grupo (ex: ABCD-EF)",
     "enterAdminCode": "Digite seu código de administrador",
+    "loginAsMember": "Entrar como Membro",
+    "loginAsGroup": "Entrar como Grupo",
+    "loginAsAdmin": "Entrar como Administrador",
     "loginSuccess": "Login realizado com sucesso!",
     "loginError": "Erro ao fazer login",
     "accessDenied": "Acesso negado",
-    "insufficientLevel": "Nível de acesso insuficiente"
+    "insufficientLevel": "Nível de acesso insuficiente",
+    "systemAccess": "Acesso ao Sistema",
+    "enterAccessCode": "Entre com seu código de acesso",
+    "pleaseEnterCode": "Por favor, insira o código de acesso",
+    "slowConnection": "Conexão lenta",
+    "checkInternet": "Verifique sua internet e tente novamente.",
+    "secureAccess": "Acesso seguro com controle de permissões"
   },
   "navigation": {
     "dashboard": "Painel",
@@ -25,6 +36,35 @@
     "services": "Serviços",
     "monthlyPlans": "Planos Mensais",
     "admin": "Administração"
+  },
+  "sidebar": {
+    "home": "Página Inicial",
+    "groups": "Grupos",
+    "newMember": "Novo Membro",
+    "musicalServices": "Serviços Musicais",
+    "reports": "Relatórios",
+    "administrators": "Administradores",
+    "settings": "Configurações",
+    "contact": "Contacto",
+    "exit": "Sair",
+    "managementSystem": "Sistema de Gestão",
+    "accessDenied": "Acesso Negado",
+    "onlyAdminsAccess": "Só Administradores têm acesso"
+  },
+  "dashboard": {
+    "title": "Sistema de Gestão de Grupos",
+    "description": "O SIGEG-BV (Sistema de Gestão de Grupos - Boa Vista) é uma plataforma completa para gestão de grupos musicais, oferecendo funcionalidades de gestão de membros, finanças, programas semanais e muito mais. Este sistema foi desenvolvido com dedicação para facilitar a organização e administração de grupos. Administre membros, organize eventos, solicite serviços como: Arranjos Musicais Automatizados, Acompanhamentos de Hinos, Revisão de Arranjos, e gere relatórios detalhados com segurança e praticidade.",
+    "viewGroups": "Ver Grupos",
+    "learnMore": "Saiba Mais",
+    "totalGroups": "Total de Grupos",
+    "activeMembers": "Membros Ativos",
+    "activeGroups": "Grupos Ativos",
+    "newRegistrations": "Novos Cadastros",
+    "thisMonth": "este mês",
+    "vsLastMonth": "vs último mês",
+    "financialSummary": "Resumo Financeiro",
+    "statisticsTrends": "Estatísticas e Tendências",
+    "newGroup": "Novo Grupo"
   },
   "groups": {
     "title": "Grupos",
@@ -46,10 +86,32 @@
     "maxMembers": "Máximo de Membros",
     "monthlyFee": "Taxa Mensal",
     "president": "Presidente",
-    "vicePresident1": "Vice-Presidente 1",
-    "vicePresident2": "Vice-Presidente 2",
+    "vicePresident1": "Vice-presidente 1",
+    "vicePresident2": "Vice-presidente 2",
     "secretary1": "Secretário 1",
-    "secretary2": "Secretário 2"
+    "secretary2": "Secretário 2",
+    "searchPlaceholder": "Buscar por nome, município ou província...",
+    "noGroupFound": "Nenhum grupo encontrado",
+    "noGroupRegistered": "Nenhum grupo cadastrado",
+    "adjustSearch": "Tente ajustar os termos de busca para encontrar grupos",
+    "createFirstGroup": "Comece criando seu primeiro grupo musical no sistema",
+    "deleteGroup": "Excluir Grupo",
+    "deleteConfirmation": "Tem certeza que deseja excluir este grupo?",
+    "deleteWarning": "Esta ação não pode ser desfeita e todos os dados relacionados ao grupo serão removidos permanentemente.",
+    "groupDeleted": "Grupo excluído com sucesso!",
+    "back": "Voltar",
+    "groupDetails": "Detalhes do Grupo",
+    "leadership": "Liderança",
+    "generalInfo": "Informações Gerais",
+    "totalMembers": "Total de Membros",
+    "creationDate": "Data de Criação",
+    "accessCode": "Código de Acesso",
+    "currentPlan": "Plano Atual",
+    "noPlanDefined": "Nenhum plano definido",
+    "notDefined": "Não definido",
+    "groupNotFound": "Grupo não encontrado",
+    "backToGroups": "Voltar para Grupos",
+    "inactiveGroup": "Grupo Inativo"
   },
   "members": {
     "title": "Membros",
@@ -67,7 +129,14 @@
     "role": "Função",
     "partition": "Partição",
     "active": "Ativo",
-    "inactive": "Inativo"
+    "inactive": "Inativo",
+    "searchPlaceholder": "Buscar membros...",
+    "addMember": "Adicionar Membro",
+    "noMembers": "Nenhum membro encontrado",
+    "viewDetails": "Ver Detalhes",
+    "memberActivated": "Membro ativado",
+    "memberDeactivated": "Membro desativado",
+    "statusChanged": "O membro foi ativado/desativado com sucesso."
   },
   "financial": {
     "title": "Gestão Financeira",
@@ -86,7 +155,35 @@
     "category": "Categoria",
     "groupSupport": "Apoio ao Grupo",
     "developmentCommission": "Comissão de Desenvolvimento",
-    "travelCommission": "Comissão de Viagens"
+    "travelCommission": "Comissão de Viagens",
+    "loadingSystem": "Carregando sistema financeiro...",
+    "leaderInfo": "Como líder do grupo, você pode atribuir membros para gerir cada categoria financeira.",
+    "clickManageLeaders": "Clique em \"Gerir Líderes\" em cada categoria para atribuir permissões.",
+    "financialRecords": "Registros Financeiros",
+    "paymentControl": "Controlo de Pagamentos",
+    "records": "Registros",
+    "payments": "Pagamentos"
+  },
+  "header": {
+    "sessionInfo": "Informações da Sessão",
+    "accessCode": "Código de Acesso",
+    "close": "Fechar",
+    "clearCache": "Cache",
+    "clearing": "Limpando...",
+    "exit": "Sair",
+    "clearAppCache": "Limpar cache do aplicativo",
+    "administrator": "Administrador",
+    "group": "Grupo",
+    "code": "Código"
+  },
+  "contact": {
+    "title": "Contacto",
+    "subtitle": "Entra em contacto se precisar de ajuda ou esclarecimentos",
+    "creatorDeveloper": "Criador e Desenvolvedor do SIGEG-BV",
+    "aboutSigeg": "Sobre o SIGEG-BV",
+    "aboutDescription": "O SIGEG-BV (Sistema de Gestão de Grupos - Boa Vista) é uma plataforma completa para gestão de grupos musicais, oferecendo funcionalidades de gestão de membros, finanças, programas semanais e muito mais. Este sistema foi desenvolvido com dedicação para facilitar a organização e administração de grupos. Administre membros, organize eventos, solicite serviços como: Arranjos Musicais Automatizados, Acompanhamentos de Hinos, Revisão de Arranjos, e gere relatórios detalhados com segurança e praticidade.",
+    "whatsapp": "WhatsApp",
+    "email": "Email"
   },
   "common": {
     "save": "Salvar",
@@ -118,7 +215,8 @@
     "select": "Selecionar",
     "clear": "Limpar",
     "reset": "Redefinir",
-    "apply": "Aplicar"
+    "apply": "Aplicar",
+    "createFirst": "Criar Primeiro"
   },
   "messages": {
     "deleteConfirm": "Tem certeza de que deseja excluir este item?",
@@ -127,6 +225,7 @@
     "errorGeneral": "Ocorreu um erro. Tente novamente.",
     "noData": "Nenhum dado encontrado",
     "loadingData": "Carregando dados...",
-    "connectionError": "Erro de conexão. Verifique sua internet."
+    "connectionError": "Erro de conexão. Verifique sua internet.",
+    "statusChangeSuccess": "Status alterado com sucesso."
   }
 }
