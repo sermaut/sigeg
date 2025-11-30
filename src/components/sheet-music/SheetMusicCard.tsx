@@ -1,9 +1,10 @@
-import { Music, Download, Eye, Trash2 } from "lucide-react";
+import { Music, Download, Trash2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 const categoryEmojis: Record<string, string> = {
   alegria: "🎉",
@@ -19,6 +20,8 @@ interface SheetMusicCardProps {
 }
 
 export function SheetMusicCard({ sheetMusic, onUpdate }: SheetMusicCardProps) {
+  const { t } = useTranslation();
+
   const handleDownload = async () => {
     try {
       const { data } = await supabase.storage
@@ -37,16 +40,16 @@ export function SheetMusicCard({ sheetMusic, onUpdate }: SheetMusicCardProps) {
           .update({ download_count: (sheetMusic.download_count || 0) + 1 })
           .eq('id', sheetMusic.id);
 
-        toast.success('Download iniciado');
+        toast.success(t('common.success'));
       }
     } catch (error) {
       console.error('Erro no download:', error);
-      toast.error('Erro ao fazer download');
+      toast.error(t('common.error'));
     }
   };
 
   const handleDelete = async () => {
-    if (!confirm('Deseja realmente excluir esta partitura?')) return;
+    if (!confirm(t('messages.deleteConfirm'))) return;
 
     try {
       await supabase
@@ -54,11 +57,11 @@ export function SheetMusicCard({ sheetMusic, onUpdate }: SheetMusicCardProps) {
         .update({ is_active: false })
         .eq('id', sheetMusic.id);
 
-      toast.success('Partitura excluída');
+      toast.success(t('messages.deleteSuccess'));
       onUpdate();
     } catch (error) {
       console.error('Erro ao excluir:', error);
-      toast.error('Erro ao excluir partitura');
+      toast.error(t('common.error'));
     }
   };
 
@@ -83,16 +86,16 @@ export function SheetMusicCard({ sheetMusic, onUpdate }: SheetMusicCardProps) {
 
       <CardContent className="space-y-4">
         <div className="flex flex-wrap gap-2">
-          <Badge variant="secondary">{sheetMusic.partition || 'Todas'}</Badge>
+          <Badge variant="secondary">{sheetMusic.partition || t('sheetMusic.allVoices')}</Badge>
           <Badge variant="outline">
-            {sheetMusic.download_count || 0} downloads
+            {sheetMusic.download_count || 0} {t('sheetMusic.downloads')}
           </Badge>
         </div>
 
         <div className="flex gap-2">
           <Button size="sm" variant="outline" className="flex-1" onClick={handleDownload}>
             <Download className="h-4 w-4 mr-1" />
-            Download
+            {t('common.download')}
           </Button>
           <Button size="sm" variant="ghost" onClick={handleDelete}>
             <Trash2 className="h-4 w-4" />
@@ -100,7 +103,7 @@ export function SheetMusicCard({ sheetMusic, onUpdate }: SheetMusicCardProps) {
         </div>
 
         <div className="text-xs text-muted-foreground">
-          Enviado por {(sheetMusic.members as any)?.name || 'Desconhecido'}
+          {(sheetMusic.members as any)?.name || t('rehearsalAttendance.unknown')}
         </div>
       </CardContent>
     </Card>

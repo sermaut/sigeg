@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -58,6 +59,7 @@ export function CategoryLeadersDialog({
   categoryName,
 }: CategoryLeadersDialogProps) {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [leaders, setLeaders] = useState<CategoryRole[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [selectedMember, setSelectedMember] = useState<string>("");
@@ -92,7 +94,7 @@ export function CategoryLeadersDialog({
       setLeaders(data as any || []);
     } catch (error) {
       console.error("Erro ao carregar líderes:", error);
-      toast.error("Erro ao carregar líderes da categoria");
+      toast.error(t('categoryLeaders.errorLoading'));
     }
   };
 
@@ -109,30 +111,28 @@ export function CategoryLeadersDialog({
       setMembers(data || []);
     } catch (error) {
       console.error("Erro ao carregar membros:", error);
-      toast.error("Erro ao carregar membros do grupo");
+      toast.error(t('categoryLeaders.errorLoadingMembers'));
     }
   };
 
   const handleAddLeader = async () => {
     if (!selectedMember || !selectedRole) {
-      toast.error("Selecione um membro e um cargo");
+      toast.error(t('categoryLeaders.selectMemberAndRole'));
       return;
     }
 
     setLoading(true);
     try {
-      // Verificar se já existe presidente ou secretário
       const existingLeader = leaders.find(l => l.role === selectedRole);
       if ((selectedRole === 'presidente' || selectedRole === 'secretario') && existingLeader) {
-        toast.error(`Já existe um ${getCategoryRoleLabel(selectedRole)} nesta categoria`);
+        toast.error(t('categoryLeaders.roleAlreadyExists', { role: getCategoryRoleLabel(selectedRole) }));
         setLoading(false);
         return;
       }
 
-      // Verificar se o membro já tem um cargo nesta categoria
       const memberHasRole = leaders.find(l => l.member_id === selectedMember);
       if (memberHasRole) {
-        toast.error("Este membro já possui um cargo nesta categoria");
+        toast.error(t('categoryLeaders.memberHasRole'));
         setLoading(false);
         return;
       }
@@ -149,7 +149,6 @@ export function CategoryLeadersDialog({
 
       if (error) throw error;
 
-      // Criar notificação para o membro
       const selectedMemberData = members.find(m => m.id === selectedMember);
       await supabase
         .from("notifications")
@@ -157,25 +156,25 @@ export function CategoryLeadersDialog({
           recipient_id: selectedMember,
           recipient_type: 'member',
           type: 'category_role_assigned',
-          title: 'Novo Cargo Atribuído',
-          message: `Você foi designado como ${getCategoryRoleLabel(selectedRole)} da categoria "${categoryName}"`,
+          title: t('categoryLeaders.newRoleAssigned'),
+          message: t('categoryLeaders.youWereAssigned', { role: getCategoryRoleLabel(selectedRole), categoryName }),
           link: `/financial?category=${categoryId}`,
         });
 
-      toast.success(`${selectedMemberData?.name} adicionado como ${getCategoryRoleLabel(selectedRole)}`);
+      toast.success(t('categoryLeaders.leaderAdded', { name: selectedMemberData?.name, role: getCategoryRoleLabel(selectedRole) }));
       setSelectedMember("");
       setSelectedRole("");
       loadLeaders();
     } catch (error) {
       console.error("Erro ao adicionar líder:", error);
-      toast.error("Erro ao adicionar líder");
+      toast.error(t('categoryLeaders.errorAdding'));
     } finally {
       setLoading(false);
     }
   };
 
   const handleRemoveLeader = async (leaderId: string, memberName: string, role: string) => {
-    if (!confirm(`Tem certeza que deseja remover ${memberName} do cargo de ${getCategoryRoleLabel(role)}?`)) {
+    if (!confirm(t('categoryLeaders.confirmRemove', { name: memberName, role: getCategoryRoleLabel(role) }))) {
       return;
     }
 
@@ -188,11 +187,11 @@ export function CategoryLeadersDialog({
 
       if (error) throw error;
 
-      toast.success(`${memberName} removido do cargo`);
+      toast.success(t('categoryLeaders.leaderRemoved', { name: memberName }));
       loadLeaders();
     } catch (error) {
       console.error("Erro ao remover líder:", error);
-      toast.error("Erro ao remover líder");
+      toast.error(t('categoryLeaders.errorRemoving'));
     } finally {
       setLoading(false);
     }
@@ -220,35 +219,33 @@ export function CategoryLeadersDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5" />
-            Gerir Líderes - {categoryName}
+            {t('categoryLeaders.manageLeaders')} - {categoryName}
           </DialogTitle>
           <DialogDescription>
-            Atribua cargos aos membros para gerenciar esta categoria financeira
+            {t('categoryLeaders.assignRoles')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Informações de permissões */}
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription className="text-xs space-y-1">
-              <div><strong>Presidente:</strong> Permissão total - criar, editar, deletar transações e gerir líderes</div>
-              <div><strong>Secretário:</strong> Criar e editar suas próprias transações</div>
-              <div><strong>Auxiliar:</strong> Apenas visualizar saldos e transações</div>
+              <div><strong>{t('categoryLeaders.president')}:</strong> {t('categoryLeaders.presidentPermissions')}</div>
+              <div><strong>{t('categoryLeaders.secretary')}:</strong> {t('categoryLeaders.secretaryPermissions')}</div>
+              <div><strong>{t('categoryLeaders.auxiliary')}:</strong> {t('categoryLeaders.auxiliaryPermissions')}</div>
             </AlertDescription>
           </Alert>
 
-          {/* Adicionar novo líder */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold flex items-center gap-2">
               <UserPlus className="h-4 w-4" />
-              Adicionar Líder
+              {t('categoryLeaders.addLeader')}
             </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Select value={selectedMember} onValueChange={setSelectedMember}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecionar membro" />
+                  <SelectValue placeholder={t('categoryLeaders.selectMember')} />
                 </SelectTrigger>
                 <SelectContent>
                   {members
@@ -263,25 +260,25 @@ export function CategoryLeadersDialog({
 
               <Select value={selectedRole} onValueChange={(value) => setSelectedRole(value as any)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecionar cargo" />
+                  <SelectValue placeholder={t('categoryLeaders.selectRole')} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="presidente" disabled={hasPresidente}>
                     <div className="flex items-center gap-2">
                       <Crown className="h-4 w-4" />
-                      Presidente {hasPresidente && "(Já atribuído)"}
+                      {t('categoryLeaders.president')} {hasPresidente && `(${t('categoryLeaders.alreadyAssigned')})`}
                     </div>
                   </SelectItem>
                   <SelectItem value="secretario" disabled={hasSecretario}>
                     <div className="flex items-center gap-2">
                       <FileText className="h-4 w-4" />
-                      Secretário {hasSecretario && "(Já atribuído)"}
+                      {t('categoryLeaders.secretary')} {hasSecretario && `(${t('categoryLeaders.alreadyAssigned')})`}
                     </div>
                   </SelectItem>
                   <SelectItem value="auxiliar">
                     <div className="flex items-center gap-2">
                       <Eye className="h-4 w-4" />
-                      Auxiliar
+                      {t('categoryLeaders.auxiliary')}
                     </div>
                   </SelectItem>
                 </SelectContent>
@@ -303,19 +300,18 @@ export function CategoryLeadersDialog({
               className="w-full"
             >
               <UserPlus className="h-4 w-4 mr-2" />
-              Adicionar Líder
+              {t('categoryLeaders.addLeader')}
             </Button>
           </div>
 
-          {/* Lista de líderes atuais */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold">Líderes Atuais</h3>
+            <h3 className="text-sm font-semibold">{t('categoryLeaders.currentLeaders')}</h3>
             
             {leaders.length === 0 ? (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  Nenhum líder atribuído a esta categoria. Adicione líderes para controlar o acesso.
+                  {t('categoryLeaders.noLeadersAssigned')}
                 </AlertDescription>
               </Alert>
             ) : (

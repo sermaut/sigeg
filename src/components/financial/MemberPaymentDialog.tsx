@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 interface MemberPaymentDialogProps {
   open: boolean;
@@ -27,6 +28,7 @@ export function MemberPaymentDialog({
   const [loading, setLoading] = useState(false);
   const [amountPaid, setAmountPaid] = useState("");
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (memberPayment) {
@@ -50,14 +52,14 @@ export function MemberPaymentDialog({
       if (error) throw error;
 
       toast({
-        title: "Pagamento atualizado com sucesso!",
+        title: t('memberPayment.paymentUpdated'),
       });
 
       onPaymentUpdated();
     } catch (error) {
       console.error("Erro ao atualizar pagamento:", error);
       toast({
-        title: "Erro ao atualizar pagamento",
+        title: t('memberPayment.errorUpdating'),
         variant: "destructive",
       });
     } finally {
@@ -81,14 +83,14 @@ export function MemberPaymentDialog({
 
       setAmountPaid("0");
       toast({
-        title: "Pagamento limpo com sucesso!",
+        title: t('memberPayment.paymentCleared'),
       });
 
       onPaymentUpdated();
     } catch (error) {
       console.error("Erro ao limpar pagamento:", error);
       toast({
-        title: "Erro ao limpar pagamento",
+        title: t('memberPayment.errorClearing'),
         variant: "destructive",
       });
     } finally {
@@ -98,9 +100,9 @@ export function MemberPaymentDialog({
 
   const getPaymentStatus = () => {
     const paid = parseFloat(amountPaid) || 0;
-    if (paid === 0) return { status: "Pendente", variant: "destructive" as const };
-    if (paid >= eventAmountToPay) return { status: "Concluído", variant: "default" as const };
-    return { status: "Parcial", variant: "outline" as const };
+    if (paid === 0) return { status: t('memberPayment.pending'), variant: "destructive" as const };
+    if (paid >= eventAmountToPay) return { status: t('memberPayment.completed'), variant: "default" as const };
+    return { status: t('memberPayment.partial'), variant: "outline" as const };
   };
 
   const paymentStatus = getPaymentStatus();
@@ -111,21 +113,21 @@ export function MemberPaymentDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Pagamento de {memberPayment.members?.name}</DialogTitle>
+          <DialogTitle>{t('memberPayment.paymentOf', { name: memberPayment.members?.name })}</DialogTitle>
           <DialogDescription>
-            Visualize, edite ou limpe o valor pago por este membro.
+            {t('memberPayment.viewEditClear')}
           </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4">
           <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-            <span className="text-sm font-medium">Status do Pagamento:</span>
+            <span className="text-sm font-medium">{t('memberPayment.paymentStatus')}:</span>
             <Badge variant={paymentStatus.variant}>{paymentStatus.status}</Badge>
           </div>
 
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <span className="text-muted-foreground">Valor a pagar:</span>
+              <span className="text-muted-foreground">{t('memberPayment.amountToPay')}:</span>
               <p className="font-semibold">
                 {eventAmountToPay.toLocaleString('pt-AO', { 
                   style: 'currency', 
@@ -134,7 +136,7 @@ export function MemberPaymentDialog({
               </p>
             </div>
             <div>
-              <span className="text-muted-foreground">Valor em falta:</span>
+              <span className="text-muted-foreground">{t('memberPayment.amountMissing')}:</span>
               <p className="font-semibold text-red-600">
                 {Math.max(0, eventAmountToPay - (parseFloat(amountPaid) || 0)).toLocaleString('pt-AO', { 
                   style: 'currency', 
@@ -146,7 +148,7 @@ export function MemberPaymentDialog({
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="amount">Valor Pago (AOA)</Label>
+              <Label htmlFor="amount">{t('memberPayment.amountPaid')}</Label>
               <Input
                 id="amount"
                 type="number"
@@ -169,14 +171,14 @@ export function MemberPaymentDialog({
                   onClick={handleClear}
                   disabled={loading}
                 >
-                  Limpar
+                  {t('memberPayment.clear')}
                 </Button>
                 <div className="flex space-x-2">
                   <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                    Cancelar
+                    {t('common.cancel')}
                   </Button>
                   <Button type="submit" disabled={loading}>
-                    {loading ? "Salvando..." : "Salvar"}
+                    {loading ? t('memberPayment.saving') : t('memberPayment.save')}
                   </Button>
                 </div>
               </div>
@@ -187,7 +189,7 @@ export function MemberPaymentDialog({
                 onClick={() => onOpenChange(false)}
                 className="w-full"
               >
-                Fechar
+                {t('common.close')}
               </Button>
             )}
           </form>

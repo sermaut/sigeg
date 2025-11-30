@@ -10,9 +10,11 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useNotifications } from "@/hooks/useNotifications";
 import { NotificationItem } from "./NotificationItem";
 import { Separator } from "@/components/ui/separator";
+import { useTranslation } from "react-i18next";
 
 export function NotificationCenter() {
   const { notifications, unreadCount, loading, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
+  const { t } = useTranslation();
 
   return (
     <DropdownMenu>
@@ -32,7 +34,7 @@ export function NotificationCenter() {
       
       <DropdownMenuContent align="end" className="w-80 p-0">
         <div className="flex items-center justify-between p-4 border-b">
-          <h3 className="font-semibold">Notificações</h3>
+          <h3 className="font-semibold">{t('notifications.title')}</h3>
           {unreadCount > 0 && (
             <Button 
               variant="ghost" 
@@ -40,7 +42,7 @@ export function NotificationCenter() {
               onClick={markAllAsRead}
               className="text-xs"
             >
-              Marcar todas como lidas
+              {t('notifications.markAllAsRead')}
             </Button>
           )}
         </div>
@@ -48,13 +50,13 @@ export function NotificationCenter() {
         <ScrollArea className="h-[400px]">
           {loading ? (
             <div className="p-4 text-center text-sm text-muted-foreground">
-              Carregando notificações...
+              {t('notifications.loading')}
             </div>
           ) : notifications.length === 0 ? (
             <div className="p-8 text-center">
               <Bell className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-50" />
               <p className="text-sm text-muted-foreground">
-                Nenhuma notificação
+                {t('notifications.noNotifications')}
               </p>
             </div>
           ) : (
