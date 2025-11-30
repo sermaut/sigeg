@@ -7,15 +7,26 @@
     "login": "Login",
     "logout": "Logout",
     "member": "Member",
-    "admin": "Administrator",
+    "group": "Group",
+    "admin": "Admin",
     "welcome": "Welcome to SIGEG",
     "accessCode": "Access code",
     "enterMemberCode": "Enter your member code",
+    "enterGroupCode": "Enter the group code (e.g.: ABCD-EF)",
     "enterAdminCode": "Enter your administrator code",
+    "loginAsMember": "Login as Member",
+    "loginAsGroup": "Login as Group",
+    "loginAsAdmin": "Login as Administrator",
     "loginSuccess": "Login successful!",
     "loginError": "Login error",
     "accessDenied": "Access denied",
-    "insufficientLevel": "Insufficient access level"
+    "insufficientLevel": "Insufficient access level",
+    "systemAccess": "System Access",
+    "enterAccessCode": "Enter your access code",
+    "pleaseEnterCode": "Please enter the access code",
+    "slowConnection": "Slow connection",
+    "checkInternet": "Check your internet and try again.",
+    "secureAccess": "Secure access with permission control"
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -25,6 +36,35 @@
     "services": "Services",
     "monthlyPlans": "Monthly Plans",
     "admin": "Administration"
+  },
+  "sidebar": {
+    "home": "Home",
+    "groups": "Groups",
+    "newMember": "New Member",
+    "musicalServices": "Musical Services",
+    "reports": "Reports",
+    "administrators": "Administrators",
+    "settings": "Settings",
+    "contact": "Contact",
+    "exit": "Exit",
+    "managementSystem": "Management System",
+    "accessDenied": "Access Denied",
+    "onlyAdminsAccess": "Only Administrators have access"
+  },
+  "dashboard": {
+    "title": "Group Management System",
+    "description": "SIGEG-BV (Group Management System - Boa Vista) is a complete platform for managing musical groups, offering member management, finances, weekly programs and much more. This system was developed with dedication to facilitate the organization and administration of groups. Manage members, organize events, request services such as: Automated Musical Arrangements, Hymn Accompaniments, Arrangement Reviews, and generate detailed reports with security and practicality.",
+    "viewGroups": "View Groups",
+    "learnMore": "Learn More",
+    "totalGroups": "Total Groups",
+    "activeMembers": "Active Members",
+    "activeGroups": "Active Groups",
+    "newRegistrations": "New Registrations",
+    "thisMonth": "this month",
+    "vsLastMonth": "vs last month",
+    "financialSummary": "Financial Summary",
+    "statisticsTrends": "Statistics and Trends",
+    "newGroup": "New Group"
   },
   "groups": {
     "title": "Groups",
@@ -49,7 +89,29 @@
     "vicePresident1": "Vice President 1",
     "vicePresident2": "Vice President 2",
     "secretary1": "Secretary 1",
-    "secretary2": "Secretary 2"
+    "secretary2": "Secretary 2",
+    "searchPlaceholder": "Search by name, municipality or province...",
+    "noGroupFound": "No group found",
+    "noGroupRegistered": "No group registered",
+    "adjustSearch": "Try adjusting search terms to find groups",
+    "createFirstGroup": "Start by creating your first musical group in the system",
+    "deleteGroup": "Delete Group",
+    "deleteConfirmation": "Are you sure you want to delete this group?",
+    "deleteWarning": "This action cannot be undone and all group-related data will be permanently removed.",
+    "groupDeleted": "Group deleted successfully!",
+    "back": "Back",
+    "groupDetails": "Group Details",
+    "leadership": "Leadership",
+    "generalInfo": "General Information",
+    "totalMembers": "Total Members",
+    "creationDate": "Creation Date",
+    "accessCode": "Access Code",
+    "currentPlan": "Current Plan",
+    "noPlanDefined": "No plan defined",
+    "notDefined": "Not defined",
+    "groupNotFound": "Group not found",
+    "backToGroups": "Back to Groups",
+    "inactiveGroup": "Inactive Group"
   },
   "members": {
     "title": "Members",
@@ -67,7 +129,14 @@
     "role": "Role",
     "partition": "Partition",
     "active": "Active",
-    "inactive": "Inactive"
+    "inactive": "Inactive",
+    "searchPlaceholder": "Search members...",
+    "addMember": "Add Member",
+    "noMembers": "No members found",
+    "viewDetails": "View Details",
+    "memberActivated": "Member activated",
+    "memberDeactivated": "Member deactivated",
+    "statusChanged": "The member was activated/deactivated successfully."
   },
   "financial": {
     "title": "Financial Management",
@@ -86,7 +155,35 @@
     "category": "Category",
     "groupSupport": "Group Support",
     "developmentCommission": "Development Commission",
-    "travelCommission": "Travel Commission"
+    "travelCommission": "Travel Commission",
+    "loadingSystem": "Loading financial system...",
+    "leaderInfo": "As a group leader, you can assign members to manage each financial category.",
+    "clickManageLeaders": "Click \"Manage Leaders\" on each category to assign permissions.",
+    "financialRecords": "Financial Records",
+    "paymentControl": "Payment Control",
+    "records": "Records",
+    "payments": "Payments"
+  },
+  "header": {
+    "sessionInfo": "Session Information",
+    "accessCode": "Access Code",
+    "close": "Close",
+    "clearCache": "Cache",
+    "clearing": "Clearing...",
+    "exit": "Exit",
+    "clearAppCache": "Clear application cache",
+    "administrator": "Administrator",
+    "group": "Group",
+    "code": "Code"
+  },
+  "contact": {
+    "title": "Contact",
+    "subtitle": "Get in touch if you need help or clarification",
+    "creatorDeveloper": "Creator and Developer of SIGEG-BV",
+    "aboutSigeg": "About SIGEG-BV",
+    "aboutDescription": "SIGEG-BV (Group Management System - Boa Vista) is a complete platform for managing musical groups, offering member management, finances, weekly programs and much more. This system was developed with dedication to facilitate the organization and administration of groups. Manage members, organize events, request services such as: Automated Musical Arrangements, Hymn Accompaniments, Arrangement Reviews, and generate detailed reports with security and practicality.",
+    "whatsapp": "WhatsApp",
+    "email": "Email"
   },
   "common": {
     "save": "Save",
@@ -118,7 +215,8 @@
     "select": "Select",
     "clear": "Clear",
     "reset": "Reset",
-    "apply": "Apply"
+    "apply": "Apply",
+    "createFirst": "Create First"
   },
   "messages": {
     "deleteConfirm": "Are you sure you want to delete this item?",
@@ -127,6 +225,7 @@
     "errorGeneral": "An error occurred. Please try again.",
     "noData": "No data found",
     "loadingData": "Loading data...",
-    "connectionError": "Connection error. Check your internet."
+    "connectionError": "Connection error. Check your internet.",
+    "statusChangeSuccess": "Status changed successfully."
   }
 }

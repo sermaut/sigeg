@@ -9,6 +9,7 @@ import { PaymentEvents } from "./PaymentEvents";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from 'react-i18next';
 
 interface FinancialDashboardProps {
   groupId: string;
@@ -19,6 +20,7 @@ interface FinancialDashboardProps {
 export function FinancialDashboard({ groupId, currentMemberId, isGroupLeader: isGroupLeaderProp }: FinancialDashboardProps) {
   const { toast } = useToast();
   const { user, isAdmin } = useAuth();
+  const { t } = useTranslation();
   
   // Verificar se é líder do grupo através do role do membro
   const isMember = user?.type === 'member';
@@ -51,7 +53,7 @@ export function FinancialDashboard({ groupId, currentMemberId, isGroupLeader: is
   const negativeBalance = categories.filter(cat => Number(cat.total_balance) < 0).reduce((sum, cat) => sum + Number(cat.total_balance), 0);
 
   if (loading) {
-    return <div className="text-center py-8">Carregando sistema financeiro...</div>;
+    return <div className="text-center py-8">{t('financial.loadingSystem')}</div>;
   }
 
   return (
@@ -61,8 +63,7 @@ export function FinancialDashboard({ groupId, currentMemberId, isGroupLeader: is
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription className="text-sm">
-            Como líder do grupo, você pode atribuir membros para gerir cada categoria financeira. 
-            Clique em "Gerir Líderes" em cada categoria para atribuir permissões.
+            {t('financial.leaderInfo')} {t('financial.clickManageLeaders')}
           </AlertDescription>
         </Alert>
       )}
@@ -79,8 +80,8 @@ export function FinancialDashboard({ groupId, currentMemberId, isGroupLeader: is
                        hover:bg-primary/5 flex items-center justify-center gap-1.5 px-3"
           >
             <Wallet className="h-3 w-3" />
-            <span className="hidden sm:inline">Registros Financeiros</span>
-            <span className="sm:hidden">Registros</span>
+            <span className="hidden sm:inline">{t('financial.financialRecords')}</span>
+            <span className="sm:hidden">{t('financial.records')}</span>
           </TabsTrigger>
           <TabsTrigger 
             value="payments"
@@ -91,8 +92,8 @@ export function FinancialDashboard({ groupId, currentMemberId, isGroupLeader: is
                        hover:bg-primary/5 flex items-center justify-center gap-1.5 px-3"
           >
             <CreditCard className="h-3 w-3" />
-            <span className="hidden sm:inline">Controlo de Pagamentos</span>
-            <span className="sm:hidden">Pagamentos</span>
+            <span className="hidden sm:inline">{t('financial.paymentControl')}</span>
+            <span className="sm:hidden">{t('financial.payments')}</span>
           </TabsTrigger>
         </TabsList>
         
