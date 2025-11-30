@@ -11,7 +11,6 @@ import { PermissionGuard } from '@/components/common/PermissionGuard';
 import { useDashboardStats, useRecentGroups, useDashboardCharts, useFinancialSummary } from '@/hooks/useOptimizedQueries';
 import { Skeleton } from "@/components/ui/skeleton";
 import sigegLogo from "@/assets/sigeg-logo.png";
-import { useTranslation } from 'react-i18next';
 
 // Skeleton component for stats cards
 function StatsCardSkeleton() {
@@ -30,7 +29,6 @@ function StatsCardSkeleton() {
 export function Dashboard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { t } = useTranslation();
   
   // Prefetch all dashboard data in parallel on mount
   useEffect(() => {
@@ -91,12 +89,12 @@ export function Dashboard() {
             decoding="async"
           />
           <h1 className="text-xl sm:text-2xl font-bold text-foreground">
-            {t('dashboard.title')}
+            Sistema de Gestão de Grupos
           </h1>
         </div>
         <div>
           <p className="text-muted-foreground max-w-2xl mx-auto text-sm leading-relaxed text-justify">
-            {t('app.description')}
+            O SIGEG-BV (Sistema de Gestão de Grupos - Boa Vista) é uma plataforma completa para gestão de grupos musicais, oferecendo funcionalidades de gestão de membros, finanças, programas semanais e muito mais. Este sistema foi desenvolvido com dedicação para facilitar a organização e administração de grupos. Administre membros, organize eventos, solicite serviços como: Arranjos Musicais Automatizados, Acompanhamentos de Hinos, Revisão de Arranjos, e gere relatórios detalhados com segurança e praticidade.
           </p>
         </div>
         <div className="flex flex-row gap-3 justify-center">
@@ -107,7 +105,7 @@ export function Dashboard() {
             onClick={() => navigate("/groups")}
           >
             <Users className="w-4 h-4" />
-            {t('dashboard.viewGroups')}
+            Ver Grupos
           </Button>
           <Button 
             variant="outline" 
@@ -115,7 +113,7 @@ export function Dashboard() {
             className="text-sm"
           >
             <Activity className="w-4 h-4" />
-            {t('dashboard.learnMore')}
+            Saiba Mais
           </Button>
         </div>
       </div>
@@ -123,28 +121,28 @@ export function Dashboard() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatsCard
-          title={t('dashboard.totalGroups')}
+          title="Total de Grupos"
           value={stats?.totalGroups ?? 0}
-          change={`+2 ${t('dashboard.thisMonth')}`}
+          change="+2 este mês"
           changeType="positive"
           icon={Building}
         />
         <StatsCard
-          title={t('dashboard.activeMembers')}
+          title="Membros Ativos"
           value={stats?.totalMembers ?? 0}
-          change={`+15 ${t('dashboard.thisMonth')}`}
+          change="+15 este mês"
           changeType="positive"
           icon={Users}
         />
         <StatsCard
-          title={t('dashboard.activeGroups')}
+          title="Grupos Ativos"
           value={stats?.activeGroups ?? 0}
           icon={Activity}
         />
         <StatsCard
-          title={t('dashboard.newRegistrations')}
+          title="Novos Cadastros"
           value="8"
-          change={`+25% ${t('dashboard.vsLastMonth')}`}
+          change="+25% vs último mês"
           changeType="positive"
           icon={UserPlus}
         />
@@ -152,13 +150,13 @@ export function Dashboard() {
 
       {/* Financial Summary Widget */}
       <section>
-        <h2 className="text-2xl font-semibold mb-6">{t('dashboard.financialSummary')}</h2>
+        <h2 className="text-2xl font-semibold mb-6">Resumo Financeiro</h2>
         <FinancialSummaryWidget />
       </section>
 
       {/* Interactive Charts */}
       <section>
-        <h2 className="text-2xl font-semibold mb-6">{t('dashboard.statisticsAndTrends')}</h2>
+        <h2 className="text-2xl font-semibold mb-6">Estatísticas e Tendências</h2>
         <DashboardCharts />
       </section>
 
@@ -175,7 +173,7 @@ export function Dashboard() {
             onClick={() => navigate("/groups/new")}
           >
             <Plus className="w-5 h-5" />
-            {t('dashboard.newGroup')}
+            Novo Grupo
           </Button>
         </div>
       </PermissionGuard>
