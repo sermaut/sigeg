@@ -76,25 +76,24 @@ const PERMISSION_MAP: Record<number, string[]> = {
   7: ['view_group_data'],
 };
 
-// Timeout for login requests (8 seconds)
-const LOGIN_TIMEOUT = 8000;
+// ULTRA-FAST: Reduced timeout for faster feedback (5 seconds)
+const LOGIN_TIMEOUT = 5000;
+
+// INSTANT: Parse stored user synchronously before React hydration
+const getStoredUser = (): AuthUser | null => {
+  try {
+    const stored = localStorage.getItem('sigeg_user');
+    if (stored) return JSON.parse(stored);
+  } catch {
+    localStorage.removeItem('sigeg_user');
+  }
+  return null;
+};
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem('sigeg_user');
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error('Error parsing stored user:', error);
-        localStorage.removeItem('sigeg_user');
-      }
-    }
-    setLoading(false);
-  }, []);
+  // INSTANT: Initialize with stored user immediately (no useEffect delay)
+  const [user, setUser] = useState<AuthUser | null>(getStoredUser);
+  const [loading, setLoading] = useState(false); // Start false - no loading needed if cached
 
   const login = async (code: string, type: 'admin' | 'member' | 'group') => {
     try {

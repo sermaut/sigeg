@@ -80,7 +80,7 @@ export const useAppStore = create<AppState>()(
         clearErrors: () => set({ errors: [] }),
       }),
       {
-        name: 'sigeg-app-store',
+        name: 'sigeg_app_state', // Match key used in i18n for instant language sync
         partialize: (state) => ({
           theme: state.theme,
           language: state.language,
