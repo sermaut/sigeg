@@ -17,6 +17,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from 'react-i18next';
 
 interface SidebarProps {
   className?: string;
@@ -30,45 +31,46 @@ export function Sidebar({ className, isOpen, onOpenChange }: SidebarProps) {
   const { logout } = useAuth();
   const permissions = usePermissions();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const handleRestrictedClick = (label: string) => {
     toast({
-      title: "Acesso Negado",
-      description: "Só Administradores têm acesso",
+      title: t('sidebar.accessDenied'),
+      description: t('sidebar.onlyAdmins'),
       variant: "destructive",
     });
   };
 
   const navigationItems = [
-    { icon: Home, label: "Página Inicial", href: "/", show: true },
-    { icon: Users, label: "Grupos", href: "/groups", show: true },
-    { icon: UserPlus, label: "Novo Membro", href: "/members/new", show: permissions.canAccessNewMember },
-    { icon: Briefcase, label: "Serviços Musicais", href: "/services", show: true },
+    { icon: Home, label: t('navigation.home'), href: "/", show: true },
+    { icon: Users, label: t('navigation.groups'), href: "/groups", show: true },
+    { icon: UserPlus, label: t('navigation.newMember'), href: "/members/new", show: permissions.canAccessNewMember },
+    { icon: Briefcase, label: t('navigation.services'), href: "/services", show: true },
     { 
       icon: FileText, 
-      label: "Relatórios", 
+      label: t('navigation.reports'), 
       href: "/reports", 
       show: true,
       restricted: !permissions.canAccessReports,
-      onClick: !permissions.canAccessReports ? () => handleRestrictedClick("Relatórios") : undefined
+      onClick: !permissions.canAccessReports ? () => handleRestrictedClick(t('navigation.reports')) : undefined
     },
     { 
       icon: Shield, 
-      label: "Administradores", 
+      label: t('navigation.admin'), 
       href: "/admin", 
       show: true,
       restricted: !permissions.canAccessAdmins,
-      onClick: !permissions.canAccessAdmins ? () => handleRestrictedClick("Administradores") : undefined
+      onClick: !permissions.canAccessAdmins ? () => handleRestrictedClick(t('navigation.admin')) : undefined
     },
     { 
       icon: Settings, 
-      label: "Configurações", 
+      label: t('navigation.settings'), 
       href: "/settings", 
       show: true,
       restricted: !permissions.canAccessSettings,
-      onClick: !permissions.canAccessSettings ? () => handleRestrictedClick("Configurações") : undefined
+      onClick: !permissions.canAccessSettings ? () => handleRestrictedClick(t('navigation.settings')) : undefined
     },
-    { icon: MessageCircle, label: "Contacto", href: "/contact", show: true },
+    { icon: MessageCircle, label: t('navigation.contact'), href: "/contact", show: true },
   ].filter(item => item.show);
 
   return (
@@ -141,7 +143,7 @@ export function Sidebar({ className, isOpen, onOpenChange }: SidebarProps) {
             className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10 px-4 text-base"
           >
             <LogOut className="w-6 h-6 flex-shrink-0" />
-            <span className="ml-3 text-base">Sair</span>
+            <span className="ml-3 text-base">{t('auth.logout')}</span>
           </Button>
         </div>
       </div>

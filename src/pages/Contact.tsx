@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { MessageCircle, Mail, User, ExternalLink, Phone, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useTranslation } from 'react-i18next';
 
 interface CreatorInfo {
   name: string;
@@ -13,6 +14,7 @@ interface CreatorInfo {
 }
 
 export default function Contact() {
+  const { t } = useTranslation();
   const [creatorInfo, setCreatorInfo] = useState<CreatorInfo>({
     name: "Manuel Bemvindo Mendes",
     whatsapp: "+244 927 800 658",
@@ -64,7 +66,7 @@ export default function Contact() {
         {/* Header */}
         <div className="text-center">
           <p className="text-muted-foreground">
-            Entra em contacto se precisar de ajuda ou esclarecimentos
+            {t('contact.subtitle')}
           </p>
         </div>
 
@@ -81,7 +83,7 @@ export default function Contact() {
             </Avatar>
             <CardTitle className="text-2xl">{creatorInfo.name}</CardTitle>
             <CardDescription className="text-base">
-              Criador e Desenvolvedor do SIGEG-BV
+              {t('contact.creatorDeveloper')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pt-4">
@@ -135,11 +137,11 @@ export default function Contact() {
         {/* About SIGEG */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Sobre o SIGEG-BV</CardTitle>
+            <CardTitle className="text-lg">{t('contact.aboutSigeg')}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              O SIGEG-BV (Sistema de Gestão de Grupos - Boa Vista) é uma plataforma completa para gestão de grupos musicais, oferecendo funcionalidades de gestão de membros, finanças, programas semanais e muito mais. Este sistema foi desenvolvido com dedicação para facilitar a organização e administração de grupos. Administre membros, organize eventos, solicite serviços como: Arranjos Musicais Automatizados, Acompanhamentos de Hinos, Revisão de Arranjos, e gere relatórios detalhados com segurança e praticidade.
+              {t('app.description')}
             </p>
           </CardContent>
         </Card>
