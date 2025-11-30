@@ -80,11 +80,11 @@ export function Dashboard() {
     <div className="space-y-6">
       {/* Welcome Header */}
       <div className="text-center space-y-6">
-        <div className="flex items-center justify-center space-x-4 mb-6">
+        <div className="flex flex-col items-center mb-6">
           <img 
             src={sigegLogo} 
             alt="SIGEG Logo" 
-            className="w-16 h-16 object-contain"
+            className="w-20 h-20 object-contain mb-4"
             loading="eager"
             decoding="async"
           />
@@ -93,8 +93,8 @@ export function Dashboard() {
           </h1>
         </div>
         <div>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Plataforma completa para gestão eficiente de grupos musicais em Angola. Administre membros, organize eventos, solicite arranjos e gere relatórios detalhados com segurança e praticidade.
+          <p className="text-muted-foreground max-w-2xl mx-auto text-sm leading-relaxed">
+            O SIGEG-BV (Sistema de Gestão de Grupos - Boa Vista) é uma plataforma completa para gestão de grupos musicais, oferecendo funcionalidades de gestão de membros, finanças, programas semanais e muito mais. Este sistema foi desenvolvido com dedicação para facilitar a organização e administração de grupos. Administre membros, organize eventos, solicite serviços como: Arranjos Musicais Automatizados, Acompanhamentos de Hinos, Revisão de Arranjos, e gere relatórios detalhados com segurança e praticidade.
           </p>
         </div>
         <div className="flex flex-row gap-3 justify-center">
