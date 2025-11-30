@@ -5,7 +5,7 @@ import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +16,7 @@ import { ImageCropper } from "./ImageCropper";
 import { compressImage } from "@/lib/imageOptimization";
 import { generateUniqueMemberCode, isMemberCodeUnique } from "@/lib/codeGenerator";
 import { useTranslation } from "react-i18next";
+
 const memberSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
   group_id: z.string().min(1, "Grupo é obrigatório"),
@@ -156,8 +157,8 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
     const maxSizeInBytes = 2.5 * 1024 * 1024; // 2,5MB
     if (file.size > maxSizeInBytes) {
       toast({
-        title: "Imagem muito grande",
-        description: "A imagem deve ter no máximo 2,5MB. Por favor, selecione uma imagem menor.",
+        title: t('memberForm.imageTooLarge'),
+        description: t('memberForm.maxImageSize'),
         variant: "destructive",
       });
       // Limpar o input
@@ -177,8 +178,8 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
       reader.readAsDataURL(compressedFile);
     } catch (error) {
       toast({
-        title: "Erro",
-        description: "Falha ao processar imagem",
+        title: t('memberForm.errorSave'),
+        description: t('memberForm.errorProcessImage'),
         variant: "destructive",
       });
     }
@@ -193,11 +194,11 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
     try {
       const code = await generateUniqueMemberCode(memberId);
       form.setValue("member_code", code);
-      toast({ title: "Código gerado com sucesso!" });
+      toast({ title: t('memberForm.codeGenerated') });
     } catch (error) {
       toast({
-        title: "Erro ao gerar código",
-        description: "Tente novamente",
+        title: t('memberForm.errorGenerateCode'),
+        description: t('common.tryAgain'),
         variant: "destructive",
       });
     } finally {
@@ -212,8 +213,12 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
     if (!isEditing && memberLimitInfo) {
       if (memberLimitInfo.currentCount >= memberLimitInfo.limit) {
         toast({
-          title: "Limite de membros excedido",
-          description: `O plano ${memberLimitInfo.planName} permite apenas ${memberLimitInfo.limit} membros. O grupo já tem ${memberLimitInfo.currentCount} membros ativos.`,
+          title: t('memberForm.memberLimitExceeded'),
+          description: t('memberForm.memberLimitDesc', { 
+            plan: memberLimitInfo.planName, 
+            limit: memberLimitInfo.limit,
+            current: memberLimitInfo.currentCount
+          }),
           variant: "destructive",
         });
         setIsLoading(false);
@@ -226,8 +231,8 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
       const isUnique = await isMemberCodeUnique(data.member_code, memberId);
       if (!isUnique) {
         toast({
-          title: "Código já existe",
-          description: "Este código de membro já está em uso. Gere um novo código ou digite outro.",
+          title: t('memberForm.codeExists'),
+          description: t('memberForm.codeInUse'),
           variant: "destructive",
         });
         setIsLoading(false);
@@ -248,14 +253,14 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
           .eq("id", memberId);
         
         if (error) throw error;
-        toast({ title: "Membro atualizado com sucesso!" });
+        toast({ title: t('memberForm.memberUpdated') });
       } else {
         const { error } = await supabase
           .from("members")
           .insert([memberData as any]);
         
         if (error) throw error;
-        toast({ title: "Membro criado com sucesso!" });
+        toast({ title: t('memberForm.memberCreated') });
       }
       
       onSuccess?.();
@@ -272,13 +277,13 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
       console.error("Erro ao salvar membro:", error);
       
       // Handle specific database errors
-      let errorMessage = "Verifique os dados e tente novamente";
+      let errorMessage = t('common.checkDataTryAgain');
       if (error?.message?.includes("Limite de membros excedido")) {
         errorMessage = error.message;
       }
       
       toast({
-        title: "Erro ao salvar membro",
+        title: t('memberForm.errorSave'),
         description: errorMessage,
         variant: "destructive",
       });
@@ -316,7 +321,7 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
                 className="flex items-center gap-2"
               >
                 <Upload className="w-4 h-4" />
-                Carregar Foto
+                {t('memberForm.uploadPhoto')}
               </Button>
             </div>
 
@@ -325,9 +330,9 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nome Completo</FormLabel>
+                  <FormLabel>{t('memberForm.fullName')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Digite o nome completo" {...field} />
+                    <Input placeholder={t('memberForm.enterFullName')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -340,7 +345,7 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
                 name="birth_date"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Data de Nascimento</FormLabel>
+                    <FormLabel>{t('memberForm.birthDate')}</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>
@@ -354,7 +359,7 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Telefone</FormLabel>
+                    <FormLabel>{t('memberForm.phone')}</FormLabel>
                     <FormControl>
                       <Input placeholder="+244 xxx xxx xxx" {...field} />
                     </FormControl>
@@ -369,9 +374,9 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
               name="neighborhood"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Bairro</FormLabel>
+                  <FormLabel>{t('memberForm.neighborhood')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Digite o bairro" {...field} />
+                    <Input placeholder={t('memberForm.enterNeighborhood')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -384,9 +389,9 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
                 name="birth_province"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Província de Nascimento</FormLabel>
+                    <FormLabel>{t('memberForm.birthProvince')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Digite a província" {...field} />
+                      <Input placeholder={t('memberForm.enterProvince')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -398,9 +403,9 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
                 name="birth_municipality"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Município de Nascimento</FormLabel>
+                    <FormLabel>{t('memberForm.birthMunicipality')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Digite o município" {...field} />
+                      <Input placeholder={t('memberForm.enterMunicipality')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -415,18 +420,18 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
                 name="marital_status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Estado Civil</FormLabel>
+                    <FormLabel>{t('memberForm.maritalStatus')}</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Selecione" />
+                          <SelectValue placeholder={t('common.select')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="solteiro">Solteiro</SelectItem>
-                        <SelectItem value="casado">Casado</SelectItem>
-                        <SelectItem value="divorciado">Divorciado</SelectItem>
-                        <SelectItem value="viuvo">Viúvo</SelectItem>
+                        <SelectItem value="solteiro">{t('memberForm.single')}</SelectItem>
+                        <SelectItem value="casado">{t('memberForm.married')}</SelectItem>
+                        <SelectItem value="divorciado">{t('memberForm.divorced')}</SelectItem>
+                        <SelectItem value="viuvo">{t('memberForm.widowed')}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -439,73 +444,73 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
                 name="role"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Função</FormLabel>
+                    <FormLabel>{t('memberForm.role')}</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Selecione" />
+                          <SelectValue placeholder={t('common.select')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="max-h-[400px]">
                         {/* Nível 1 - Liderança Executiva */}
                         <div className="px-2 py-1.5 text-xs font-semibold text-primary bg-primary/5">
-                          Nível 1 - Liderança Executiva
+                          {t('memberForm.level1')}
                         </div>
-                        <SelectItem value="presidente">Presidente</SelectItem>
-                        <SelectItem value="vice_presidente_1">Vice-presidente 1</SelectItem>
-                        <SelectItem value="vice_presidente_2">Vice-presidente 2</SelectItem>
-                        <SelectItem value="secretario_1">Secretário 1</SelectItem>
-                        <SelectItem value="secretario_2">Secretário 2</SelectItem>
+                        <SelectItem value="presidente">{t('memberForm.roles.president')}</SelectItem>
+                        <SelectItem value="vice_presidente_1">{t('memberForm.roles.vicePresident1')}</SelectItem>
+                        <SelectItem value="vice_presidente_2">{t('memberForm.roles.vicePresident2')}</SelectItem>
+                        <SelectItem value="secretario_1">{t('memberForm.roles.secretary1')}</SelectItem>
+                        <SelectItem value="secretario_2">{t('memberForm.roles.secretary2')}</SelectItem>
                         
                         {/* Nível 2 - Coordenação */}
                         <div className="px-2 py-1.5 text-xs font-semibold text-primary bg-primary/5 mt-1">
-                          Nível 2 - Coordenação
+                          {t('memberForm.level2')}
                         </div>
-                        <SelectItem value="inspector">Inspector</SelectItem>
-                        <SelectItem value="inspector_adj">Inspector Adj.</SelectItem>
-                        <SelectItem value="coordenador">Coordenador</SelectItem>
-                        <SelectItem value="coordenador_adj">Coordenador Adj.</SelectItem>
+                        <SelectItem value="inspector">{t('memberForm.roles.inspector')}</SelectItem>
+                        <SelectItem value="inspector_adj">{t('memberForm.roles.inspectorAdj')}</SelectItem>
+                        <SelectItem value="coordenador">{t('memberForm.roles.coordinator')}</SelectItem>
+                        <SelectItem value="coordenador_adj">{t('memberForm.roles.coordinatorAdj')}</SelectItem>
                         
                         {/* Nível 3 - Direção Técnica */}
                         <div className="px-2 py-1.5 text-xs font-semibold text-primary bg-primary/5 mt-1">
-                          Nível 3 - Direção Técnica
+                          {t('memberForm.level3')}
                         </div>
-                        <SelectItem value="dirigente_tecnico">Dirigente Técnico</SelectItem>
-                        <SelectItem value="chefe_pelotao">Chefe de Pelotão</SelectItem>
-                        <SelectItem value="chefe_seccao">Chefe de Secção</SelectItem>
-                        <SelectItem value="chefe_grupo">Chefe de Grupo</SelectItem>
+                        <SelectItem value="dirigente_tecnico">{t('memberForm.roles.technicalDirector')}</SelectItem>
+                        <SelectItem value="chefe_pelotao">{t('memberForm.roles.platoonChief')}</SelectItem>
+                        <SelectItem value="chefe_seccao">{t('memberForm.roles.sectionChief')}</SelectItem>
+                        <SelectItem value="chefe_grupo">{t('memberForm.roles.groupChief')}</SelectItem>
                         
                         {/* Nível 4 - Liderança Setorial */}
                         <div className="px-2 py-1.5 text-xs font-semibold text-primary bg-primary/5 mt-1">
-                          Nível 4 - Liderança Setorial
+                          {t('memberForm.level4')}
                         </div>
-                        <SelectItem value="chefe_particao">Chefe de Partição</SelectItem>
-                        <SelectItem value="chefe_categoria">Chefe de Categoria</SelectItem>
-                        <SelectItem value="chefe_equipa">Chefe de Equipa</SelectItem>
-                        <SelectItem value="chefe_missao">Chefe de Missão</SelectItem>
-                        <SelectItem value="chefe_percussao">Chefe de Percussão</SelectItem>
+                        <SelectItem value="chefe_particao">{t('memberForm.roles.partitionChief')}</SelectItem>
+                        <SelectItem value="chefe_categoria">{t('memberForm.roles.categoryChief')}</SelectItem>
+                        <SelectItem value="chefe_equipa">{t('memberForm.roles.teamChief')}</SelectItem>
+                        <SelectItem value="chefe_missao">{t('memberForm.roles.missionChief')}</SelectItem>
+                        <SelectItem value="chefe_percussao">{t('memberForm.roles.percussionChief')}</SelectItem>
                         
                         {/* Nível 5 - Serviços Especiais */}
                         <div className="px-2 py-1.5 text-xs font-semibold text-primary bg-primary/5 mt-1">
-                          Nível 5 - Serviços Especiais
+                          {t('memberForm.level5')}
                         </div>
-                        <SelectItem value="protocolo">Protocolo</SelectItem>
-                        <SelectItem value="relacao_publica">Relação Pública</SelectItem>
-                        <SelectItem value="evangelista">Evangelista</SelectItem>
-                        <SelectItem value="conselheiro">Conselheiro</SelectItem>
-                        <SelectItem value="disciplinador">Disciplinador</SelectItem>
+                        <SelectItem value="protocolo">{t('memberForm.roles.protocol')}</SelectItem>
+                        <SelectItem value="relacao_publica">{t('memberForm.roles.publicRelations')}</SelectItem>
+                        <SelectItem value="evangelista">{t('memberForm.roles.evangelist')}</SelectItem>
+                        <SelectItem value="conselheiro">{t('memberForm.roles.counselor')}</SelectItem>
+                        <SelectItem value="disciplinador">{t('memberForm.roles.disciplinarian')}</SelectItem>
                         
                         {/* Nível 6 - Gestão Financeira */}
                         <div className="px-2 py-1.5 text-xs font-semibold text-primary bg-primary/5 mt-1">
-                          Nível 6 - Gestão Financeira
+                          {t('memberForm.level6')}
                         </div>
-                        <SelectItem value="financeiro">Financeiro</SelectItem>
+                        <SelectItem value="financeiro">{t('memberForm.roles.financial')}</SelectItem>
                         
                         {/* Nível 7 - Membros */}
                         <div className="px-2 py-1.5 text-xs font-semibold text-primary bg-primary/5 mt-1">
-                          Nível 7 - Membros
+                          {t('memberForm.level7')}
                         </div>
-                        <SelectItem value="membro_simples">Membro Simples</SelectItem>
+                        <SelectItem value="membro_simples">{t('memberForm.roles.simpleMember')}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -518,17 +523,17 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
                 name="partition"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Partição</FormLabel>
+                    <FormLabel>{t('memberForm.partition')}</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Selecione" />
+                          <SelectValue placeholder={t('common.select')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="max-h-[400px]">
                         {/* Vozes */}
                         <div className="px-2 py-1.5 text-xs font-semibold text-primary bg-primary/5">
-                          Vozes
+                          {t('memberForm.partitions.voices')}
                         </div>
                         <SelectItem value="soprano">Soprano</SelectItem>
                         <SelectItem value="alto">Alto</SelectItem>
@@ -538,27 +543,27 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
                         
                         {/* Metais */}
                         <div className="px-2 py-1.5 text-xs font-semibold text-primary bg-primary/5 mt-1">
-                          Metais
+                          {t('memberForm.partitions.brass')}
                         </div>
-                        <SelectItem value="trompete">Trompete</SelectItem>
-                        <SelectItem value="trombones">Trombones</SelectItem>
-                        <SelectItem value="tubas">Tubas</SelectItem>
+                        <SelectItem value="trompete">{t('memberForm.partitions.trumpet')}</SelectItem>
+                        <SelectItem value="trombones">{t('memberForm.partitions.trombones')}</SelectItem>
+                        <SelectItem value="tubas">{t('memberForm.partitions.tubas')}</SelectItem>
                         
                         {/* Madeiras */}
                         <div className="px-2 py-1.5 text-xs font-semibold text-primary bg-primary/5 mt-1">
-                          Madeiras
+                          {t('memberForm.partitions.woodwinds')}
                         </div>
-                        <SelectItem value="clarinetes">Clarinetes</SelectItem>
-                        <SelectItem value="saxofone">Saxofone</SelectItem>
+                        <SelectItem value="clarinetes">{t('memberForm.partitions.clarinets')}</SelectItem>
+                        <SelectItem value="saxofone">{t('memberForm.partitions.saxophone')}</SelectItem>
                         
                         {/* Percussão */}
                         <div className="px-2 py-1.5 text-xs font-semibold text-primary bg-primary/5 mt-1">
-                          Percussão
+                          {t('memberForm.partitions.percussion')}
                         </div>
-                        <SelectItem value="caixa_1">1ª Caixa</SelectItem>
-                        <SelectItem value="caixa_2">2ª Caixa</SelectItem>
-                        <SelectItem value="caixa_3">3ª Caixa</SelectItem>
-                        <SelectItem value="percussao">Percussão</SelectItem>
+                        <SelectItem value="caixa_1">{t('memberForm.partitions.snare1')}</SelectItem>
+                        <SelectItem value="caixa_2">{t('memberForm.partitions.snare2')}</SelectItem>
+                        <SelectItem value="caixa_3">{t('memberForm.partitions.snare3')}</SelectItem>
+                        <SelectItem value="percussao">{t('memberForm.partitions.percussion')}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -572,7 +577,7 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
               name="member_code"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Código de Membro</FormLabel>
+                  <FormLabel>{t('memberForm.memberCode')}</FormLabel>
                   <div className="flex gap-2">
                     <FormControl>
                       <Input placeholder="Ex: AB3@K7" {...field} className="flex-1" />
@@ -589,7 +594,7 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
                       ) : (
                         <Wand2 className="w-4 h-4" />
                       )}
-                      <span className="ml-2 hidden sm:inline">Gerar</span>
+                      <span className="ml-2 hidden sm:inline">{t('memberForm.generate')}</span>
                     </Button>
                   </div>
                   <FormMessage />
@@ -602,12 +607,15 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
               <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
                 <div className="flex items-center space-x-2">
                   <div className="text-destructive font-medium">
-                    ⚠️ Limite de membros atingido
+                    ⚠️ {t('memberForm.memberLimitReached')}
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
-                  O plano {memberLimitInfo.planName} permite apenas {memberLimitInfo.limit} membros. 
-                  Este grupo já tem {memberLimitInfo.currentCount} membros ativos.
+                  {t('memberForm.memberLimitDesc', { 
+                    plan: memberLimitInfo.planName, 
+                    limit: memberLimitInfo.limit,
+                    current: memberLimitInfo.currentCount
+                  })}
                 </p>
               </div>
             )}
@@ -616,7 +624,7 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
             {!isEditing && memberLimitInfo && memberLimitInfo.currentCount < memberLimitInfo.limit && (
               <div className="bg-muted/50 border border-muted rounded-lg p-3">
                 <div className="text-sm text-muted-foreground">
-                  <strong>Plano {memberLimitInfo.planName}:</strong> {memberLimitInfo.currentCount} de {memberLimitInfo.limit} membros utilizados
+                  <strong>{t('memberForm.plan')} {memberLimitInfo.planName}:</strong> {memberLimitInfo.currentCount} {t('memberForm.of')} {memberLimitInfo.limit} {t('memberForm.membersUsed')}
                 </div>
               </div>
             )}
@@ -628,14 +636,14 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
                 onClick={() => navigate(-1)}
                 className="flex-1"
               >
-                Cancelar
+                {t('common.cancel')}
               </Button>
               <Button 
                 type="submit" 
                 disabled={isLoading || (!isEditing && memberLimitInfo && memberLimitInfo.currentCount >= memberLimitInfo.limit)} 
                 className="flex-1"
               >
-                {isLoading ? "Salvando..." : memberId ? "Atualizar" : "Criar Membro"}
+                {isLoading ? t('memberForm.saving') : memberId ? t('memberForm.update') : t('memberForm.createMember')}
               </Button>
             </div>
           </form>
