@@ -62,10 +62,9 @@ export default function Contact() {
     <MainLayout>
       <div className="max-w-2xl mx-auto space-y-8">
         {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-foreground">Contacto</h1>
+        <div className="text-center">
           <p className="text-muted-foreground">
-            Entre em contacto com o criador do SIGEG-BV
+            Entra em contacto se precisar de ajuda ou esclarecimentos
           </p>
         </div>
 

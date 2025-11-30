@@ -28,6 +28,18 @@ interface PaymentEventsProps {
   groupId: string;
 }
 
+// Category border colors for visual identification
+const categoryBorderColors = [
+  "border-blue-500",
+  "border-emerald-500", 
+  "border-amber-500",
+  "border-violet-500",
+  "border-rose-500",
+  "border-orange-500",
+  "border-pink-500",
+  "border-cyan-500",
+];
+
 export function PaymentEvents({ groupId }: PaymentEventsProps) {
   const [events, setEvents] = useState<any[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
@@ -38,6 +50,7 @@ export function PaymentEvents({ groupId }: PaymentEventsProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<string | null>(null);
   const [userCategoryLeadership, setUserCategoryLeadership] = useState<string[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const { toast } = useToast();
   const permissions = usePermissions();
   const { user, isMember } = useAuth();
@@ -47,7 +60,30 @@ export function PaymentEvents({ groupId }: PaymentEventsProps) {
   useEffect(() => {
     loadEvents();
     loadUserCategoryLeadership();
+    loadCategories();
   }, [groupId]);
+  
+  const loadCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("financial_categories")
+        .select("id")
+        .eq("group_id", groupId)
+        .order("created_at", { ascending: true });
+      
+      if (error) throw error;
+      setCategories(data || []);
+    } catch (error) {
+      console.error("Erro ao carregar categorias:", error);
+    }
+  };
+  
+  const getCategoryBorderColor = (categoryId: string | null) => {
+    if (!categoryId) return "border-border";
+    const index = categories.findIndex(c => c.id === categoryId);
+    if (index === -1) return "border-border";
+    return categoryBorderColors[index % categoryBorderColors.length];
+  };
   
   const loadUserCategoryLeadership = async () => {
     if (!currentMemberId) return;
@@ -169,9 +205,9 @@ export function PaymentEvents({ groupId }: PaymentEventsProps) {
         <PermissionGuard require="canCreatePaymentEvent">
           <Button 
             onClick={() => setShowEventDialog(true)}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 text-sm py-[5px] px-3 h-auto"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-3.5 w-3.5" />
             Novo Evento
           </Button>
         </PermissionGuard>
@@ -196,7 +232,7 @@ export function PaymentEvents({ groupId }: PaymentEventsProps) {
           {events.map((event) => (
             <Card 
               key={event.id}
-              className="hover:shadow-md transition-shadow"
+              className={`hover:shadow-md transition-shadow border-2 ${getCategoryBorderColor(event.category_id)}`}
             >
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle 

@@ -252,18 +252,16 @@ export function ImageCropper({ open, onOpenChange, imageSrc, onCrop }: ImageCrop
             <Button 
               variant="outline" 
               onClick={() => onOpenChange(false)} 
-              className="flex-1"
-              size="lg"
+              className="flex-1 text-sm py-[6px] h-auto"
             >
-              <X className="w-4 h-4 mr-2" />
+              <X className="w-3 h-3 mr-1.5" />
               Cancelar
             </Button>
             <Button 
               onClick={handleCrop} 
-              className="flex-1"
-              size="lg"
+              className="flex-1 text-sm py-[6px] h-auto"
             >
-              <Check className="w-4 h-4 mr-2" />
+              <Check className="w-3 h-3 mr-1.5" />
               Aplicar Recorte
             </Button>
           </div>

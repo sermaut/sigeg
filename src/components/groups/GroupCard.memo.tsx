@@ -78,31 +78,39 @@ export const GroupCard = memo(function GroupCard({
 
   return (
     <Card 
-      className={`card-elevated hover:scale-105 transition-all duration-300 ${isInactive ? 'opacity-75 border-destructive/50' : ''}`}
+      className={`
+        bg-gradient-to-br from-card via-card to-primary/5
+        border-2 ${isInactive ? 'border-destructive/40 opacity-75' : 'border-primary/15 hover:border-primary/30'}
+        shadow-md hover:shadow-lg
+        hover:scale-[1.02] transition-all duration-300
+        backdrop-blur-sm
+      `}
       onMouseEnter={handleMouseEnter}
     >
-      <CardHeader>
-        <div className="flex justify-between items-start">
-          <div className="flex-1">
-            <CardTitle className={`text-lg font-semibold flex items-center gap-2 ${isInactive ? 'text-muted-foreground' : 'text-foreground'}`}>
-              <Building className={`w-5 h-5 ${isInactive ? 'text-muted-foreground' : 'text-primary'}`} />
-              {group.name}
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-start gap-2">
+          <div className="flex-1 min-w-0">
+            <CardTitle className={`text-base font-semibold flex items-center gap-2 ${isInactive ? 'text-muted-foreground' : 'text-foreground'}`}>
+              <div className={`p-1.5 rounded-lg ${isInactive ? 'bg-muted' : 'bg-primary/10'}`}>
+                <Building className={`w-4 h-4 ${isInactive ? 'text-muted-foreground' : 'text-primary'}`} />
+              </div>
+              <span className="truncate">{group.name}</span>
             </CardTitle>
           </div>
           {group.is_active !== undefined && (
             <Badge 
               variant={group.is_active ? "default" : "destructive"}
-              className={isInactive ? 'animate-pulse' : ''}
+              className={`shrink-0 ${isInactive ? 'animate-pulse' : ''}`}
             >
               {group.is_active ? "Ativo" : "Inativo"}
             </Badge>
           )}
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-          <MapPin className="w-4 h-4" />
-          <span>{group.municipality}, {group.province}</span>
+      <CardContent className="space-y-3 pt-0">
+        <div className="flex items-center space-x-2 text-sm text-muted-foreground bg-muted/30 rounded-lg px-2.5 py-1.5">
+          <MapPin className="w-4 h-4 text-primary/70" />
+          <span className="truncate">{group.municipality}, {group.province}</span>
         </div>
 
         <div className="flex space-x-2 pt-2">
