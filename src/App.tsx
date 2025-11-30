@@ -35,21 +35,22 @@ const AdminManagement = lazy(() => import('@/pages/AdminManagement'));
 const Contact = lazy(() => import('@/pages/Contact'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 
-// ULTRA-FAST: Cache otimizado para máxima performance (<1s loading)
+// ULTRA-AGGRESSIVE: Cache otimizado para máxima performance (30 dias)
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: Infinity, // Dados nunca ficam stale automaticamente
-      gcTime: Infinity, // Mantém em cache indefinidamente
-      retry: false, // Sem retry para máxima velocidade
+      staleTime: 7 * 24 * 60 * 60 * 1000, // 7 dias - dados considerados frescos
+      gcTime: 30 * 24 * 60 * 60 * 1000, // 30 dias - mantém em memória
+      retry: (failureCount, error: any) => {
+        if (error?.message?.includes('4')) return false;
+        return failureCount < 1; // Apenas 1 retry
+      },
       refetchOnWindowFocus: false,
-      refetchOnReconnect: false,
-      refetchOnMount: false,
-      networkMode: 'offlineFirst', // Usa cache primeiro, sempre
+      refetchOnReconnect: true,
+      refetchOnMount: false, // Não refetch se dados ainda válidos
     },
     mutations: {
-      retry: false,
-      networkMode: 'offlineFirst',
+      retry: 1,
     },
   },
 });

@@ -3,14 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trash2, Calendar, Music, FileText, Edit, ChevronDown, ChevronUp, X } from "lucide-react";
+import { Trash2, Calendar, Music, FileText, Edit, ChevronDown, ChevronUp } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
 import { WeeklyProgramEditDialog } from "./WeeklyProgramEditDialog";
 import { CustomAudioPlayer } from "./CustomAudioPlayer";
 import { usePermissions } from "@/hooks/usePermissions";
 import { PermissionGuard } from "@/components/common/PermissionGuard";
-import { useTranslation } from "react-i18next";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -52,7 +51,6 @@ export function WeeklyProgramList({ groupId, refreshTrigger }: WeeklyProgramList
   const [editProgram, setEditProgram] = useState<WeeklyProgram | null>(null);
   const [expandedPrograms, setExpandedPrograms] = useState<Record<string, boolean>>({});
   const { toast } = useToast();
-  const { t } = useTranslation();
   const permissions = usePermissions();
 
   useEffect(() => {
@@ -84,8 +82,8 @@ export function WeeklyProgramList({ groupId, refreshTrigger }: WeeklyProgramList
     } catch (error) {
       console.error('Erro ao carregar programas:', error);
       toast({
-        title: t('weeklyProgramList.error'),
-        description: t('weeklyProgramList.failedToLoad'),
+        title: "Erro",
+        description: "Falha ao carregar programas semanais",
         variant: "destructive",
       });
     } finally {
@@ -103,16 +101,16 @@ export function WeeklyProgramList({ groupId, refreshTrigger }: WeeklyProgramList
       if (error) throw error;
 
       toast({
-        title: t('weeklyProgramList.success'),
-        description: t('weeklyProgramList.programRemoved'),
+        title: "Sucesso",
+        description: "Programa removido com sucesso",
       });
 
       loadPrograms();
     } catch (error) {
       console.error('Erro ao remover programa:', error);
       toast({
-        title: t('weeklyProgramList.error'),
-        description: t('weeklyProgramList.failedToRemove'),
+        title: "Erro",
+        description: "Falha ao remover programa",
         variant: "destructive",
       });
     } finally {
@@ -143,7 +141,7 @@ export function WeeklyProgramList({ groupId, refreshTrigger }: WeeklyProgramList
     return (
       <Card className="p-8 text-center">
         <p className="text-muted-foreground">
-          {t('weeklyProgramList.noProgramsAdded')}
+          Nenhum programa semanal adicionado ainda
         </p>
       </Card>
     );
@@ -254,7 +252,7 @@ export function WeeklyProgramList({ groupId, refreshTrigger }: WeeklyProgramList
           <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-primary/10">
             <div className="flex items-center">
               <Calendar className="w-3 h-3 mr-1" />
-              {t('weeklyProgramList.expiresIn', { days: daysRemaining, count: daysRemaining })}
+              Expira em {daysRemaining} {daysRemaining === 1 ? 'dia' : 'dias'}
             </div>
             <span>
               {new Date(program.created_at).toLocaleDateString('pt-BR')}
@@ -272,10 +270,10 @@ export function WeeklyProgramList({ groupId, refreshTrigger }: WeeklyProgramList
       <Tabs defaultValue="hinos" className="w-full">
         <TabsList className="grid w-full grid-cols-2 mb-4">
           <TabsTrigger value="hinos">
-            {t('weeklyProgramList.hymns')} ({hymnsPrograms.length})
+            Hinos ({hymnsPrograms.length})
           </TabsTrigger>
           <TabsTrigger value="acompanhamentos">
-            {t('weeklyProgramList.accompaniments')} ({accompanimentPrograms.length})
+            Acompanhamentos ({accompanimentPrograms.length})
           </TabsTrigger>
         </TabsList>
 
@@ -283,7 +281,7 @@ export function WeeklyProgramList({ groupId, refreshTrigger }: WeeklyProgramList
           {hymnsPrograms.length === 0 ? (
             <Card className="p-8 text-center">
               <p className="text-muted-foreground">
-                {t('weeklyProgramList.noHymnsAdded')}
+                Nenhum programa de hino adicionado ainda
               </p>
             </Card>
           ) : (
@@ -295,7 +293,7 @@ export function WeeklyProgramList({ groupId, refreshTrigger }: WeeklyProgramList
           {accompanimentPrograms.length === 0 ? (
             <Card className="p-8 text-center">
               <p className="text-muted-foreground">
-                {t('weeklyProgramList.noAccompanimentsAdded')}
+                Nenhum programa de acompanhamento adicionado ainda
               </p>
             </Card>
           ) : (
@@ -307,18 +305,18 @@ export function WeeklyProgramList({ groupId, refreshTrigger }: WeeklyProgramList
       <AlertDialog open={deleteId !== null} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('weeklyProgramList.confirmRemoval')}</AlertDialogTitle>
+            <AlertDialogTitle>Confirmar remoção</AlertDialogTitle>
             <AlertDialogDescription>
-              {t('weeklyProgramList.confirmRemovalDesc')}
+              Tem certeza que deseja remover este programa? Esta ação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t('weeklyProgramList.cancel')}</AlertDialogCancel>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => deleteId && handleDelete(deleteId)}
               className="bg-destructive hover:bg-destructive/90"
             >
-              {t('weeklyProgramList.remove')}
+              Remover
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -341,7 +339,7 @@ export function WeeklyProgramList({ groupId, refreshTrigger }: WeeklyProgramList
               className="absolute top-4 right-4 text-white hover:bg-white/20"
               onClick={() => setFullscreenImage(null)}
             >
-              <X className="w-6 h-6" />
+              <Trash2 className="w-6 h-6" />
             </Button>
           </div>
         </div>

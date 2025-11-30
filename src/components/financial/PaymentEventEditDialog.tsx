@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useTranslation } from "react-i18next";
 
 interface PaymentEventEditDialogProps {
   open: boolean;
@@ -21,7 +20,6 @@ export function PaymentEventEditDialog({ open, onOpenChange, event, onEventUpdat
     amount_to_pay: "",
   });
   const { toast } = useToast();
-  const { t } = useTranslation();
 
   useEffect(() => {
     if (event) {
@@ -49,14 +47,14 @@ export function PaymentEventEditDialog({ open, onOpenChange, event, onEventUpdat
       if (error) throw error;
 
       toast({
-        title: t('paymentEvent.eventUpdated'),
+        title: "Evento atualizado com sucesso!",
       });
 
       onEventUpdated();
     } catch (error) {
       console.error("Erro ao atualizar evento:", error);
       toast({
-        title: t('paymentEvent.errorUpdating'),
+        title: "Erro ao atualizar evento",
         variant: "destructive",
       });
     } finally {
@@ -70,26 +68,26 @@ export function PaymentEventEditDialog({ open, onOpenChange, event, onEventUpdat
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{t('paymentEvent.editEvent')}</DialogTitle>
+          <DialogTitle>Editar Evento de Pagamento</DialogTitle>
           <DialogDescription>
-            {t('paymentEvent.editDescription')}
+            Edite as informações do evento de pagamento.
           </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="title">{t('paymentEvent.eventTitle')}</Label>
+            <Label htmlFor="title">Título do Evento</Label>
             <Input
               id="title"
               value={formData.title}
               onChange={(e) => setFormData({...formData, title: e.target.value})}
-              placeholder={t('paymentEvent.eventTitlePlaceholder')}
+              placeholder="Ex: Taxa mensal de Janeiro"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="amount">{t('paymentEvent.amountToPay')}</Label>
+            <Label htmlFor="amount">Valor a Pagar (AOA)</Label>
             <Input
               id="amount"
               type="number"
@@ -104,10 +102,10 @@ export function PaymentEventEditDialog({ open, onOpenChange, event, onEventUpdat
 
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              {t('common.cancel')}
+              Cancelar
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? t('paymentEvent.updating') : t('paymentEvent.updateEvent')}
+              {loading ? "Atualizando..." : "Atualizar Evento"}
             </Button>
           </div>
         </form>

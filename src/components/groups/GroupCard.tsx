@@ -1,8 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Building, MapPin, Eye, Edit, Trash2 } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { Building, MapPin, Users, Eye, Edit, Trash2 } from "lucide-react";
 
 interface GroupCardProps {
   group: {
@@ -21,10 +20,9 @@ interface GroupCardProps {
 }
 
 export function GroupCard({ group, onView, onEdit, onDelete }: GroupCardProps) {
-  const { t } = useTranslation();
-
   return (
     <Card className="group relative overflow-hidden card-elevated border-2 border-border hover:border-primary/50 transition-all duration-300 bg-primary/5 backdrop-blur-sm">
+      {/* Efeito de luz de fundo */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl 
                       opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
       
@@ -37,6 +35,7 @@ export function GroupCard({ group, onView, onEdit, onDelete }: GroupCardProps) {
                               group-hover:scale-110 group-hover:rotate-3 group-hover:shadow-glow">
                 <Building className="w-7 h-7 text-white" />
               </div>
+              {/* Badge de status animado */}
               {group.is_active && (
                 <div className="absolute -top-1 -right-1 w-4 h-4 bg-success rounded-full 
                                 animate-pulse shadow-glow-accent" />
@@ -55,15 +54,16 @@ export function GroupCard({ group, onView, onEdit, onDelete }: GroupCardProps) {
           </div>
           <Badge variant={group.is_active ? "default" : "secondary"}
                  className="transition-all duration-300 hover:scale-110">
-            {group.is_active ? t('groupCard.active') : t('groupCard.inactive')}
+            {group.is_active ? "Ativo" : "Inativo"}
           </Badge>
         </div>
 
+        {/* Info com hover effect */}
         <div className="space-y-3 mb-6">
           {group.access_code && (
             <div className="flex items-center justify-between text-sm p-3 rounded-lg
                             bg-muted/30 hover:bg-muted/50 transition-colors">
-              <span className="text-muted-foreground font-medium">{t('groupCard.accessCode')}:</span>
+              <span className="text-muted-foreground font-medium">Código de Acesso:</span>
               <code className="px-3 py-1 bg-primary/10 text-primary rounded-lg text-xs font-mono
                               hover:bg-primary/20 transition-colors">
                 {group.access_code}
@@ -72,6 +72,7 @@ export function GroupCard({ group, onView, onEdit, onDelete }: GroupCardProps) {
           )}
         </div>
 
+        {/* Botões modernos */}
         <div className="flex items-center gap-2">
           <Button 
             variant="gradient" 
@@ -80,7 +81,7 @@ export function GroupCard({ group, onView, onEdit, onDelete }: GroupCardProps) {
             onClick={() => onView?.(group.id)}
           >
             <Eye className="w-4 h-4" />
-            {t('groupCard.viewDetails')}
+            Ver Detalhes
           </Button>
           <Button 
             variant="outline" 

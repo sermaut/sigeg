@@ -42,26 +42,26 @@ export function Header({ onMenuClick }: HeaderProps) {
   }, [showCode]);
 
   const getDisplayInfo = () => {
-    if (!user) return { name: t('auth.member'), code: '---', icon: User };
+    if (!user) return { name: 'Usuário', code: '---', icon: User };
 
     if (isAdmin()) {
       const admin = user.data as any;
       return {
-        name: admin.name || t('header.administrator'),
+        name: admin.name || 'Administrador',
         code: admin.access_code,
         icon: Shield
       };
     } else if (isGroup?.()) {
       const group = user.data as any;
       return {
-        name: group.name || t('header.group'),
+        name: group.name || 'Grupo',
         code: group.access_code,
         icon: Music
       };
     } else {
       const member = user.data as any;
       return {
-        name: member.name || t('auth.member'),
+        name: member.name || 'Membro',
         code: member.member_code,
         icon: Users
       };
@@ -121,7 +121,7 @@ export function Header({ onMenuClick }: HeaderProps) {
           </div>
           <div className="flex flex-col">
             <span className="text-sm font-bold text-white leading-tight">SIGEG-BV</span>
-            <span className="text-xs text-cyan-100 leading-tight">{t('sidebar.managementSystem')}</span>
+            <span className="text-xs text-cyan-100 leading-tight">Sistema de Gestão</span>
           </div>
         </div>
 
@@ -151,7 +151,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                 {name}
               </p>
               <div className="flex items-center justify-end space-x-1">
-                <p className="text-xs text-cyan-100">{t('header.code')}:</p>
+                <p className="text-xs text-cyan-100">Código:</p>
                 {showCode ? (
                   <span className="text-xs text-white font-mono font-semibold">{code}</span>
                 ) : (
@@ -190,7 +190,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                 
                 <DialogContent className="sm:max-w-md rounded-2xl">
                   <DialogHeader className="text-center">
-                    <DialogTitle className="text-base font-bold">{t('header.sessionInfo')}</DialogTitle>
+                    <DialogTitle className="text-base font-bold">Informações da Sessão</DialogTitle>
                   </DialogHeader>
                   
                   <div className="flex flex-col gap-3 py-2">
@@ -209,7 +209,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                         <h3 className="text-lg font-bold text-cyan-600 dark:text-cyan-400">{name}</h3>
                         {!isMember() && (
                           <p className="text-xs text-muted-foreground capitalize font-medium">
-                            {isAdmin() ? t('header.administrator') : t('header.group')}
+                            {isAdmin() ? 'Administrador' : 'Grupo'}
                           </p>
                         )}
                         {isMember() && (user.data as any).role && (
@@ -223,7 +223,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                     {/* Código com toggle visibility */}
                     <div className="space-y-1">
                       <label className="text-xs font-medium text-muted-foreground">
-                        {t('header.accessCode')}
+                        Código de Acesso
                       </label>
                       <div className="flex items-center gap-2">
                         <div className="flex-1 rounded-lg border-2 bg-muted/30 px-2.5 py-1.5 font-mono text-xs font-semibold">
@@ -247,7 +247,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                         variant="outline"
                         className="flex-1 rounded-lg h-9 text-xs font-semibold bg-blue-500/10 border-2 border-blue-500 text-blue-600 hover:bg-blue-500/20 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                       >
-                        {t('header.close')}
+                        Fechar
                       </Button>
                       <Button 
                         onClick={async () => {
@@ -261,12 +261,12 @@ export function Header({ onMenuClick }: HeaderProps) {
                         {isClearing ? (
                           <>
                             <InlineLoader className="mr-1" />
-                            <span className="hidden sm:inline">{t('header.clearing')}</span>
+                            <span className="hidden sm:inline">Limpando...</span>
                           </>
                         ) : (
                           <>
                             <RefreshCw className="w-3 h-3 sm:mr-1" />
-                            <span className="hidden sm:inline">{t('header.clearCache')}</span>
+                            <span className="hidden sm:inline">Cache</span>
                           </>
                         )}
                       </Button>
@@ -279,7 +279,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                         className="flex-1 rounded-lg h-9 text-xs font-semibold"
                       >
                         <LogOut className="w-3 h-3 sm:mr-1" />
-                        <span className="hidden sm:inline">{t('header.exit')}</span>
+                        <span className="hidden sm:inline">Sair</span>
                       </Button>
                     </div>
                   </div>
@@ -297,7 +297,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                          w-8 h-8 md:w-10 md:h-10 hidden md:flex transition-all duration-300
                          hover:scale-110 hover:rotate-12 disabled:opacity-50 disabled:cursor-not-allowed
                          relative group"
-              title={isClearing ? t('header.clearing') : t('header.clearAppCache')}
+              title={isClearing ? "Limpando cache..." : "Limpar cache do aplicativo"}
             >
               {isClearing ? (
                 <InlineLoader className="text-white" />
@@ -317,7 +317,7 @@ export function Header({ onMenuClick }: HeaderProps) {
               className="text-destructive hover:text-destructive hover:bg-destructive/10 
                          w-8 h-8 md:w-10 md:h-10 hidden md:flex transition-all duration-300
                          hover:scale-110 hover:rotate-12"
-              title={t('header.exit')}
+              title="Sair do sistema"
             >
               <LogOut className="w-3 h-3 md:w-4 md:h-4" />
             </Button>

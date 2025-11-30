@@ -1,7 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { TransactionCard } from "./TransactionCard";
-import { useTranslation } from "react-i18next";
 
 interface TransactionsListProps {
   transactions: any[];
@@ -12,7 +11,6 @@ interface TransactionsListProps {
 
 export function TransactionsList({ transactions, loading, onTransactionDeleted, canDelete = true }: TransactionsListProps) {
   const { toast } = useToast();
-  const { t } = useTranslation();
 
   const handleDelete = async (transactionId: string) => {
     try {
@@ -24,15 +22,15 @@ export function TransactionsList({ transactions, loading, onTransactionDeleted, 
       if (error) throw error;
 
       toast({
-        title: t('transactionsList.transactionDeleted'),
-        description: t('transactionsList.transactionDeletedDesc'),
+        title: "Transação eliminada",
+        description: "A transação foi removida com sucesso.",
       });
 
       onTransactionDeleted();
     } catch (error) {
       console.error("Erro ao eliminar transação:", error);
       toast({
-        title: t('transactionsList.errorDeleting'),
+        title: "Erro ao eliminar transação",
         variant: "destructive",
       });
     }
@@ -56,9 +54,9 @@ export function TransactionsList({ transactions, loading, onTransactionDeleted, 
   if (transactions.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground text-lg">{t('transactionsList.noTransactions')}</p>
+        <p className="text-muted-foreground text-lg">Nenhuma transação registada.</p>
         <p className="text-sm text-muted-foreground mt-2">
-          {t('transactionsList.addFirstTransaction')}
+          Adicione a primeira transação clicando no botão acima.
         </p>
       </div>
     );

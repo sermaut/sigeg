@@ -4,15 +4,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Wand2, Loader2 } from "lucide-react";
 import { generateUniqueGroupCode, isGroupCodeUnique } from "@/lib/codeGenerator";
-import { useTranslation } from "react-i18next";
 
 const groupSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
@@ -52,7 +52,6 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
   const [isGeneratingCode, setIsGeneratingCode] = useState(false);
   const [groupMembers, setGroupMembers] = useState<Array<{ id: string; name: string }>>([]);
   const { toast } = useToast();
-  const { t } = useTranslation();
   const navigate = useNavigate();
   
   const form = useForm<GroupFormData>({
@@ -120,11 +119,11 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
     try {
       const code = await generateUniqueGroupCode(groupId);
       form.setValue("access_code", code);
-      toast({ title: t('groupForm.codeGenerated') });
+      toast({ title: "Código gerado com sucesso!" });
     } catch (error) {
       toast({
-        title: t('groupForm.errorGenerateCode'),
-        description: t('common.tryAgain'),
+        title: "Erro ao gerar código",
+        description: "Tente novamente",
         variant: "destructive",
       });
     } finally {
@@ -141,8 +140,8 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
       const isUnique = await isGroupCodeUnique(data.access_code, groupId);
       if (!isUnique) {
         toast({
-          title: t('groupForm.codeExists'),
-          description: t('groupForm.codeInUse'),
+          title: "Código já existe",
+          description: "Este código de acesso já está em uso. Gere um novo código ou digite outro.",
           variant: "destructive",
         });
         setIsLoading(false);
@@ -182,7 +181,7 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
           console.error("Update error:", error);
           throw error;
         }
-        toast({ title: t('groupForm.groupUpdated') });
+        toast({ title: "Grupo atualizado com sucesso!" });
       } else {
         const { data: newGroup, error } = await supabase
           .from("groups")
@@ -260,7 +259,7 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
           }
         }
 
-        toast({ title: t('groupForm.groupCreated') });
+        toast({ title: "Grupo criado com sucesso!" });
       }
       
       onSuccess?.();
@@ -268,8 +267,8 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
     } catch (error) {
       console.error("Erro ao salvar grupo:", error);
       toast({
-        title: t('groupForm.errorSave'),
-        description: error?.message || t('common.checkDataTryAgain'),
+        title: "Erro ao salvar grupo",
+        description: error?.message || "Verifique os dados e tente novamente",
         variant: "destructive",
       });
     } finally {
@@ -287,9 +286,9 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('groupForm.groupName')}</FormLabel>
+                  <FormLabel>Nome do Grupo</FormLabel>
                   <FormControl>
-                    <Input placeholder={t('groupForm.enterGroupName')} {...field} />
+                    <Input placeholder="Digite o nome do grupo" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -302,11 +301,11 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
                 name="province"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('groupForm.province')}</FormLabel>
+                    <FormLabel>Província</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder={t('groupForm.selectProvince')} />
+                          <SelectValue placeholder="Selecione a província" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -327,9 +326,9 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
                 name="municipality"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('groupForm.municipality')}</FormLabel>
+                    <FormLabel>Município</FormLabel>
                     <FormControl>
-                      <Input placeholder={t('groupForm.enterMunicipality')} {...field} />
+                      <Input placeholder="Digite o município" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -342,21 +341,21 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
               name="direction"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('groupForm.direction')}</FormLabel>
+                  <FormLabel>Direção</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder={t('groupForm.selectDirection')} />
+                        <SelectValue placeholder="Selecione a direção" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="geral">{t('groupForm.directions.general')}</SelectItem>
-                      <SelectItem value="nacional">{t('groupForm.directions.national')}</SelectItem>
-                      <SelectItem value="provincial">{t('groupForm.directions.provincial')}</SelectItem>
-                      <SelectItem value="municipal">{t('groupForm.directions.municipal')}</SelectItem>
-                      <SelectItem value="comunal">{t('groupForm.directions.communal')}</SelectItem>
-                      <SelectItem value="seccao">{t('groupForm.directions.section')}</SelectItem>
-                      <SelectItem value="zona">{t('groupForm.directions.zone')}</SelectItem>
+                      <SelectItem value="geral">Geral</SelectItem>
+                      <SelectItem value="nacional">Nacional</SelectItem>
+                      <SelectItem value="provincial">Provincial</SelectItem>
+                      <SelectItem value="municipal">Municipal</SelectItem>
+                      <SelectItem value="comunal">Comunal</SelectItem>
+                      <SelectItem value="seccao">Secção</SelectItem>
+                      <SelectItem value="zona">Zona</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -366,11 +365,11 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
 
             {/* Leadership Section */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-foreground">{t('groupForm.groupLeadership')}</h3>
+              <h3 className="text-lg font-semibold text-foreground">Liderança do Grupo</h3>
               
               {/* Presidente */}
               <div className="space-y-2">
-                <FormLabel>{t('groupForm.president')}</FormLabel>
+                <FormLabel>Presidente</FormLabel>
                 {isEditing && groupMembers.length > 0 && (
                   <>
                     <Select
@@ -384,7 +383,7 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
                       value={form.watch("president_id") || ""}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder={t('groupForm.selectExistingMember')} />
+                        <SelectValue placeholder="Selecionar membro existente" />
                       </SelectTrigger>
                       <SelectContent>
                         {groupMembers.map((member) => (
@@ -394,7 +393,7 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
                         ))}
                       </SelectContent>
                     </Select>
-                    <p className="text-sm text-muted-foreground">{t('groupForm.orTypeManually')}</p>
+                    <p className="text-sm text-muted-foreground">ou digite o nome manualmente:</p>
                   </>
                 )}
                 <FormField
@@ -403,7 +402,7 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Input placeholder={t('groupForm.enterPresidentName')} {...field} />
+                        <Input placeholder="Digite o nome do presidente" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -414,7 +413,7 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Vice-presidente 1 */}
                 <div className="space-y-2">
-                  <FormLabel>{t('groupForm.vicePresident1')}</FormLabel>
+                  <FormLabel>Vice-presidente 1</FormLabel>
                   {isEditing && groupMembers.length > 0 && (
                     <>
                       <Select
@@ -428,7 +427,7 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
                         value={form.watch("vice_president_1_id") || ""}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder={t('groupForm.selectMember')} />
+                          <SelectValue placeholder="Selecionar membro" />
                         </SelectTrigger>
                         <SelectContent>
                           {groupMembers.map((member) => (
@@ -438,7 +437,7 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
                           ))}
                         </SelectContent>
                       </Select>
-                      <p className="text-sm text-muted-foreground">{t('groupForm.orTypeManually')}</p>
+                      <p className="text-sm text-muted-foreground">ou digite manualmente:</p>
                     </>
                   )}
                   <FormField
@@ -447,7 +446,7 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <Input placeholder={t('groupForm.enterVicePresident1Name')} {...field} />
+                          <Input placeholder="Nome do vice-presidente 1" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -457,7 +456,7 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
 
                 {/* Vice-presidente 2 */}
                 <div className="space-y-2">
-                  <FormLabel>{t('groupForm.vicePresident2')}</FormLabel>
+                  <FormLabel>Vice-presidente 2 (Opcional)</FormLabel>
                   {isEditing && groupMembers.length > 0 && (
                     <>
                       <Select
@@ -471,7 +470,7 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
                         value={form.watch("vice_president_2_id") || ""}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder={t('groupForm.selectMember')} />
+                          <SelectValue placeholder="Selecionar membro" />
                         </SelectTrigger>
                         <SelectContent>
                           {groupMembers.map((member) => (
@@ -481,7 +480,7 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
                           ))}
                         </SelectContent>
                       </Select>
-                      <p className="text-sm text-muted-foreground">{t('groupForm.orTypeManually')}</p>
+                      <p className="text-sm text-muted-foreground">ou digite manualmente:</p>
                     </>
                   )}
                   <FormField
@@ -490,7 +489,7 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <Input placeholder={t('groupForm.enterVicePresident2Name')} {...field} />
+                          <Input placeholder="Nome do vice-presidente 2" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -502,7 +501,7 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Secretário 1 */}
                 <div className="space-y-2">
-                  <FormLabel>{t('groupForm.secretary1')}</FormLabel>
+                  <FormLabel>Secretário 1</FormLabel>
                   {isEditing && groupMembers.length > 0 && (
                     <>
                       <Select
@@ -516,7 +515,7 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
                         value={form.watch("secretary_1_id") || ""}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder={t('groupForm.selectMember')} />
+                          <SelectValue placeholder="Selecionar membro" />
                         </SelectTrigger>
                         <SelectContent>
                           {groupMembers.map((member) => (
@@ -526,7 +525,7 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
                           ))}
                         </SelectContent>
                       </Select>
-                      <p className="text-sm text-muted-foreground">{t('groupForm.orTypeManually')}</p>
+                      <p className="text-sm text-muted-foreground">ou digite manualmente:</p>
                     </>
                   )}
                   <FormField
@@ -535,7 +534,7 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <Input placeholder={t('groupForm.enterSecretary1Name')} {...field} />
+                          <Input placeholder="Nome do secretário 1" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -545,7 +544,7 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
 
                 {/* Secretário 2 */}
                 <div className="space-y-2">
-                  <FormLabel>{t('groupForm.secretary2')}</FormLabel>
+                  <FormLabel>Secretário 2 (Opcional)</FormLabel>
                   {isEditing && groupMembers.length > 0 && (
                     <>
                       <Select
@@ -559,7 +558,7 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
                         value={form.watch("secretary_2_id") || ""}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder={t('groupForm.selectMember')} />
+                          <SelectValue placeholder="Selecionar membro" />
                         </SelectTrigger>
                         <SelectContent>
                           {groupMembers.map((member) => (
@@ -569,7 +568,7 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
                           ))}
                         </SelectContent>
                       </Select>
-                      <p className="text-sm text-muted-foreground">{t('groupForm.orTypeManually')}</p>
+                      <p className="text-sm text-muted-foreground">ou digite manualmente:</p>
                     </>
                   )}
                   <FormField
@@ -578,7 +577,7 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <Input placeholder={t('groupForm.enterSecretary2Name')} {...field} />
+                          <Input placeholder="Nome do secretário 2" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -594,7 +593,7 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
               name="access_code"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('groupForm.accessCode')}</FormLabel>
+                  <FormLabel>Código de Acesso (Opcional)</FormLabel>
                   <div className="flex gap-2">
                     <FormControl>
                       <Input placeholder="Ex: X7@MN5" {...field} className="flex-1" />
@@ -611,7 +610,7 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
                       ) : (
                         <Wand2 className="w-4 h-4" />
                       )}
-                      <span className="ml-2 hidden sm:inline">{t('groupForm.generate')}</span>
+                      <span className="ml-2 hidden sm:inline">Gerar</span>
                     </Button>
                   </div>
                   <FormMessage />
@@ -626,10 +625,10 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
                 onClick={() => navigate("/groups")}
                 className="flex-1"
               >
-                {t('common.cancel')}
+                Cancelar
               </Button>
               <Button type="submit" disabled={isLoading} className="flex-1">
-                {isLoading ? t('groupForm.saving') : groupId ? t('groupForm.update') : t('groupForm.createGroup')}
+                {isLoading ? "Salvando..." : groupId ? "Atualizar" : "Criar Grupo"}
               </Button>
             </div>
           </form>

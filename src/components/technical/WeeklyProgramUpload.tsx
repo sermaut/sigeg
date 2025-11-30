@@ -10,7 +10,6 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { compressImage } from "@/lib/imageOptimization";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { useTranslation } from "react-i18next";
 
 interface WeeklyProgramUploadProps {
   groupId: string;
@@ -42,14 +41,13 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   
   const { toast } = useToast();
-  const { t } = useTranslation();
   const permissions = usePermissions();
 
   const handleOpenChange = (open: boolean) => {
     if (open && !permissions.canAddWeeklyProgram) {
       toast({
-        title: t('weeklyProgram.restrictedAccess'),
-        description: t('weeklyProgram.onlyDirectorsCanAdd'),
+        title: "Acesso restrito",
+        description: "Só os Dirigentes podem adicionar programa",
         variant: "destructive",
       });
       return;

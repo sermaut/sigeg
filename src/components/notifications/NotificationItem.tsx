@@ -1,9 +1,8 @@
 import { Bell, CheckCircle2, AlertCircle, Music, DollarSign, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { ptBR, enUS, fr } from "date-fns/locale";
+import { ptBR } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
 import type { Notification } from "@/hooks/useNotifications";
 
 interface NotificationItemProps {
@@ -27,20 +26,8 @@ const getNotificationIcon = (type: string) => {
   }
 };
 
-const getLocale = (language: string) => {
-  switch (language) {
-    case 'pt':
-      return ptBR;
-    case 'fr':
-      return fr;
-    default:
-      return enUS;
-  }
-};
-
 export function NotificationItem({ notification, onMarkAsRead, onDelete }: NotificationItemProps) {
   const navigate = useNavigate();
-  const { i18n } = useTranslation();
 
   const handleClick = () => {
     if (!notification.is_read) {
@@ -88,7 +75,7 @@ export function NotificationItem({ notification, onMarkAsRead, onDelete }: Notif
           <p className="text-xs text-muted-foreground mt-2">
             {formatDistanceToNow(new Date(notification.created_at), {
               addSuffix: true,
-              locale: getLocale(i18n.language)
+              locale: ptBR
             })}
           </p>
         </div>

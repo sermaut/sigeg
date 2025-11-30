@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { useTranslation } from "react-i18next";
 import { 
   Users, 
   Building, 
@@ -47,7 +46,6 @@ export default function ReportsPage() {
   const [groups, setGroups] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const { t } = useTranslation();
 
   useEffect(() => {
     loadReportData();
@@ -210,19 +208,19 @@ export default function ReportsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">{t('reports.title')}</h1>
+            <h1 className="text-3xl font-bold text-foreground">Relatórios</h1>
             <p className="text-muted-foreground">
-              {t('reports.description')}
+              Estatísticas detalhadas e análises dos dados
             </p>
           </div>
           
           <div className="flex items-center space-x-3">
             <Select value={selectedGroup} onValueChange={setSelectedGroup}>
               <SelectTrigger className="w-48">
-                <SelectValue placeholder={t('reports.filterByGroup')} />
+                <SelectValue placeholder="Filtrar por grupo" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{t('reports.allGroups')}</SelectItem>
+                <SelectItem value="all">Todos os grupos</SelectItem>
                 {groups.map((group) => (
                   <SelectItem key={group.id} value={group.id}>
                     {group.name}
@@ -242,7 +240,7 @@ export default function ReportsPage() {
               </div>
               <div className="text-sm text-muted-foreground flex items-center justify-center">
                 <Building className="w-4 h-4 mr-1" />
-                {t('reports.totalGroups')}
+                Total de Grupos
               </div>
             </div>
           </Card>
@@ -254,7 +252,7 @@ export default function ReportsPage() {
               </div>
               <div className="text-sm text-muted-foreground flex items-center justify-center">
                 <Users className="w-4 h-4 mr-1" />
-                {t('reports.totalMembers')}
+                Total de Membros
               </div>
             </div>
           </Card>
@@ -266,7 +264,7 @@ export default function ReportsPage() {
               </div>
               <div className="text-sm text-muted-foreground flex items-center justify-center">
                 <Activity className="w-4 h-4 mr-1" />
-                {t('reports.activeMembers')}
+                Membros Ativos
               </div>
             </div>
           </Card>
@@ -281,7 +279,7 @@ export default function ReportsPage() {
               </div>
               <div className="text-sm text-muted-foreground flex items-center justify-center">
                 <BarChart3 className="w-4 h-4 mr-1" />
-                {t('reports.activityRate')}
+                Taxa de Atividade
               </div>
             </div>
           </Card>
@@ -290,10 +288,10 @@ export default function ReportsPage() {
         {/* Detailed Reports */}
         <Tabs defaultValue="distributions" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="distributions">{t('reports.distributions')}</TabsTrigger>
-            <TabsTrigger value="activity">{t('reports.activity')}</TabsTrigger>
-            <TabsTrigger value="geography">{t('reports.geography')}</TabsTrigger>
-            <TabsTrigger value="export">{t('reports.exports')}</TabsTrigger>
+            <TabsTrigger value="distributions">Distribuições</TabsTrigger>
+            <TabsTrigger value="activity">Atividade</TabsTrigger>
+            <TabsTrigger value="geography">Geografia</TabsTrigger>
+            <TabsTrigger value="export">Exportações</TabsTrigger>
           </TabsList>
 
           <TabsContent value="distributions" className="space-y-6">

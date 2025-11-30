@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useGroup, useMembers } from "@/hooks/useQueries";
@@ -84,7 +83,6 @@ export default function GroupDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { t } = useTranslation();
   const { user, isMember } = useAuth();
   const permissions = usePermissions();
   
@@ -172,8 +170,8 @@ export default function GroupDetails() {
       if (error) throw error;
       
       toast({
-        title: newStatus ? t('members.memberActivated') : t('members.memberDeactivated'),
-        description: t('members.statusChanged'),
+        title: newStatus ? "Membro ativado" : "Membro desativado",
+        description: `O membro foi ${newStatus ? 'ativado' : 'desativado'} com sucesso.`,
       });
       
       // Refetch data using React Query
@@ -181,8 +179,8 @@ export default function GroupDetails() {
     } catch (error) {
       console.error('Erro ao alterar status:', error);
       toast({
-        title: t('common.error'),
-        description: t('admin.errorChangeStatus'),
+        title: "Erro",
+        description: "Falha ao alterar status do membro",
         variant: "destructive",
       });
     } finally {
@@ -206,9 +204,9 @@ export default function GroupDetails() {
     return (
       <MainLayout>
         <div className="text-center py-12">
-          <h1 className="text-2xl font-bold text-foreground mb-4">{t('groups.groupNotFound')}</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-4">Grupo não encontrado</h1>
           <Button onClick={() => navigate('/groups')}>
-            {t('groups.backToGroups')}
+            Voltar para Grupos
           </Button>
         </div>
       </MainLayout>
@@ -231,11 +229,11 @@ export default function GroupDetails() {
                        transition-all hover:scale-105"
           >
             <ArrowLeft className="w-4 h-4" />
-            {t('common.back')}
+            Voltar
           </Button>
           <span className="text-muted-foreground">/</span>
           <span className="text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer">
-            {t('groups.title')}
+            Grupos
           </span>
           <span className="text-muted-foreground">/</span>
           <span className="text-sm font-semibold text-primary">{displayGroup.name}</span>
@@ -268,25 +266,25 @@ export default function GroupDetails() {
                          className="rounded-lg data-[state=active]:gradient-primary 
                                    data-[state=active]:text-white data-[state=active]:shadow-soft
                                    transition-all duration-300 hover:scale-105">
-              {t('groups.information')}
+              Informações
             </TabsTrigger>
             <TabsTrigger value="members"
                          className="rounded-lg data-[state=active]:gradient-primary 
                                    data-[state=active]:text-white data-[state=active]:shadow-soft
                                    transition-all duration-300 hover:scale-105">
-              {t('groups.members')}
+              Membros
             </TabsTrigger>
             <TabsTrigger value="financial"
                          className="rounded-lg data-[state=active]:gradient-primary 
                                    data-[state=active]:text-white data-[state=active]:shadow-soft
                                    transition-all duration-300 hover:scale-105">
-              {t('groups.finances')}
+              Finanças
             </TabsTrigger>
             <TabsTrigger value="technical"
                          className="rounded-lg data-[state=active]:gradient-primary 
                                    data-[state=active]:text-white data-[state=active]:shadow-soft
                                    transition-all duration-300 hover:scale-105">
-              {t('groups.technicalArea')}
+              Área Técnica
             </TabsTrigger>
           </TabsList>
 
@@ -294,7 +292,7 @@ export default function GroupDetails() {
             <Card className="border-2 border-primary/10 shadow-lg">
               <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-foreground">{t('groups.groupDetails')}</CardTitle>
+                  <CardTitle className="text-foreground">Detalhes do Grupo</CardTitle>
                   <div className="flex gap-2">
                     <PermissionGuard require="canEditGroup">
                       <Button
@@ -328,37 +326,37 @@ export default function GroupDetails() {
                     <div className="p-2 bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg">
                       <Users className="w-5 h-5 text-primary" />
                     </div>
-                    <h3 className="text-xl font-semibold text-foreground">{t('groups.leadership')}</h3>
+                    <h3 className="text-xl font-semibold text-foreground">Liderança</h3>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {displayGroup.president_name && (
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">{t('groups.president')}</label>
+                        <label className="text-sm font-medium text-muted-foreground">Presidente</label>
                         <p className="text-foreground">{displayGroup.president_name}</p>
                       </div>
                     )}
                     {displayGroup.vice_president_1_name && (
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">{t('groups.vicePresident1')}</label>
+                        <label className="text-sm font-medium text-muted-foreground">Vice-presidente 1</label>
                         <p className="text-foreground">{displayGroup.vice_president_1_name}</p>
                       </div>
                     )}
                     {displayGroup.vice_president_2_name && (
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">{t('groups.vicePresident2')}</label>
+                        <label className="text-sm font-medium text-muted-foreground">Vice-presidente 2</label>
                         <p className="text-foreground">{displayGroup.vice_president_2_name}</p>
                       </div>
                     )}
                     {displayGroup.secretary_1_name && (
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">{t('groups.secretary1')}</label>
+                        <label className="text-sm font-medium text-muted-foreground">Secretário 1</label>
                         <p className="text-foreground">{displayGroup.secretary_1_name}</p>
                       </div>
                     )}
                     {displayGroup.secretary_2_name && (
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">{t('groups.secretary2')}</label>
+                        <label className="text-sm font-medium text-muted-foreground">Secretário 2</label>
                         <p className="text-foreground">{displayGroup.secretary_2_name}</p>
                       </div>
                     )}
@@ -371,51 +369,51 @@ export default function GroupDetails() {
                     <div className="p-2 bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg">
                       <Info className="w-5 h-5 text-primary" />
                     </div>
-                    <h3 className="text-xl font-semibold text-foreground">{t('groups.generalInfo')}</h3>
+                    <h3 className="text-xl font-semibold text-foreground">Informações Gerais</h3>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">{t('groups.direction')}</label>
+                      <label className="text-sm font-medium text-muted-foreground">Direção</label>
                       <p className="text-foreground capitalize">{displayGroup.direction}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">{t('groups.province')}</label>
+                      <label className="text-sm font-medium text-muted-foreground">Província</label>
                       <p className="text-foreground">{displayGroup.province}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">{t('groups.municipality')}</label>
+                      <label className="text-sm font-medium text-muted-foreground">Município</label>
                       <p className="text-foreground">{displayGroup.municipality}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">{t('groups.totalMembers')}</label>
+                      <label className="text-sm font-medium text-muted-foreground">Total de Membros</label>
                       <p className="text-foreground">{displayMembers.length} / {displayGroup.max_members}</p>
                     </div>
                     {permissions.canViewGroupFinancialInfo && (
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">{t('groups.monthlyFee')}</label>
+                        <label className="text-sm font-medium text-muted-foreground">Mensalidade</label>
                         <p className="text-foreground">{displayGroup.monthly_fee} Kz</p>
                       </div>
                     )}
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">{t('groups.creationDate')}</label>
+                      <label className="text-sm font-medium text-muted-foreground">Data de Criação</label>
                       <p className="text-foreground">
                         {new Date(displayGroup.created_at).toLocaleDateString('pt-BR')}
                       </p>
                     </div>
                     {permissions.canViewGroupFinancialInfo && (
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">{t('groups.accessCode')}</label>
+                        <label className="text-sm font-medium text-muted-foreground">Código de Acesso</label>
                         <code className="px-2 py-1 bg-muted rounded text-xs font-mono">
-                          {displayGroup.access_code || t('groups.notDefined')}
+                          {displayGroup.access_code || 'Não definido'}
                         </code>
                       </div>
                     )}
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">{t('groups.currentPlan')}</label>
+                      <label className="text-sm font-medium text-muted-foreground">Plano Atual</label>
                       <div className="flex items-center space-x-2">
                         <p className="text-foreground">
-                          {displayGroup.monthly_plans?.name || t('groups.noPlanDefined')}
+                          {displayGroup.monthly_plans?.name || 'Nenhum plano definido'}
                         </p>
                         {displayGroup.monthly_plans && (
                           <Badge variant={displayGroup.monthly_plans.is_active ? "default" : "secondary"}>

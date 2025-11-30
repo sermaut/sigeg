@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => ({
     VitePWA({
       registerType: 'prompt',
       devOptions: {
-        enabled: false, // Disable in dev for faster reloads
+        enabled: true,
       },
       includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
       manifest: {
@@ -57,17 +57,17 @@ export default defineConfig(({ mode }) => ({
         clientsClaim: true,
         cleanupOutdatedCaches: true,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,jpg,woff2}'],
-        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
         runtimeCaching: [
           {
-            // INSTANT: CacheFirst for Supabase API (maximum speed)
+            // ULTRA-AGGRESSIVE: CacheFirst for instant Supabase responses (7 dias)
             urlPattern: /^https:\/\/udgqabvondahhzqphyzb\.supabase\.co\/rest\/.*/i,
             handler: 'CacheFirst',
             options: {
-              cacheName: 'supabase-api-v5',
+              cacheName: 'supabase-api-v4',
               expiration: {
-                maxEntries: 1000,
-                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+                maxEntries: 500,
+                maxAgeSeconds: 60 * 60 * 24 * 7, // 7 dias
               },
               cacheableResponse: {
                 statuses: [0, 200],
@@ -75,39 +75,52 @@ export default defineConfig(({ mode }) => ({
             },
           },
           {
-            // Auth/Storage uses NetworkFirst (needs fresh data)
+            // Storage/Auth uses NetworkFirst (needs fresh data)
             urlPattern: /^https:\/\/udgqabvondahhzqphyzb\.supabase\.co\/(auth|storage)\/.*/i,
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'supabase-auth-storage-v2',
-              networkTimeoutSeconds: 3, // Fast timeout
+              cacheName: 'supabase-auth-storage-v1',
+              networkTimeoutSeconds: 5,
               expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 5,
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 5, // 5 minutes
               },
             },
           },
           {
-            // INSTANT: CacheFirst for images
+            // Cache images aggressively with CacheFirst
             urlPattern: /\.(?:png|jpg|jpeg|svg|webp|gif)$/,
             handler: 'CacheFirst',
             options: {
-              cacheName: 'images-cache-v4',
+              cacheName: 'images-cache-v3',
               expiration: {
-                maxEntries: 500,
+                maxEntries: 300,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+              },
+            },
+          },
+          {
+            // Cache Google Fonts for 1 year
+            urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-cache-v1',
+              expiration: {
+                maxEntries: 30,
                 maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
               },
             },
           },
           {
-            // INSTANT: CacheFirst for fonts (1 year)
-            urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i,
-            handler: 'CacheFirst',
+            // StaleWhileRevalidate for general API requests
+            urlPattern: ({ request }) => 
+              request.url.includes('/api/') && request.method === 'GET',
+            handler: 'StaleWhileRevalidate',
             options: {
-              cacheName: 'google-fonts-cache-v2',
+              cacheName: 'api-cache-v2',
               expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 * 365,
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 10, // 10 minutes
               },
             },
           },
@@ -117,12 +130,12 @@ export default defineConfig(({ mode }) => ({
     viteCompression({
       algorithm: 'brotliCompress',
       ext: '.br',
-      threshold: 512, // Lower threshold for more compression
+      threshold: 1024,
     }),
     viteCompression({
       algorithm: 'gzip',
       ext: '.gz',
-      threshold: 512,
+      threshold: 1024,
     }),
   ].filter(Boolean),
   resolve: {
@@ -144,24 +157,17 @@ export default defineConfig(({ mode }) => ({
           'vendor-query': ['@tanstack/react-query'],
           'vendor-forms': ['react-hook-form', 'zod', '@hookform/resolvers'],
           'vendor-supabase': ['@supabase/supabase-js'],
-          'vendor-i18n': ['i18next', 'react-i18next'],
         },
       },
     },
     chunkSizeWarningLimit: 500,
-    target: 'esnext', // Modern browsers for smaller bundles
+    target: 'es2015',
     minify: 'terser',
     terserOptions: {
       compress: {
         drop_console: mode === 'production',
         drop_debugger: mode === 'production',
-        passes: 2, // Extra compression pass
       },
     },
-    cssMinify: true,
-    cssCodeSplit: true,
-  },
-  optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom', 'i18next', 'react-i18next'],
   },
 }));

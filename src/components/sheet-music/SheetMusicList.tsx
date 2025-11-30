@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SheetMusicCard } from "./SheetMusicCard";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useTranslation } from "react-i18next";
 
 interface SheetMusicListProps {
   filters: {
@@ -16,7 +15,6 @@ interface SheetMusicListProps {
 export function SheetMusicList({ filters }: SheetMusicListProps) {
   const [sheetMusic, setSheetMusic] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const { t } = useTranslation();
 
   useEffect(() => {
     loadSheetMusic();
@@ -63,7 +61,7 @@ export function SheetMusicList({ filters }: SheetMusicListProps) {
   if (sheetMusic.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground">{t('sheetMusic.noSheetMusicFound')}</p>
+        <p className="text-muted-foreground">Nenhuma partitura encontrada</p>
       </div>
     );
   }

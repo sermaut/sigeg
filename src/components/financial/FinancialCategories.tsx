@@ -11,7 +11,6 @@ import { FinancialCategoryCard } from "./FinancialCategoryCard";
 import { useToast } from "@/hooks/use-toast";
 import { useCategoryPermissions } from "@/hooks/useCategoryPermissions";
 import { usePermissions } from "@/hooks/usePermissions";
-import { useTranslation } from "react-i18next";
 
 interface FinancialCategoriesProps {
   groupId: string;
@@ -39,7 +38,6 @@ export function FinancialCategories({
   const [allLeaders, setAllLeaders] = useState<Map<string, any[]>>(new Map());
   const [loadingLeaders, setLoadingLeaders] = useState(true);
   const { toast } = useToast();
-  const { t } = useTranslation();
   const permissions = usePermissions();
   
   const { canViewBalance, canEdit, canDelete, loading: permissionsLoading } = useCategoryPermissions(
@@ -124,8 +122,8 @@ export function FinancialCategories({
     // Níveis 2-5 e 7: bloquear acesso
     if (permissions.level && permissions.level >= 2 && permissions.level !== 6) {
       toast({
-        title: t('financial.restrictedAccess'),
-        description: t('financial.onlyLeadersAccess'),
+        title: "Acesso restrito",
+        description: "Apenas Dirigentes e Líderes de Categoria têm acesso aos registros financeiros.",
         variant: "destructive",
       });
       return;

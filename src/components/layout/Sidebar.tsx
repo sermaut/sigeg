@@ -1,6 +1,5 @@
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { useTranslation } from 'react-i18next';
 import { 
   Users, 
   Home, 
@@ -31,46 +30,45 @@ export function Sidebar({ className, isOpen, onOpenChange }: SidebarProps) {
   const { logout } = useAuth();
   const permissions = usePermissions();
   const { toast } = useToast();
-  const { t } = useTranslation();
 
   const handleRestrictedClick = (label: string) => {
     toast({
-      title: t('sidebar.accessDenied'),
-      description: t('sidebar.onlyAdminsAccess'),
+      title: "Acesso Negado",
+      description: "Só Administradores têm acesso",
       variant: "destructive",
     });
   };
 
   const navigationItems = [
-    { icon: Home, label: t('sidebar.home'), href: "/", show: true },
-    { icon: Users, label: t('sidebar.groups'), href: "/groups", show: true },
-    { icon: UserPlus, label: t('sidebar.newMember'), href: "/members/new", show: permissions.canAccessNewMember },
-    { icon: Briefcase, label: t('sidebar.musicalServices'), href: "/services", show: true },
+    { icon: Home, label: "Página Inicial", href: "/", show: true },
+    { icon: Users, label: "Grupos", href: "/groups", show: true },
+    { icon: UserPlus, label: "Novo Membro", href: "/members/new", show: permissions.canAccessNewMember },
+    { icon: Briefcase, label: "Serviços Musicais", href: "/services", show: true },
     { 
       icon: FileText, 
-      label: t('sidebar.reports'), 
+      label: "Relatórios", 
       href: "/reports", 
       show: true,
       restricted: !permissions.canAccessReports,
-      onClick: !permissions.canAccessReports ? () => handleRestrictedClick(t('sidebar.reports')) : undefined
+      onClick: !permissions.canAccessReports ? () => handleRestrictedClick("Relatórios") : undefined
     },
     { 
       icon: Shield, 
-      label: t('sidebar.administrators'), 
+      label: "Administradores", 
       href: "/admin", 
       show: true,
       restricted: !permissions.canAccessAdmins,
-      onClick: !permissions.canAccessAdmins ? () => handleRestrictedClick(t('sidebar.administrators')) : undefined
+      onClick: !permissions.canAccessAdmins ? () => handleRestrictedClick("Administradores") : undefined
     },
     { 
       icon: Settings, 
-      label: t('sidebar.settings'), 
+      label: "Configurações", 
       href: "/settings", 
       show: true,
       restricted: !permissions.canAccessSettings,
-      onClick: !permissions.canAccessSettings ? () => handleRestrictedClick(t('sidebar.settings')) : undefined
+      onClick: !permissions.canAccessSettings ? () => handleRestrictedClick("Configurações") : undefined
     },
-    { icon: MessageCircle, label: t('sidebar.contact'), href: "/contact", show: true },
+    { icon: MessageCircle, label: "Contacto", href: "/contact", show: true },
   ].filter(item => item.show);
 
   return (
@@ -97,7 +95,7 @@ export function Sidebar({ className, isOpen, onOpenChange }: SidebarProps) {
             </div>
             <div className="flex flex-col">
               <span className="font-bold text-xl text-white">SIGEG</span>
-              <span className="text-xs text-cyan-100">{t('sidebar.managementSystem')}</span>
+              <span className="text-xs text-cyan-100">Sistema de Gestão</span>
             </div>
           </div>
           <Button
@@ -143,7 +141,7 @@ export function Sidebar({ className, isOpen, onOpenChange }: SidebarProps) {
             className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10 px-4 text-base"
           >
             <LogOut className="w-6 h-6 flex-shrink-0" />
-            <span className="ml-3 text-base">{t('sidebar.exit')}</span>
+            <span className="ml-3 text-base">Sair</span>
           </Button>
         </div>
       </div>
