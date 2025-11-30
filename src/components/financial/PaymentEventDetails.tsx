@@ -116,18 +116,18 @@ export function PaymentEventDetails({ event, groupId, onClose }: PaymentEventDet
     setShowPaymentDialog(false);
   };
 
-  // Categorize members based on payment status
-  const completedPayments = memberPayments.filter(mp => 
-    Number(mp.amount_paid) >= Number(event.amount_to_pay)
-  );
+  // Categorize members based on payment status and sort alphabetically
+  const completedPayments = memberPayments
+    .filter(mp => Number(mp.amount_paid) >= Number(event.amount_to_pay))
+    .sort((a, b) => a.members.name.localeCompare(b.members.name));
   
-  const partialPayments = memberPayments.filter(mp => 
-    Number(mp.amount_paid) > 0 && Number(mp.amount_paid) < Number(event.amount_to_pay)
-  );
+  const partialPayments = memberPayments
+    .filter(mp => Number(mp.amount_paid) > 0 && Number(mp.amount_paid) < Number(event.amount_to_pay))
+    .sort((a, b) => a.members.name.localeCompare(b.members.name));
   
-  const noPayments = memberPayments.filter(mp => 
-    Number(mp.amount_paid) === 0
-  );
+  const noPayments = memberPayments
+    .filter(mp => Number(mp.amount_paid) === 0)
+    .sort((a, b) => a.members.name.localeCompare(b.members.name));
 
   const totalCollected = memberPayments.reduce((sum, mp) => sum + Number(mp.amount_paid), 0);
   const expectedTotal = memberPayments.length * Number(event.amount_to_pay);

@@ -151,20 +151,23 @@ export function GroupsList() {
   return (
     <div className="space-y-6">
       {/* Filters */}
-      <Card className="card-elevated p-4">
-        <div className="flex items-center space-x-4">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+      <Card className="card-elevated p-[5px]">
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
             <Input
               placeholder="Buscar por nome, município ou província..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pr-12"
+              onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
             />
           </div>
-          <Button variant="outline">
-            <Filter className="w-4 h-4" />
-            Filtros
+          <Button 
+            variant="default" 
+            size="icon"
+            className="h-10 w-10 rounded-full bg-green-600 hover:bg-green-700 shrink-0"
+          >
+            <Search className="w-4 h-4 text-white" />
           </Button>
         </div>
       </Card>
@@ -217,10 +220,10 @@ export function GroupsList() {
         <div className="flex justify-center pt-6">
           <Button 
             variant="gradient" 
-            size="lg"
             onClick={() => navigate("/groups/new")}
+            className="h-9 py-[5px] px-3 text-sm"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-4 h-4" />
             Novo Grupo
           </Button>
         </div>

@@ -168,6 +168,28 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
     try {
       const currentMonth = format(new Date(), 'yyyy-MM');
       
+      // Check for and delete records from previous months
+      const { data: oldRecords, error: oldRecordsError } = await supabase
+        .from('rehearsal_attendance')
+        .select('id')
+        .eq('group_id', groupId)
+        .neq('month_year', currentMonth);
+
+      if (!oldRecordsError && oldRecords && oldRecords.length > 0) {
+        const { error: deleteError } = await supabase
+          .from('rehearsal_attendance')
+          .delete()
+          .eq('group_id', groupId)
+          .neq('month_year', currentMonth);
+        
+        if (!deleteError && permissions.canSelectRehearsalDate) {
+          toast({
+            title: "Registros arquivados",
+            description: `${oldRecords.length} registro(s) do mês anterior foram excluídos automaticamente.`,
+          });
+        }
+      }
+      
       const { data: attendanceData, error: attendanceError } = await supabase
         .from('rehearsal_attendance')
         .select('*')
@@ -259,7 +281,12 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
       // Sort days within week (most recent first)
       days.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       
-      const totalCount = days.reduce((sum, d) => sum + d.totalCount, 0);
+      // Count unique members in the week (not total attendances)
+      const uniqueMembersInWeek = new Set<string>();
+      days.forEach(day => {
+        Object.values(day.membersByPartition).flat().forEach(m => uniqueMembersInWeek.add(m.id));
+      });
+      const uniqueMembersCount = uniqueMembersInWeek.size;
       
       // Get week date range
       const firstDayOfWeek = days[days.length - 1]?.date;
@@ -273,7 +300,7 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
         weekNumber: weekNum,
         weekLabel,
         days,
-        totalCount
+        totalCount: uniqueMembersCount // Now represents unique members, not total attendances
       });
     });
 
@@ -604,7 +631,7 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
                             {week.weekLabel}
                           </CardTitle>
                           <Badge variant="outline" className="border-primary/20">
-                            {week.totalCount} {week.totalCount === 1 ? 'presença' : 'presenças'}
+                            {week.totalCount} {week.totalCount === 1 ? 'membro' : 'membros'}
                           </Badge>
                         </div>
                       </CardHeader>
@@ -641,24 +668,32 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
                                     {partitionOrder
                                       .filter(p => day.membersByPartition[p]?.length > 0)
                                       .map((partition) => (
-                                        <div key={partition} className="flex flex-wrap items-center gap-2 p-2 bg-primary/5 rounded-lg">
-                                          <Badge variant="outline" className="border-primary/30 text-xs shrink-0">
+                                        <div key={partition} className="p-2 bg-primary/5 rounded-lg">
+                                          <Badge variant="outline" className="border-primary/30 text-xs mb-2">
                                             {getPartitionLabel(partition)} ({day.membersByPartition[partition].length})
                                           </Badge>
-                                          <span className="text-xs text-muted-foreground">
-                                            {day.membersByPartition[partition].map(m => m.name).join(', ')}
-                                          </span>
+                                          <div className="flex flex-wrap gap-1.5 mt-1">
+                                            {day.membersByPartition[partition].map((m) => (
+                                              <span key={m.id} className="text-xs bg-background px-2 py-0.5 rounded border border-border">
+                                                {m.name}
+                                              </span>
+                                            ))}
+                                          </div>
                                         </div>
                                       ))}
                                     {/* Handle "Sem Partição" */}
                                     {day.membersByPartition["Sem Partição"]?.length > 0 && (
-                                      <div className="flex flex-wrap items-center gap-2 p-2 bg-muted/50 rounded-lg">
-                                        <Badge variant="outline" className="border-muted-foreground/30 text-xs shrink-0">
+                                      <div className="p-2 bg-muted/50 rounded-lg">
+                                        <Badge variant="outline" className="border-muted-foreground/30 text-xs mb-2">
                                           Sem Partição ({day.membersByPartition["Sem Partição"].length})
                                         </Badge>
-                                        <span className="text-xs text-muted-foreground">
-                                          {day.membersByPartition["Sem Partição"].map(m => m.name).join(', ')}
-                                        </span>
+                                        <div className="flex flex-wrap gap-1.5 mt-1">
+                                          {day.membersByPartition["Sem Partição"].map((m) => (
+                                            <span key={m.id} className="text-xs bg-background px-2 py-0.5 rounded border border-border">
+                                              {m.name}
+                                            </span>
+                                          ))}
+                                        </div>
                                       </div>
                                     )}
                                   </div>
