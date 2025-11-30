@@ -7,7 +7,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import { Calendar as CalendarIcon, Users, Save, Music, Crown, Shield, ChevronDown, Eye, Loader2 } from "lucide-react";
+import { Calendar as CalendarIcon, Users, Save, Music, Crown, Shield, ChevronDown, Eye, Loader2, Trash2 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { format, startOfMonth, endOfMonth, getWeek, startOfWeek, endOfWeek } from "date-fns";
 import { pt } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
@@ -328,6 +329,61 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
     setExpandedDays(newExpanded);
   };
 
+  const deleteWeekRecords = async (weekNumber: number) => {
+    try {
+      const weekDays = processedRecords.find(w => w.weekNumber === weekNumber)?.days || [];
+      const datesToDelete = weekDays.map(d => d.date);
+      
+      if (datesToDelete.length === 0) return;
+
+      const { error } = await supabase
+        .from('rehearsal_attendance')
+        .delete()
+        .eq('group_id', groupId)
+        .in('rehearsal_date', datesToDelete);
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: `Registros da semana ${weekNumber} excluídos.`,
+      });
+      loadMonthlyRecords();
+    } catch (error) {
+      console.error('Erro ao excluir semana:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível excluir os registros da semana.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const deleteDayRecords = async (date: string) => {
+    try {
+      const { error } = await supabase
+        .from('rehearsal_attendance')
+        .delete()
+        .eq('group_id', groupId)
+        .eq('rehearsal_date', date);
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: `Registros do dia ${format(new Date(date), "dd/MM/yyyy")} excluídos.`,
+      });
+      loadMonthlyRecords();
+    } catch (error) {
+      console.error('Erro ao excluir dia:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível excluir os registros do dia.",
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
     if (showRecordsDialog) {
       loadMonthlyRecords();
@@ -590,7 +646,7 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
 
       {/* Dialog de Registros Mensais - Reorganized */}
       <Dialog open={showRecordsDialog} onOpenChange={setShowRecordsDialog}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto p-[4px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <CalendarIcon className="w-5 h-5 text-primary" />
@@ -611,17 +667,17 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
               <p className="text-muted-foreground">Nenhum registro encontrado neste mês</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {processedRecords.map((week) => (
                 <Collapsible
                   key={week.weekNumber}
                   open={expandedWeeks.has(week.weekNumber)}
                   onOpenChange={() => toggleWeekExpansion(week.weekNumber)}
                 >
-                  <Card className="border-primary/10">
-                    <CollapsibleTrigger asChild>
-                      <CardHeader className="pb-3 cursor-pointer hover:bg-primary/5 transition-colors">
-                        <div className="flex items-center justify-between">
+                  <Card className="border-primary/10 p-[4px]">
+                    <CardHeader className="p-[4px] cursor-pointer hover:bg-primary/5 transition-colors relative">
+                      <CollapsibleTrigger asChild>
+                        <div className="flex items-center justify-between pr-8">
                           <CardTitle className="text-sm flex items-center gap-2">
                             <ChevronDown 
                               className={`w-4 h-4 text-primary transition-transform ${expandedWeeks.has(week.weekNumber) ? 'rotate-180' : ''}`}
@@ -632,21 +688,47 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
                             {week.totalCount} {week.totalCount === 1 ? 'membro' : 'membros'}
                           </Badge>
                         </div>
-                      </CardHeader>
-                    </CollapsibleTrigger>
+                      </CollapsibleTrigger>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute top-1 right-1 h-6 w-6 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Excluir semana?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Todos os registros de presença da {week.weekLabel} serão excluídos permanentemente.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => deleteWeekRecords(week.weekNumber)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                              Excluir
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </CardHeader>
                     
                     <CollapsibleContent>
-                      <CardContent className="pt-0 space-y-3">
+                      <CardContent className="pt-0 p-[4px] space-y-2">
                         {week.days.map((day) => (
                           <Collapsible
                             key={day.date}
                             open={expandedDays.has(day.date)}
                             onOpenChange={() => toggleDayExpansion(day.date)}
                           >
-                            <Card className="border-border/50">
-                              <CollapsibleTrigger asChild>
-                                <CardHeader className="py-2 px-3 cursor-pointer hover:bg-muted/50 transition-colors">
-                                  <div className="flex items-center justify-between">
+                            <Card className="border-border/50 p-[4px]">
+                              <CardHeader className="py-1 px-2 cursor-pointer hover:bg-muted/50 transition-colors relative">
+                                <CollapsibleTrigger asChild>
+                                  <div className="flex items-center justify-between pr-8">
                                     <div className="flex items-center gap-2 text-sm font-medium">
                                       <ChevronDown 
                                         className={`w-3 h-3 text-muted-foreground transition-transform ${expandedDays.has(day.date) ? 'rotate-180' : ''}`}
@@ -657,11 +739,37 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
                                       {day.totalCount} {day.totalCount === 1 ? 'presente' : 'presentes'}
                                     </Badge>
                                   </div>
-                                </CardHeader>
-                              </CollapsibleTrigger>
+                                </CollapsibleTrigger>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="absolute top-1 right-1 h-5 w-5 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Excluir dia?</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Todos os registros de presença do dia {format(new Date(day.date), "dd/MM/yyyy")} serão excluídos permanentemente.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                      <AlertDialogAction onClick={() => deleteDayRecords(day.date)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                        Excluir
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </CardHeader>
                               
                               <CollapsibleContent>
-                                <CardContent className="pt-0 pb-3 px-3">
+                                <CardContent className="pt-0 pb-2 px-2">
                                   <div className="space-y-2">
                                     {partitionOrder
                                       .filter(p => day.membersByPartition[p]?.length > 0)
