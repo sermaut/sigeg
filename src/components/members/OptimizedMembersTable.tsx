@@ -131,7 +131,10 @@ export const OptimizedMembersTable = memo(({
   showActions = true,
   onMembersDeleted
 }: OptimizedMembersTableProps) => {
-  const memoizedMembers = useMemo(() => members, [members]);
+  const memoizedMembers = useMemo(() => 
+    [...members].sort((a, b) => a.name.localeCompare(b.name, 'pt', { sensitivity: 'base' })), 
+    [members]
+  );
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set());
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { toast } = useToast();
