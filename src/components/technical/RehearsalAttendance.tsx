@@ -9,14 +9,15 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Calendar as CalendarIcon, Users, Save, Music, Crown, Shield, ChevronDown, Eye, Loader2, Trash2 } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { format, startOfMonth, endOfMonth, getWeek, startOfWeek, endOfWeek } from "date-fns";
-import { pt } from "date-fns/locale";
+import { format, getWeek } from "date-fns";
+import { pt, fr, enUS } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useEffect } from "react";
 import { usePermissions } from "@/hooks/usePermissions";
 import { PermissionGuard } from "@/components/common/PermissionGuard";
+import { useTranslation } from "react-i18next";
 
 interface Member {
   id: string;
@@ -63,14 +64,26 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
   const [expandedWeeks, setExpandedWeeks] = useState<Set<number>>(new Set());
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
   const { toast } = useToast();
+  const { t, i18n } = useTranslation();
   const permissions = usePermissions();
+
+  // Get date-fns locale based on current language
+  const getDateLocale = () => {
+    switch (i18n.language) {
+      case 'fr': return fr;
+      case 'en': return enUS;
+      default: return pt;
+    }
+  };
+
+  const dateLocale = getDateLocale();
 
   // Filter only active members
   const activeMembers = members.filter(m => m.is_active);
 
   // Group members by partition
   const membersByPartition = activeMembers.reduce((acc, member) => {
-    const partition = member.partition || "Sem Partição";
+    const partition = member.partition || t('rehearsalAttendance.noPartition');
     if (!acc[partition]) {
       acc[partition] = [];
     }
@@ -86,7 +99,7 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
     "baixo",
     "base",
     "instrumental",
-    "Sem Partição"
+    t('rehearsalAttendance.noPartition')
   ];
 
   const sortedPartitions = Object.keys(membersByPartition).sort((a, b) => {
@@ -183,8 +196,8 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
         
         if (!deleteError && permissions.canSelectRehearsalDate) {
           toast({
-            title: "Registros arquivados",
-            description: `${oldRecords.length} registro(s) do mês anterior foram excluídos automaticamente.`,
+            title: t('rehearsalAttendance.recordsArchived'),
+            description: t('rehearsalAttendance.recordsArchivedDesc', { count: oldRecords.length }),
           });
         }
       }
@@ -204,7 +217,7 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
       
       const enrichedData = attendanceData.map(record => ({
         ...record,
-        member: memberMap.get(record.member_id) || { name: 'Desconhecido', partition: null }
+        member: memberMap.get(record.member_id) || { name: t('rehearsalAttendance.unknown'), partition: null }
       }));
       
       const groupedByDate = enrichedData.reduce((acc: any, record: any) => {
@@ -224,8 +237,8 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
     } catch (error) {
       console.error('Erro ao carregar registros:', error);
       toast({
-        title: "Erro",
-        description: "Não foi possível carregar os registros",
+        title: t('rehearsalAttendance.error'),
+        description: t('rehearsalAttendance.failedToLoad'),
         variant: "destructive",
       });
     } finally {
@@ -241,19 +254,19 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
 
     monthlyRecords.forEach((record) => {
       const recordDate = new Date(record.date);
-      const weekNum = getWeek(recordDate, { locale: pt, weekStartsOn: 0 });
+      const weekNum = getWeek(recordDate, { locale: dateLocale, weekStartsOn: 0 });
       
       // Group members by partition for this day
       const membersByPart: Record<string, { id: string; name: string }[]> = {};
       
       record.records.forEach((r: any) => {
-        const partition = r.member?.partition || "Sem Partição";
+        const partition = r.member?.partition || t('rehearsalAttendance.noPartition');
         if (!membersByPart[partition]) {
           membersByPart[partition] = [];
         }
         membersByPart[partition].push({
           id: r.member_id,
-          name: r.member?.name || 'Desconhecido'
+          name: r.member?.name || t('rehearsalAttendance.unknown')
         });
       });
 
@@ -292,8 +305,8 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
       const lastDayOfWeek = days[0]?.date;
       
       const weekLabel = firstDayOfWeek && lastDayOfWeek
-        ? `Semana ${weekNum} (${format(new Date(firstDayOfWeek), 'dd')}-${format(new Date(lastDayOfWeek), 'dd MMM', { locale: pt })})`
-        : `Semana ${weekNum}`;
+        ? `${t('rehearsalAttendance.week')} ${weekNum} (${format(new Date(firstDayOfWeek), 'dd')}-${format(new Date(lastDayOfWeek), 'dd MMM', { locale: dateLocale })})`
+        : `${t('rehearsalAttendance.week')} ${weekNum}`;
 
       weeks.push({
         weekNumber: weekNum,
@@ -307,7 +320,7 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
     weeks.sort((a, b) => b.weekNumber - a.weekNumber);
 
     return weeks;
-  }, [monthlyRecords]);
+  }, [monthlyRecords, t, dateLocale]);
 
   const toggleWeekExpansion = (weekNum: number) => {
     const newExpanded = new Set(expandedWeeks);
@@ -345,15 +358,15 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
       if (error) throw error;
 
       toast({
-        title: "Sucesso",
-        description: `Registros da semana ${weekNumber} excluídos.`,
+        title: t('rehearsalAttendance.success'),
+        description: t('rehearsalAttendance.deleteWeekRecords', { week: weekNumber }),
       });
       loadMonthlyRecords();
     } catch (error) {
       console.error('Erro ao excluir semana:', error);
       toast({
-        title: "Erro",
-        description: "Não foi possível excluir os registros da semana.",
+        title: t('rehearsalAttendance.error'),
+        description: t('rehearsalAttendance.failedToDeleteWeek'),
         variant: "destructive",
       });
     }
@@ -370,15 +383,15 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
       if (error) throw error;
 
       toast({
-        title: "Sucesso",
-        description: `Registros do dia ${format(new Date(date), "dd/MM/yyyy")} excluídos.`,
+        title: t('rehearsalAttendance.success'),
+        description: t('rehearsalAttendance.deleteDayRecords', { date: format(new Date(date), "dd/MM/yyyy") }),
       });
       loadMonthlyRecords();
     } catch (error) {
       console.error('Erro ao excluir dia:', error);
       toast({
-        title: "Erro",
-        description: "Não foi possível excluir os registros do dia.",
+        title: t('rehearsalAttendance.error'),
+        description: t('rehearsalAttendance.failedToDeleteDay'),
         variant: "destructive",
       });
     }
@@ -396,8 +409,8 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
   const handleSave = async () => {
     if (!date) {
       toast({
-        title: "Erro",
-        description: "Por favor, selecione uma data",
+        title: t('rehearsalAttendance.error'),
+        description: t('rehearsalAttendance.selectDateError'),
         variant: "destructive",
       });
       return;
@@ -405,8 +418,8 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
 
     if (selectedMembers.size === 0) {
       toast({
-        title: "Erro",
-        description: "Por favor, selecione pelo menos um membro",
+        title: t('rehearsalAttendance.error'),
+        description: t('rehearsalAttendance.selectMemberError'),
         variant: "destructive",
       });
       return;
@@ -431,8 +444,11 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
       if (error) throw error;
 
       toast({
-        title: "Sucesso",
-        description: `Presença registrada para ${selectedMembers.size} membros em ${format(date, "dd/MM/yyyy", { locale: pt })}`,
+        title: t('rehearsalAttendance.success'),
+        description: t('rehearsalAttendance.attendanceRegistered', { 
+          count: selectedMembers.size, 
+          date: format(date, "dd/MM/yyyy", { locale: dateLocale }) 
+        }),
       });
 
       setSelectedMembers(new Set());
@@ -442,14 +458,14 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
       
       if (error.code === '23505') {
         toast({
-          title: "Atenção",
-          description: "Já existe um registro para esta data. Use o botão 'Ver Registros' para visualizar.",
+          title: t('rehearsalAttendance.error'),
+          description: t('rehearsalAttendance.duplicateRecord'),
           variant: "destructive",
         });
       } else {
         toast({
-          title: "Erro",
-          description: "Falha ao registrar presença. Tente novamente.",
+          title: t('rehearsalAttendance.error'),
+          description: t('rehearsalAttendance.failedToRegister'),
           variant: "destructive",
         });
       }
@@ -465,7 +481,7 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
           <div className="flex flex-col gap-3">
             <CardTitle className="text-foreground flex items-center justify-center gap-2 text-base">
               <Music className="w-5 h-5 text-primary" />
-              Registros de Presença nos Ensaios
+              {t('rehearsalAttendance.title')}
             </CardTitle>
             <div className="flex flex-wrap items-center justify-center gap-2">
               <PermissionGuard require="canSelectRehearsalDate">
@@ -473,7 +489,7 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
                   <PopoverTrigger asChild>
                     <Button variant="outline" className="border-primary/20 text-xs h-8 px-2.5">
                       <CalendarIcon className="mr-1.5 h-4 w-4" />
-                      {date ? format(date, "dd/MM/yyyy", { locale: pt }) : "Selecionar data"}
+                      {date ? format(date, "dd/MM/yyyy", { locale: dateLocale }) : t('rehearsalAttendance.selectDate')}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="end">
@@ -481,7 +497,7 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
                       mode="single"
                       selected={date}
                       onSelect={setDate}
-                      locale={pt}
+                      locale={dateLocale}
                       disabled={(date) => date > new Date()}
                     />
                   </PopoverContent>
@@ -494,7 +510,7 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
                 className="border-primary/20 text-xs h-8 px-2.5"
               >
                 <Eye className="mr-1.5 h-4 w-4" />
-                Ver Registros
+                {t('rehearsalAttendance.viewRecords')}
               </Button>
             </div>
           </div>
@@ -538,11 +554,11 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
                             {getPartitionLabel(partition)}
                           </h3>
                           <Badge variant="outline" className="border-primary/20 text-primary">
-                            {selectedInPartition} {selectedInPartition === 1 ? "membro" : "membros"}
+                            {selectedInPartition} {selectedInPartition === 1 ? t('rehearsalAttendance.member') : t('rehearsalAttendance.members')}
                           </Badge>
                           {someSelected && !allSelected && (
                             <Badge variant="secondary" className="bg-primary/10 text-primary">
-                              Parcial
+                              {t('rehearsalAttendance.partial')}
                             </Badge>
                           )}
                         </div>
@@ -561,7 +577,7 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
                               </HoverCardTrigger>
                               <HoverCardContent className="w-64">
                                 <div className="space-y-2">
-                                  <h4 className="font-semibold text-sm">Chefes desta partição:</h4>
+                                  <h4 className="font-semibold text-sm">{t('rehearsalAttendance.partitionLeaders')}:</h4>
                                   <ul className="text-sm space-y-1">
                                     {partitionLeaders.map(leader => (
                                       <li key={leader.id} className="flex items-center gap-2">
@@ -611,15 +627,15 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
           {activeMembers.length === 0 && (
             <div className="text-center py-12">
               <Users className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground">Nenhum membro ativo encontrado</p>
+              <p className="text-muted-foreground">{t('rehearsalAttendance.noActiveMembers')}</p>
             </div>
           )}
 
           {activeMembers.length > 0 && (
             <div className="mt-6 pt-6 border-t border-primary/10 flex items-center justify-between">
               <div className="text-sm text-muted-foreground">
-                <strong className="text-foreground">{selectedMembers.size}</strong> de{" "}
-                <strong className="text-foreground">{activeMembers.length}</strong> membros selecionados
+                <strong className="text-foreground">{selectedMembers.size}</strong> {t('rehearsalAttendance.of')}{" "}
+                <strong className="text-foreground">{activeMembers.length}</strong> {t('rehearsalAttendance.membersSelected')}
               </div>
               <Button
                 onClick={handleSave}
@@ -630,12 +646,12 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
                 {saving ? (
                   <>
                     <Save className="w-4 h-4 mr-2 animate-spin" />
-                    Salvando...
+                    {t('rehearsalAttendance.saving')}
                   </>
                 ) : (
                   <>
                     <Save className="w-4 h-4 mr-2" />
-                    Salvar Presença
+                    {t('rehearsalAttendance.saveAttendance')}
                   </>
                 )}
               </Button>
@@ -650,10 +666,10 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <CalendarIcon className="w-5 h-5 text-primary" />
-              Registros de {format(new Date(), 'MMMM yyyy', { locale: pt })}
+              {t('rehearsalAttendance.monthlyRecords')} - {format(new Date(), 'MMMM yyyy', { locale: dateLocale })}
             </DialogTitle>
             <DialogDescription>
-              Visualize todos os registros de presença deste mês, agrupados por semana e partição
+              {t('rehearsalAttendance.monthlyRecordsDesc')}
             </DialogDescription>
           </DialogHeader>
           
@@ -664,7 +680,7 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
           ) : processedRecords.length === 0 ? (
             <div className="text-center py-12">
               <Music className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground">Nenhum registro encontrado neste mês</p>
+              <p className="text-muted-foreground">{t('rehearsalAttendance.noRecordsFound')}</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -685,7 +701,7 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
                             {week.weekLabel}
                           </CardTitle>
                           <Badge variant="outline" className="border-primary/20">
-                            {week.totalCount} {week.totalCount === 1 ? 'membro' : 'membros'}
+                            {week.totalCount} {week.totalCount === 1 ? t('rehearsalAttendance.member') : t('rehearsalAttendance.members')}
                           </Badge>
                         </div>
                       </CollapsibleTrigger>
@@ -702,15 +718,15 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Excluir semana?</AlertDialogTitle>
+                            <AlertDialogTitle>{t('rehearsalAttendance.deleteWeek')}</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Todos os registros de presença da {week.weekLabel} serão excluídos permanentemente.
+                              {t('rehearsalAttendance.deleteWeekDesc', { week: week.weekLabel })}
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogCancel>{t('rehearsalAttendance.cancel')}</AlertDialogCancel>
                             <AlertDialogAction onClick={() => deleteWeekRecords(week.weekNumber)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                              Excluir
+                              {t('rehearsalAttendance.delete')}
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
@@ -733,10 +749,10 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
                                       <ChevronDown 
                                         className={`w-3 h-3 text-muted-foreground transition-transform ${expandedDays.has(day.date) ? 'rotate-180' : ''}`}
                                       />
-                                      {format(new Date(day.date), "dd 'de' MMMM", { locale: pt })}
+                                      {format(new Date(day.date), "dd 'de' MMMM", { locale: dateLocale })}
                                     </div>
                                     <Badge variant="secondary" className="text-xs">
-                                      {day.totalCount} {day.totalCount === 1 ? 'presente' : 'presentes'}
+                                      {day.totalCount} {day.totalCount === 1 ? t('rehearsalAttendance.present') : t('rehearsalAttendance.presents')}
                                     </Badge>
                                   </div>
                                 </CollapsibleTrigger>
@@ -753,15 +769,15 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
                                   </AlertDialogTrigger>
                                   <AlertDialogContent>
                                     <AlertDialogHeader>
-                                      <AlertDialogTitle>Excluir dia?</AlertDialogTitle>
+                                      <AlertDialogTitle>{t('rehearsalAttendance.deleteDay')}</AlertDialogTitle>
                                       <AlertDialogDescription>
-                                        Todos os registros de presença do dia {format(new Date(day.date), "dd/MM/yyyy")} serão excluídos permanentemente.
+                                        {t('rehearsalAttendance.deleteDayDesc', { date: format(new Date(day.date), "dd/MM/yyyy") })}
                                       </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
-                                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                      <AlertDialogCancel>{t('rehearsalAttendance.cancel')}</AlertDialogCancel>
                                       <AlertDialogAction onClick={() => deleteDayRecords(day.date)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                                        Excluir
+                                        {t('rehearsalAttendance.delete')}
                                       </AlertDialogAction>
                                     </AlertDialogFooter>
                                   </AlertDialogContent>
@@ -788,13 +804,13 @@ export function RehearsalAttendance({ groupId, members, groupLeaders }: Rehearsa
                                         </div>
                                       ))}
                                     {/* Handle "Sem Partição" */}
-                                    {day.membersByPartition["Sem Partição"]?.length > 0 && (
+                                    {day.membersByPartition[t('rehearsalAttendance.noPartition')]?.length > 0 && (
                                       <div className="p-2 bg-muted/50 rounded-lg">
                                         <Badge variant="outline" className="border-muted-foreground/30 text-xs mb-2">
-                                          Sem Partição ({day.membersByPartition["Sem Partição"].length})
+                                          {t('rehearsalAttendance.noPartition')} ({day.membersByPartition[t('rehearsalAttendance.noPartition')].length})
                                         </Badge>
                                         <div className="flex flex-wrap gap-1.5 mt-1">
-                                          {day.membersByPartition["Sem Partição"].map((m) => (
+                                          {day.membersByPartition[t('rehearsalAttendance.noPartition')].map((m) => (
                                             <span key={m.id} className="text-xs bg-background px-2 py-0.5 rounded border border-border">
                                               {m.name}
                                             </span>
