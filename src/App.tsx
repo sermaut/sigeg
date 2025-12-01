@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { LanguageProvider } from '@/contexts/LanguageContext';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { GlobalErrorToast } from '@/components/common/GlobalErrorToast';
@@ -60,7 +61,8 @@ function App() {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <AuthProvider>
+          <LanguageProvider>
+            <AuthProvider>
             <PWAUpdatePrompt />
             <PWAInstallPrompt />
             <OfflineIndicator />
@@ -217,7 +219,8 @@ function App() {
                 <Sonner />
               </div>
             </BrowserRouter>
-          </AuthProvider>
+            </AuthProvider>
+          </LanguageProvider>
         </TooltipProvider>
         
       </QueryClientProvider>

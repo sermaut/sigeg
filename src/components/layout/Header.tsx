@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Bell, User, LogOut, Shield, Users, Menu, Eye, EyeOff, Music, RefreshCw } from "lucide-react";
 import { getRoleLabel } from "@/lib/memberHelpers";
 import { RoleNotificationBadge } from "@/components/common/RoleNotificationBadge";
 import { NotificationCenter } from "@/components/notifications/NotificationCenter";
 import { GlobalSearch } from "@/components/common/GlobalSearch";
+import { GlobalLanguageToggle } from "@/components/common/GlobalLanguageToggle";
 import { useCacheClearer } from "@/lib/cacheUtils";
 import { InlineLoader } from "@/components/common/LoadingIndicators";
 import {
@@ -24,6 +26,7 @@ interface HeaderProps {
 
 export function Header({ onMenuClick }: HeaderProps) {
   const { user, logout, isAdmin, isMember, isGroup } = useAuth();
+  const { t } = useLanguage();
   const { clearCache, isClearing } = useCacheClearer();
   const [showCode, setShowCode] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -129,6 +132,9 @@ export function Header({ onMenuClick }: HeaderProps) {
 
         {/* User info section */}
         <div className="flex items-center space-x-2 md:space-x-3">
+          {/* Language Toggle */}
+          <GlobalLanguageToggle />
+          
           {/* Notification Center */}
           <NotificationCenter />
           
@@ -184,8 +190,8 @@ export function Header({ onMenuClick }: HeaderProps) {
                 </DialogTrigger>
                 
                 <DialogContent className="sm:max-w-md rounded-2xl">
-                  <DialogHeader className="text-center">
-                    <DialogTitle className="text-base font-bold">Informações da Sessão</DialogTitle>
+                <DialogHeader className="text-center">
+                    <DialogTitle className="text-base font-bold">{t('header.sessionInfo')}</DialogTitle>
                   </DialogHeader>
                   
                   <div className="flex flex-col gap-3 py-2">
@@ -204,7 +210,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                         <h3 className="text-lg font-bold text-cyan-600 dark:text-cyan-400">{name}</h3>
                         {!isMember() && (
                           <p className="text-xs text-muted-foreground capitalize font-medium">
-                            {isAdmin() ? 'Administrador' : 'Grupo'}
+                            {isAdmin() ? t('header.administrator') : t('header.group')}
                           </p>
                         )}
                         {isMember() && (user.data as any).role && (
@@ -218,7 +224,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                     {/* Código com toggle visibility */}
                     <div className="space-y-1">
                       <label className="text-xs font-medium text-muted-foreground">
-                        Código de Acesso
+                        {t('header.accessCode')}
                       </label>
                       <div className="flex items-center gap-2">
                         <div className="flex-1 rounded-lg border-2 bg-muted/30 px-2.5 py-1.5 font-mono text-xs font-semibold">
@@ -242,7 +248,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                         variant="outline"
                         className="flex-1 rounded-lg h-9 text-xs font-semibold bg-blue-500/10 border-2 border-blue-500 text-blue-600 hover:bg-blue-500/20 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                       >
-                        Fechar
+                        {t('common.close')}
                       </Button>
                       <Button 
                         onClick={async () => {
