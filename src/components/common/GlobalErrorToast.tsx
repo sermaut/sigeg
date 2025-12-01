@@ -1,11 +1,9 @@
 import { useEffect } from 'react';
 import { useAppStore } from '@/stores/useAppStore';
 import { toast } from 'sonner';
-import { useTranslation } from 'react-i18next';
 
 export function GlobalErrorToast() {
   const { errors, removeError } = useAppStore();
-  const { t } = useTranslation();
 
   useEffect(() => {
     errors.forEach((error) => {
@@ -13,7 +11,7 @@ export function GlobalErrorToast() {
         toast.error(error.message, {
           id: error.id,
           action: {
-            label: t('common.close'),
+            label: 'Fechar',
             onClick: () => removeError(error.id),
           },
         });
@@ -21,13 +19,13 @@ export function GlobalErrorToast() {
         toast.warning(error.message, {
           id: error.id,
           action: {
-            label: t('common.close'),
+            label: 'Fechar',
             onClick: () => removeError(error.id),
           },
         });
       }
     });
-  }, [errors, removeError, t]);
+  }, [errors, removeError]);
 
   return null;
 }

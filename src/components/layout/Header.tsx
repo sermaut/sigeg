@@ -3,11 +3,9 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { Bell, User, LogOut, Shield, Users, Menu, Eye, EyeOff, Music, RefreshCw } from "lucide-react";
 import { getRoleLabel } from "@/lib/memberHelpers";
-import { LanguageSelector } from "@/components/common/LanguageSelector";
 import { RoleNotificationBadge } from "@/components/common/RoleNotificationBadge";
 import { NotificationCenter } from "@/components/notifications/NotificationCenter";
 import { GlobalSearch } from "@/components/common/GlobalSearch";
-import { useTranslation } from 'react-i18next';
 import { useCacheClearer } from "@/lib/cacheUtils";
 import { InlineLoader } from "@/components/common/LoadingIndicators";
 import {
@@ -26,7 +24,6 @@ interface HeaderProps {
 
 export function Header({ onMenuClick }: HeaderProps) {
   const { user, logout, isAdmin, isMember, isGroup } = useAuth();
-  const { t } = useTranslation();
   const { clearCache, isClearing } = useCacheClearer();
   const [showCode, setShowCode] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -134,8 +131,6 @@ export function Header({ onMenuClick }: HeaderProps) {
         <div className="flex items-center space-x-2 md:space-x-3">
           {/* Notification Center */}
           <NotificationCenter />
-          
-          <LanguageSelector />
           
           {/* Notificação de atribuições */}
           <RoleNotificationBadge />
