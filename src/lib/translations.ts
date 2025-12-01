@@ -28,6 +28,15 @@ export const translations: Record<Language, Record<string, string>> = {
     'common.clear': 'Limpar',
     'common.clearCache': 'Limpar Cache',
     'common.logout': 'Sair',
+    'common.notFound': 'Não encontrado',
+    'common.createdAt': 'Data de Criação',
+    'common.status': 'Estado',
+    'common.active': 'Ativo',
+    'common.inactive': 'Inativo',
+    'common.total': 'Total',
+    'common.view': 'Ver',
+    'common.new': 'Novo',
+    'common.upload': 'Carregar',
 
     // Navigation
     'nav.home': 'Página Inicial',
@@ -72,6 +81,13 @@ export const translations: Record<Language, Record<string, string>> = {
     'groups.province': 'Província',
     'groups.inactive': 'Grupo Inativo',
     'groups.accessCode': 'Código de Acesso',
+    'groups.details': 'Detalhes do Grupo',
+    'groups.leadership': 'Liderança',
+    'groups.generalInfo': 'Informações Gerais',
+    'groups.monthlyFee': 'Mensalidade',
+    'groups.currentPlan': 'Plano Atual',
+    'groups.noPlan': 'Nenhum plano definido',
+    'groups.backToGroups': 'Voltar para Grupos',
 
     // Members
     'members.title': 'Membros',
@@ -87,6 +103,17 @@ export const translations: Record<Language, Record<string, string>> = {
     'members.active': 'Ativo',
     'members.inactive': 'Inativo',
     'members.memberCode': 'Código do Membro',
+    'members.addMember': 'Adicionar Membro',
+    'members.editMember': 'Editar Membro',
+    'members.viewMember': 'Ver Membro',
+    'members.activateMember': 'Ativar Membro',
+    'members.deactivateMember': 'Desativar Membro',
+    'members.confirmActivate': 'Tem certeza que deseja ativar este membro?',
+    'members.confirmDeactivate': 'Tem certeza que deseja desativar este membro?',
+    'members.activated': 'Membro ativado',
+    'members.deactivated': 'Membro desativado',
+    'members.activatedSuccess': 'O membro foi ativado com sucesso.',
+    'members.deactivatedSuccess': 'O membro foi desativado com sucesso.',
 
     // Financial
     'financial.title': 'Área Financeira',
@@ -109,6 +136,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'financial.pending': 'Pendente',
     'financial.amountToPay': 'Valor a Pagar',
     'financial.amountPaid': 'Valor Pago',
+    'financial.financialRecords': 'Registros Financeiros',
+    'financial.paymentControl': 'Controlo de Pagamentos',
 
     // Technical
     'technical.title': 'Área Técnica',
@@ -119,6 +148,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'technical.hymns': 'Hinos',
     'technical.accompaniments': 'Acompanhamentos',
     'technical.viewRecords': 'Ver Registros',
+    'technical.uploadProgram': 'Carregar Programa',
 
     // Tabs
     'tabs.info': 'Informações',
@@ -133,8 +163,13 @@ export const translations: Record<Language, Record<string, string>> = {
     'services.arrangements': 'Arranjos Musicais',
     'services.accompaniments': 'Acompanhamentos de Hinos',
     'services.reviews': 'Revisão de Arranjos',
+    'services.description': 'Solicite serviços musicais profissionais para o seu grupo',
+    'services.requestArrangement': 'Solicitar Arranjo',
+    'services.requestAccompaniment': 'Solicitar Acompanhamento',
+    'services.requestReview': 'Solicitar Revisão',
 
     // Contact
+    'contact.title': 'Contacto',
     'contact.subtitle': 'Entra em contacto se precisar de ajuda ou esclarecimentos',
     'contact.whatsapp': 'WhatsApp',
     'contact.email': 'Email',
@@ -154,6 +189,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'error.notFound': 'Não encontrado',
     'error.unauthorized': 'Não autorizado',
     'error.forbidden': 'Acesso proibido',
+    'error.statusChange': 'Falha ao alterar status do membro',
 
     // Partitions
     'partition.soprano': 'Soprano',
@@ -164,9 +200,35 @@ export const translations: Record<Language, Record<string, string>> = {
     'partition.instrumental': 'Instrumental',
     'partition.none': 'Sem Partição',
 
+    // Roles
+    'role.president': 'Presidente',
+    'role.vicePresident1': 'Vice-presidente 1',
+    'role.vicePresident2': 'Vice-presidente 2',
+    'role.secretary1': 'Secretário 1',
+    'role.secretary2': 'Secretário 2',
+
     // Language
     'language.toggle': 'Traduzir para Francês',
     'language.current': 'Português',
+
+    // Reports
+    'reports.title': 'Relatórios',
+    'reports.generate': 'Gerar Relatório',
+    'reports.memberReport': 'Relatório de Membros',
+    'reports.financialReport': 'Relatório Financeiro',
+    'reports.attendanceReport': 'Relatório de Presenças',
+
+    // Admin
+    'admin.title': 'Administração',
+    'admin.manageAdmins': 'Gerir Administradores',
+    'admin.settings': 'Configurações',
+    'admin.systemSettings': 'Configurações do Sistema',
+
+    // Dialogs
+    'dialog.confirm': 'Confirmar',
+    'dialog.cancel': 'Cancelar',
+    'dialog.areYouSure': 'Tem certeza?',
+    'dialog.actionCannotBeUndone': 'Esta ação não pode ser desfeita.',
   },
   
   fr: {
@@ -196,6 +258,15 @@ export const translations: Record<Language, Record<string, string>> = {
     'common.clear': 'Effacer',
     'common.clearCache': 'Vider le Cache',
     'common.logout': 'Déconnexion',
+    'common.notFound': 'Non trouvé',
+    'common.createdAt': 'Date de Création',
+    'common.status': 'Statut',
+    'common.active': 'Actif',
+    'common.inactive': 'Inactif',
+    'common.total': 'Total',
+    'common.view': 'Voir',
+    'common.new': 'Nouveau',
+    'common.upload': 'Télécharger',
 
     // Navigation
     'nav.home': 'Accueil',
@@ -240,6 +311,13 @@ export const translations: Record<Language, Record<string, string>> = {
     'groups.province': 'Province',
     'groups.inactive': 'Groupe Inactif',
     'groups.accessCode': 'Code d\'Accès',
+    'groups.details': 'Détails du Groupe',
+    'groups.leadership': 'Direction',
+    'groups.generalInfo': 'Informations Générales',
+    'groups.monthlyFee': 'Cotisation Mensuelle',
+    'groups.currentPlan': 'Plan Actuel',
+    'groups.noPlan': 'Aucun plan défini',
+    'groups.backToGroups': 'Retour aux Groupes',
 
     // Members
     'members.title': 'Membres',
@@ -255,6 +333,17 @@ export const translations: Record<Language, Record<string, string>> = {
     'members.active': 'Actif',
     'members.inactive': 'Inactif',
     'members.memberCode': 'Code du Membre',
+    'members.addMember': 'Ajouter un Membre',
+    'members.editMember': 'Modifier le Membre',
+    'members.viewMember': 'Voir le Membre',
+    'members.activateMember': 'Activer le Membre',
+    'members.deactivateMember': 'Désactiver le Membre',
+    'members.confirmActivate': 'Êtes-vous sûr de vouloir activer ce membre?',
+    'members.confirmDeactivate': 'Êtes-vous sûr de vouloir désactiver ce membre?',
+    'members.activated': 'Membre activé',
+    'members.deactivated': 'Membre désactivé',
+    'members.activatedSuccess': 'Le membre a été activé avec succès.',
+    'members.deactivatedSuccess': 'Le membre a été désactivé avec succès.',
 
     // Financial
     'financial.title': 'Espace Financier',
@@ -277,6 +366,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'financial.pending': 'En Attente',
     'financial.amountToPay': 'Montant à Payer',
     'financial.amountPaid': 'Montant Payé',
+    'financial.financialRecords': 'Registres Financiers',
+    'financial.paymentControl': 'Contrôle des Paiements',
 
     // Technical
     'technical.title': 'Espace Technique',
@@ -287,6 +378,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'technical.hymns': 'Hymnes',
     'technical.accompaniments': 'Accompagnements',
     'technical.viewRecords': 'Voir les Registres',
+    'technical.uploadProgram': 'Télécharger un Programme',
 
     // Tabs
     'tabs.info': 'Informations',
@@ -301,8 +393,13 @@ export const translations: Record<Language, Record<string, string>> = {
     'services.arrangements': 'Arrangements Musicaux',
     'services.accompaniments': 'Accompagnements d\'Hymnes',
     'services.reviews': 'Révision d\'Arrangements',
+    'services.description': 'Demandez des services musicaux professionnels pour votre groupe',
+    'services.requestArrangement': 'Demander un Arrangement',
+    'services.requestAccompaniment': 'Demander un Accompagnement',
+    'services.requestReview': 'Demander une Révision',
 
     // Contact
+    'contact.title': 'Contact',
     'contact.subtitle': 'Contactez-nous si vous avez besoin d\'aide ou de clarifications',
     'contact.whatsapp': 'WhatsApp',
     'contact.email': 'Email',
@@ -322,6 +419,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'error.notFound': 'Non trouvé',
     'error.unauthorized': 'Non autorisé',
     'error.forbidden': 'Accès interdit',
+    'error.statusChange': 'Échec du changement de statut du membre',
 
     // Partitions
     'partition.soprano': 'Soprano',
@@ -332,9 +430,35 @@ export const translations: Record<Language, Record<string, string>> = {
     'partition.instrumental': 'Instrumental',
     'partition.none': 'Sans Partition',
 
+    // Roles
+    'role.president': 'Président',
+    'role.vicePresident1': 'Vice-président 1',
+    'role.vicePresident2': 'Vice-président 2',
+    'role.secretary1': 'Secrétaire 1',
+    'role.secretary2': 'Secrétaire 2',
+
     // Language
     'language.toggle': 'Traduire en Portugais',
     'language.current': 'Français',
+
+    // Reports
+    'reports.title': 'Rapports',
+    'reports.generate': 'Générer un Rapport',
+    'reports.memberReport': 'Rapport des Membres',
+    'reports.financialReport': 'Rapport Financier',
+    'reports.attendanceReport': 'Rapport de Présences',
+
+    // Admin
+    'admin.title': 'Administration',
+    'admin.manageAdmins': 'Gérer les Administrateurs',
+    'admin.settings': 'Paramètres',
+    'admin.systemSettings': 'Paramètres du Système',
+
+    // Dialogs
+    'dialog.confirm': 'Confirmer',
+    'dialog.cancel': 'Annuler',
+    'dialog.areYouSure': 'Êtes-vous sûr?',
+    'dialog.actionCannotBeUndone': 'Cette action ne peut pas être annulée.',
   }
 };
 
