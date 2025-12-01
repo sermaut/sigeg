@@ -19,6 +19,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { usePermissions } from "@/hooks/usePermissions";
 import { PermissionGuard } from "@/components/common/PermissionGuard";
 import { usePersistedTab } from "@/hooks/usePersistedTab";
@@ -84,6 +85,7 @@ export default function GroupDetails() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, isMember } = useAuth();
+  const { t } = useLanguage();
   const permissions = usePermissions();
   
   const [searchTerm, setSearchTerm] = useState("");
@@ -170,8 +172,8 @@ export default function GroupDetails() {
       if (error) throw error;
       
       toast({
-        title: newStatus ? "Membro ativado" : "Membro desativado",
-        description: `O membro foi ${newStatus ? 'ativado' : 'desativado'} com sucesso.`,
+        title: newStatus ? t('members.activated') : t('members.deactivated'),
+        description: newStatus ? t('members.activatedSuccess') : t('members.deactivatedSuccess'),
       });
       
       // Refetch data using React Query
@@ -179,8 +181,8 @@ export default function GroupDetails() {
     } catch (error) {
       console.error('Erro ao alterar status:', error);
       toast({
-        title: "Erro",
-        description: "Falha ao alterar status do membro",
+        title: t('error.general'),
+        description: t('error.statusChange'),
         variant: "destructive",
       });
     } finally {
@@ -204,9 +206,9 @@ export default function GroupDetails() {
     return (
       <MainLayout>
         <div className="text-center py-12">
-          <h1 className="text-2xl font-bold text-foreground mb-4">Grupo não encontrado</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-4">{t('common.notFound')}</h1>
           <Button onClick={() => navigate('/groups')}>
-            Voltar para Grupos
+            {t('groups.backToGroups')}
           </Button>
         </div>
       </MainLayout>
@@ -229,11 +231,11 @@ export default function GroupDetails() {
                        transition-all hover:scale-105"
           >
             <ArrowLeft className="w-4 h-4" />
-            Voltar
+            {t('common.back')}
           </Button>
           <span className="text-muted-foreground">/</span>
           <span className="text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer">
-            Grupos
+            {t('nav.groups')}
           </span>
           <span className="text-muted-foreground">/</span>
           <span className="text-sm font-semibold text-primary">{displayGroup.name}</span>
@@ -266,25 +268,25 @@ export default function GroupDetails() {
                          className="rounded-lg data-[state=active]:gradient-primary 
                                    data-[state=active]:text-white data-[state=active]:shadow-soft
                                    transition-all duration-300 hover:scale-105">
-              Informações
+              {t('tabs.info')}
             </TabsTrigger>
             <TabsTrigger value="members"
                          className="rounded-lg data-[state=active]:gradient-primary 
                                    data-[state=active]:text-white data-[state=active]:shadow-soft
                                    transition-all duration-300 hover:scale-105">
-              Membros
+              {t('tabs.members')}
             </TabsTrigger>
             <TabsTrigger value="financial"
                          className="rounded-lg data-[state=active]:gradient-primary 
                                    data-[state=active]:text-white data-[state=active]:shadow-soft
                                    transition-all duration-300 hover:scale-105">
-              Finanças
+              {t('tabs.financial')}
             </TabsTrigger>
             <TabsTrigger value="technical"
                          className="rounded-lg data-[state=active]:gradient-primary 
                                    data-[state=active]:text-white data-[state=active]:shadow-soft
                                    transition-all duration-300 hover:scale-105">
-              Área Técnica
+              {t('tabs.technical')}
             </TabsTrigger>
           </TabsList>
 
@@ -292,7 +294,7 @@ export default function GroupDetails() {
             <Card className="border-2 border-primary/10 shadow-lg">
               <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-foreground">Detalhes do Grupo</CardTitle>
+                  <CardTitle className="text-foreground">{t('groups.details')}</CardTitle>
                   <div className="flex gap-2">
                     <PermissionGuard require="canEditGroup">
                       <Button
@@ -326,37 +328,37 @@ export default function GroupDetails() {
                     <div className="p-2 bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg">
                       <Users className="w-5 h-5 text-primary" />
                     </div>
-                    <h3 className="text-xl font-semibold text-foreground">Liderança</h3>
+                    <h3 className="text-xl font-semibold text-foreground">{t('groups.leadership')}</h3>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {displayGroup.president_name && (
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">Presidente</label>
+                        <label className="text-sm font-medium text-muted-foreground">{t('role.president')}</label>
                         <p className="text-foreground">{displayGroup.president_name}</p>
                       </div>
                     )}
                     {displayGroup.vice_president_1_name && (
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">Vice-presidente 1</label>
+                        <label className="text-sm font-medium text-muted-foreground">{t('role.vicePresident1')}</label>
                         <p className="text-foreground">{displayGroup.vice_president_1_name}</p>
                       </div>
                     )}
                     {displayGroup.vice_president_2_name && (
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">Vice-presidente 2</label>
+                        <label className="text-sm font-medium text-muted-foreground">{t('role.vicePresident2')}</label>
                         <p className="text-foreground">{displayGroup.vice_president_2_name}</p>
                       </div>
                     )}
                     {displayGroup.secretary_1_name && (
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">Secretário 1</label>
+                        <label className="text-sm font-medium text-muted-foreground">{t('role.secretary1')}</label>
                         <p className="text-foreground">{displayGroup.secretary_1_name}</p>
                       </div>
                     )}
                     {displayGroup.secretary_2_name && (
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">Secretário 2</label>
+                        <label className="text-sm font-medium text-muted-foreground">{t('role.secretary2')}</label>
                         <p className="text-foreground">{displayGroup.secretary_2_name}</p>
                       </div>
                     )}
@@ -369,61 +371,61 @@ export default function GroupDetails() {
                     <div className="p-2 bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg">
                       <Info className="w-5 h-5 text-primary" />
                     </div>
-                    <h3 className="text-xl font-semibold text-foreground">Informações Gerais</h3>
+                    <h3 className="text-xl font-semibold text-foreground">{t('groups.generalInfo')}</h3>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">Direção</label>
+                      <label className="text-sm font-medium text-muted-foreground">{t('groups.direction')}</label>
                       <p className="text-foreground capitalize">{displayGroup.direction}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">Província</label>
+                      <label className="text-sm font-medium text-muted-foreground">{t('groups.province')}</label>
                       <p className="text-foreground">{displayGroup.province}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">Município</label>
+                      <label className="text-sm font-medium text-muted-foreground">{t('groups.municipality')}</label>
                       <p className="text-foreground">{displayGroup.municipality}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">Total de Membros</label>
+                      <label className="text-sm font-medium text-muted-foreground">{t('dashboard.totalMembers')}</label>
                       <p className="text-foreground">{displayMembers.length} / {displayGroup.max_members}</p>
                     </div>
                     {permissions.canViewGroupFinancialInfo && (
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">Mensalidade</label>
+                        <label className="text-sm font-medium text-muted-foreground">{t('groups.monthlyFee')}</label>
                         <p className="text-foreground">{displayGroup.monthly_fee} Kz</p>
                       </div>
                     )}
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">Data de Criação</label>
+                      <label className="text-sm font-medium text-muted-foreground">{t('common.createdAt')}</label>
                       <p className="text-foreground">
                         {new Date(displayGroup.created_at).toLocaleDateString('pt-BR')}
                       </p>
                     </div>
                     {permissions.canViewGroupFinancialInfo && (
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">Código de Acesso</label>
+                        <label className="text-sm font-medium text-muted-foreground">{t('groups.accessCode')}</label>
                         <code className="px-2 py-1 bg-muted rounded text-xs font-mono">
-                          {displayGroup.access_code || 'Não definido'}
+                          {displayGroup.access_code || t('common.none')}
                         </code>
                       </div>
                     )}
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">Plano Atual</label>
+                      <label className="text-sm font-medium text-muted-foreground">{t('groups.currentPlan')}</label>
                       <div className="flex items-center space-x-2">
                         <p className="text-foreground">
-                          {displayGroup.monthly_plans?.name || 'Nenhum plano definido'}
+                          {displayGroup.monthly_plans?.name || t('groups.noPlan')}
                         </p>
                         {displayGroup.monthly_plans && (
                           <Badge variant={displayGroup.monthly_plans.is_active ? "default" : "secondary"}>
-                            {displayGroup.monthly_plans.is_active ? "Ativo" : "Inativo"}
+                            {displayGroup.monthly_plans.is_active ? t('common.active') : t('common.inactive')}
                           </Badge>
                         )}
                       </div>
                       {displayGroup.monthly_plans && (
                         <div className="mt-1 text-sm text-muted-foreground">
-                          Máx. {displayGroup.monthly_plans.max_members} membros • {displayGroup.monthly_plans.price_per_member} Kz por membro
+                          Máx. {displayGroup.monthly_plans.max_members} {t('members.title').toLowerCase()} • {displayGroup.monthly_plans.price_per_member} Kz
                         </div>
                       )}
                     </div>
@@ -438,14 +440,14 @@ export default function GroupDetails() {
               <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-2">
-                    <CardTitle className="text-foreground">Membros do Grupo</CardTitle>
+                    <CardTitle className="text-foreground">{t('members.title')}</CardTitle>
                     <PermissionGuard require="canAddMember">
                       <Button
                         variant="gradient"
                         size="icon"
                         onClick={() => navigate(`/members/new?groupId=${id}`)}
                         className="hover:shadow-glow h-9 w-9"
-                        title="Adicionar Membro"
+                        title={t('members.addMember')}
                       >
                         <UserPlus className="w-4 h-4" />
                       </Button>
@@ -454,7 +456,7 @@ export default function GroupDetails() {
                   <div className="relative w-full sm:w-64">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
-                      placeholder="Buscar membro..."
+                      placeholder={t('members.searchPlaceholder')}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-10 border-primary/20 focus:border-primary"
@@ -492,7 +494,7 @@ export default function GroupDetails() {
                              transition-all duration-200 font-medium
                              hover:bg-primary/5 flex items-center justify-center gap-1.5"
                 >
-                  Programa Semanal
+                  {t('technical.weeklyProgram')}
                 </TabsTrigger>
                 <TabsTrigger 
                   value="ensaios"
@@ -502,7 +504,7 @@ export default function GroupDetails() {
                              transition-all duration-200 font-medium
                              hover:bg-primary/5 flex items-center justify-center gap-1.5"
                 >
-                  Participação nos Ensaios
+                  {t('technical.attendance')}
                 </TabsTrigger>
               </TabsList>
 
@@ -546,22 +548,20 @@ export default function GroupDetails() {
                   )}
                 </div>
                 <AlertDialogTitle>
-                  {memberToToggle?.isActive ? 'Desativar Membro' : 'Ativar Membro'}
+                  {memberToToggle?.isActive ? t('members.deactivateMember') : t('members.activateMember')}
                 </AlertDialogTitle>
               </div>
               <AlertDialogDescription>
-                Tem certeza que deseja {memberToToggle?.isActive ? 'desativar' : 'ativar'} este membro?
-                {memberToToggle?.isActive && ' O membro não poderá mais acessar o sistema.'}
-                {!memberToToggle?.isActive && ' O membro poderá voltar a acessar o sistema.'}
+                {memberToToggle?.isActive ? t('members.confirmDeactivate') : t('members.confirmActivate')}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={confirmToggleStatus}
                 className={memberToToggle?.isActive ? "bg-warning hover:bg-warning/90" : "bg-success hover:bg-success/90"}
               >
-                {memberToToggle?.isActive ? 'Desativar' : 'Ativar'}
+                {memberToToggle?.isActive ? t('members.deactivateMember') : t('members.activateMember')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
