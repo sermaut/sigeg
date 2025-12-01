@@ -13,7 +13,6 @@ import { GlobalPageLoader } from '@/components/common/GlobalPageLoader';
 import { PWAUpdatePrompt } from '@/components/common/PWAUpdatePrompt';
 import { PWAInstallPrompt } from '@/components/common/PWAInstallPrompt';
 import { OfflineIndicator } from '@/components/common/OfflineIndicator';
-import '@/i18n';
 
 // CRITICAL: Import Index and Auth directly (no lazy loading) for faster login
 import Index from '@/pages/Index';
