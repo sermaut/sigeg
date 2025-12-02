@@ -9,8 +9,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Music, Shield, Users, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import sigegLogo from '@/assets/sigeg-logo-seal.png';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function Auth() {
+  const { t } = useLanguage();
   const [memberCode, setMemberCode] = useState('');
   const [adminCode, setAdminCode] = useState('');
   const [groupCode, setGroupCode] = useState('');
@@ -35,7 +37,7 @@ export default function Auth() {
 
   const handleLogin = async (code: string, type: 'admin' | 'member' | 'group') => {
     if (!code.trim()) {
-      setError('Por favor, insira o código de acesso');
+      setError(t('auth.enterCode'));
       return;
     }
 
@@ -48,16 +50,16 @@ export default function Auth() {
     
     if (result.success) {
       toast({
-        title: "Login realizado com sucesso!",
-        description: `Bem-vindo ao SIGEG`,
+        title: t('auth.loginSuccess'),
+        description: t('auth.welcome'),
       });
     } else {
-      setError(result.error || 'Erro ao fazer login');
+      setError(result.error || t('error.general'));
       
       if (result.error?.includes('Tempo esgotado')) {
         toast({
-          title: "Conexão lenta",
-          description: "Verifique sua internet e tente novamente.",
+          title: t('auth.slowConnection'),
+          description: t('auth.checkInternet'),
           variant: "destructive",
         });
       }
@@ -91,7 +93,7 @@ export default function Auth() {
                            bg-clip-text text-transparent">
               SIGEG-BV
             </h1>
-            <p className="text-lg text-muted-foreground">Sistema de Gestão de Grupos</p>
+            <p className="text-lg text-muted-foreground">{t('auth.managementSystem')}</p>
           </div>
         </div>
 
@@ -102,9 +104,9 @@ export default function Auth() {
                           via-primary to-transparent opacity-50" />
           
           <CardHeader className="space-y-1 pt-8">
-            <CardTitle className="text-2xl text-center font-bold">Acesso ao Sistema</CardTitle>
+            <CardTitle className="text-2xl text-center font-bold">{t('auth.systemAccess')}</CardTitle>
             <p className="text-center text-muted-foreground">
-              Entre com seu código de acesso
+              {t('auth.enterAccessCode')}
             </p>
           </CardHeader>
           
@@ -115,19 +117,19 @@ export default function Auth() {
                              className="flex items-center gap-2 rounded-lg data-[state=active]:gradient-primary 
                                        data-[state=active]:text-white transition-all duration-300">
                   <Users className="w-4 h-4" />
-                  <span>Membro</span>
+                  <span>{t('auth.member')}</span>
                 </TabsTrigger>
                 <TabsTrigger value="group"
                              className="flex items-center gap-2 rounded-lg data-[state=active]:gradient-primary 
                                        data-[state=active]:text-white transition-all duration-300">
                   <Music className="w-4 h-4" />
-                  <span>Grupo</span>
+                  <span>{t('groups.title')}</span>
                 </TabsTrigger>
                 <TabsTrigger value="admin"
                              className="flex items-center gap-2 rounded-lg data-[state=active]:gradient-primary 
                                        data-[state=active]:text-white transition-all duration-300">
                   <Shield className="w-4 h-4" />
-                  <span>Admin</span>
+                  <span>{t('auth.admin')}</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -143,7 +145,7 @@ export default function Auth() {
                 <div className="relative">
                   <Input
                     type={showMemberCode ? "text" : "password"}
-                    placeholder="Digite seu código de membro"
+                    placeholder={t('auth.enterMemberCode')}
                     value={memberCode}
                     onChange={(e) => setMemberCode(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleLogin(memberCode, 'member')}
@@ -184,7 +186,7 @@ export default function Auth() {
                   ) : (
                     <>
                       <Users className="w-5 h-5 mr-2" />
-                      Entrar como Membro
+                      {t('auth.loginAsMember')}
                     </>
                   )}
                 </Button>
@@ -195,7 +197,7 @@ export default function Auth() {
                 <div className="relative">
                   <Input
                     type={showGroupCode ? "text" : "password"}
-                    placeholder="Digite o código do grupo (ex: ABCD-EF)"
+                    placeholder={t('auth.enterGroupCode')}
                     value={groupCode}
                     onChange={(e) => setGroupCode(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleLogin(groupCode, 'group')}
@@ -236,7 +238,7 @@ export default function Auth() {
                   ) : (
                     <>
                       <Music className="w-5 h-5 mr-2" />
-                      Entrar como Grupo
+                      {t('auth.loginAsGroup')}
                     </>
                   )}
                 </Button>
@@ -247,7 +249,7 @@ export default function Auth() {
                 <div className="relative">
                   <Input
                     type={showAdminCode ? "text" : "password"}
-                    placeholder="Digite seu código de administrador"
+                    placeholder={t('auth.enterAdminCode')}
                     value={adminCode}
                     onChange={(e) => setAdminCode(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleLogin(adminCode, 'admin')}
@@ -288,7 +290,7 @@ export default function Auth() {
                   ) : (
                     <>
                       <Shield className="w-5 h-5 mr-2" />
-                      Entrar como Administrador
+                      {t('auth.loginAsAdmin')}
                     </>
                   )}
                 </Button>
@@ -301,7 +303,7 @@ export default function Auth() {
         <div className="text-center text-sm text-muted-foreground space-y-1 animate-fade-in"
              style={{ animationDelay: '0.3s' }}>
           <p className="font-semibold">SIGEG © {new Date().getFullYear()}</p>
-          <p>Acesso seguro com controle de permissões</p>
+          <p>{t('auth.secureAccess')}</p>
         </div>
       </div>
     </div>
