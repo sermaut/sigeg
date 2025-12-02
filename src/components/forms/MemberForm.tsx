@@ -15,6 +15,7 @@ import { Camera, Upload, Wand2, Loader2 } from "lucide-react";
 import { ImageCropper } from "./ImageCropper";
 import { compressImage } from "@/lib/imageOptimization";
 import { generateUniqueMemberCode, isMemberCodeUnique } from "@/lib/codeGenerator";
+import { useLanguage } from "@/contexts/LanguageContext";
 const memberSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
   group_id: z.string().min(1, "Grupo é obrigatório"),
@@ -70,6 +71,7 @@ interface MemberFormProps {
 }
 
 export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSuccess }: MemberFormProps) => {
+  const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingCode, setIsGeneratingCode] = useState(false);
   const [profileImageUrl, setProfileImageUrl] = useState<string>("");
@@ -154,8 +156,8 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
     const maxSizeInBytes = 2.5 * 1024 * 1024; // 2,5MB
     if (file.size > maxSizeInBytes) {
       toast({
-        title: "Imagem muito grande",
-        description: "A imagem deve ter no máximo 2,5MB. Por favor, selecione uma imagem menor.",
+        title: t('memberForm.imageTooLarge'),
+        description: t('memberForm.imageTooLargeDescription'),
         variant: "destructive",
       });
       // Limpar o input
@@ -175,8 +177,8 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
       reader.readAsDataURL(compressedFile);
     } catch (error) {
       toast({
-        title: "Erro",
-        description: "Falha ao processar imagem",
+        title: t('error.general'),
+        description: t('memberForm.imageError'),
         variant: "destructive",
       });
     }
@@ -191,11 +193,11 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
     try {
       const code = await generateUniqueMemberCode(memberId);
       form.setValue("member_code", code);
-      toast({ title: "Código gerado com sucesso!" });
+      toast({ title: t('forms.codeGenerated') });
     } catch (error) {
       toast({
-        title: "Erro ao gerar código",
-        description: "Tente novamente",
+        title: t('forms.codeError'),
+        description: t('forms.tryAgain'),
         variant: "destructive",
       });
     } finally {
@@ -210,8 +212,11 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
     if (!isEditing && memberLimitInfo) {
       if (memberLimitInfo.currentCount >= memberLimitInfo.limit) {
         toast({
-          title: "Limite de membros excedido",
-          description: `O plano ${memberLimitInfo.planName} permite apenas ${memberLimitInfo.limit} membros. O grupo já tem ${memberLimitInfo.currentCount} membros ativos.`,
+          title: t('memberForm.memberLimitExceeded'),
+          description: t('memberForm.memberLimitDescription')
+            .replace('{planName}', memberLimitInfo.planName)
+            .replace('{limit}', String(memberLimitInfo.limit))
+            .replace('{current}', String(memberLimitInfo.currentCount)),
           variant: "destructive",
         });
         setIsLoading(false);
@@ -224,8 +229,8 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
       const isUnique = await isMemberCodeUnique(data.member_code, memberId);
       if (!isUnique) {
         toast({
-          title: "Código já existe",
-          description: "Este código de membro já está em uso. Gere um novo código ou digite outro.",
+          title: t('forms.codeExists'),
+          description: t('forms.codeExistsDescription'),
           variant: "destructive",
         });
         setIsLoading(false);
@@ -246,14 +251,14 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
           .eq("id", memberId);
         
         if (error) throw error;
-        toast({ title: "Membro atualizado com sucesso!" });
+        toast({ title: t('memberForm.memberUpdated') });
       } else {
         const { error } = await supabase
           .from("members")
           .insert([memberData as any]);
         
         if (error) throw error;
-        toast({ title: "Membro criado com sucesso!" });
+        toast({ title: t('memberForm.memberCreated') });
       }
       
       onSuccess?.();
@@ -270,13 +275,13 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
       console.error("Erro ao salvar membro:", error);
       
       // Handle specific database errors
-      let errorMessage = "Verifique os dados e tente novamente";
+      let errorMessage = t('memberForm.saveErrorDescription');
       if (error?.message?.includes("Limite de membros excedido")) {
         errorMessage = error.message;
       }
       
       toast({
-        title: "Erro ao salvar membro",
+        title: t('memberForm.saveError'),
         description: errorMessage,
         variant: "destructive",
       });
@@ -314,7 +319,7 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
                 className="flex items-center gap-2"
               >
                 <Upload className="w-4 h-4" />
-                Carregar Foto
+                {t('memberForm.uploadPhoto')}
               </Button>
             </div>
 
@@ -323,9 +328,9 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nome Completo</FormLabel>
+                  <FormLabel>{t('memberForm.fullName')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Digite o nome completo" {...field} />
+                    <Input placeholder={t('memberForm.fullNamePlaceholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -338,7 +343,7 @@ export const MemberForm = ({ memberId, groupId, initialData, isEditing, onSucces
                 name="birth_date"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Data de Nascimento</FormLabel>
+                    <FormLabel>{t('memberForm.birthDate')}</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>

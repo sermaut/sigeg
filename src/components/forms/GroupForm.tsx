@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Wand2, Loader2 } from "lucide-react";
 import { generateUniqueGroupCode, isGroupCodeUnique } from "@/lib/codeGenerator";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const groupSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
@@ -48,6 +49,7 @@ const provinces = [
 ];
 
 export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupFormProps) => {
+  const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingCode, setIsGeneratingCode] = useState(false);
   const [groupMembers, setGroupMembers] = useState<Array<{ id: string; name: string }>>([]);
@@ -119,11 +121,11 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
     try {
       const code = await generateUniqueGroupCode(groupId);
       form.setValue("access_code", code);
-      toast({ title: "Código gerado com sucesso!" });
+      toast({ title: t('forms.codeGenerated') });
     } catch (error) {
       toast({
-        title: "Erro ao gerar código",
-        description: "Tente novamente",
+        title: t('forms.codeError'),
+        description: t('forms.tryAgain'),
         variant: "destructive",
       });
     } finally {
@@ -140,8 +142,8 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
       const isUnique = await isGroupCodeUnique(data.access_code, groupId);
       if (!isUnique) {
         toast({
-          title: "Código já existe",
-          description: "Este código de acesso já está em uso. Gere um novo código ou digite outro.",
+          title: t('forms.codeExists'),
+          description: t('forms.codeExistsDescription'),
           variant: "destructive",
         });
         setIsLoading(false);
@@ -181,7 +183,7 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
           console.error("Update error:", error);
           throw error;
         }
-        toast({ title: "Grupo atualizado com sucesso!" });
+        toast({ title: t('groupForm.groupUpdated') });
       } else {
         const { data: newGroup, error } = await supabase
           .from("groups")
@@ -259,7 +261,7 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
           }
         }
 
-        toast({ title: "Grupo criado com sucesso!" });
+        toast({ title: t('groupForm.groupCreated') });
       }
       
       onSuccess?.();
@@ -267,8 +269,8 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
     } catch (error) {
       console.error("Erro ao salvar grupo:", error);
       toast({
-        title: "Erro ao salvar grupo",
-        description: error?.message || "Verifique os dados e tente novamente",
+        title: t('groupForm.saveError'),
+        description: error?.message || t('groupForm.saveErrorDescription'),
         variant: "destructive",
       });
     } finally {
@@ -286,9 +288,9 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nome do Grupo</FormLabel>
+                  <FormLabel>{t('groupForm.groupName')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Digite o nome do grupo" {...field} />
+                    <Input placeholder={t('groupForm.groupNamePlaceholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -301,11 +303,11 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
                 name="province"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Província</FormLabel>
+                    <FormLabel>{t('groupForm.province')}</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Selecione a província" />
+                          <SelectValue placeholder={t('groupForm.provincePlaceholder')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -326,9 +328,9 @@ export const GroupForm = ({ groupId, initialData, isEditing, onSuccess }: GroupF
                 name="municipality"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Município</FormLabel>
+                    <FormLabel>{t('groupForm.municipality')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Digite o município" {...field} />
+                      <Input placeholder={t('groupForm.municipalityPlaceholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
