@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Phone, Eye, Edit, User, Trash2 } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -47,6 +48,7 @@ const MemberRow = memo(({
   onMemberEdit?: (id: string) => void;
   showActions?: boolean;
 }) => {
+  const { t } = useLanguage();
   const initials = useMemo(() => {
     return member.name
       .split(' ')
@@ -93,7 +95,7 @@ const MemberRow = memo(({
       </td>
       <td className="px-4 py-3 border-r border-border/50">
         <Badge variant={member.is_active ? "default" : "secondary"}>
-          {member.is_active ? "Ativo" : "Inativo"}
+          {member.is_active ? t('common.active') : t('common.inactive')}
         </Badge>
       </td>
       {showActions && (
@@ -131,6 +133,7 @@ export const OptimizedMembersTable = memo(({
   showActions = true,
   onMembersDeleted
 }: OptimizedMembersTableProps) => {
+  const { t } = useLanguage();
   const memoizedMembers = useMemo(() => 
     [...members].sort((a, b) => a.name.localeCompare(b.name, 'pt', { sensitivity: 'base' })), 
     [members]
@@ -169,8 +172,8 @@ export const OptimizedMembersTable = memo(({
       if (error) throw error;
 
       toast({
-        title: "Membros eliminados",
-        description: `${memberIds.length} membro(s) eliminado(s) com sucesso.`,
+        title: t('members.deleted'),
+        description: `${memberIds.length} ${t('members.deletedSuccess')}`,
       });
 
       setSelectedMembers(new Set());
@@ -179,7 +182,7 @@ export const OptimizedMembersTable = memo(({
     } catch (error) {
       console.error("Erro ao eliminar membros:", error);
       toast({
-        title: "Erro ao eliminar membros",
+        title: t('members.deleteError'),
         variant: "destructive",
       });
     }
@@ -189,7 +192,7 @@ export const OptimizedMembersTable = memo(({
     return (
       <div className="text-center py-12">
         <User className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-        <p className="text-muted-foreground">Nenhum membro encontrado</p>
+        <p className="text-muted-foreground">{t('members.noMembers')}</p>
       </div>
     );
   }
@@ -199,7 +202,7 @@ export const OptimizedMembersTable = memo(({
       {selectedMembers.size > 0 && (
         <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
           <span className="text-sm font-medium">
-            {selectedMembers.size} membro(s) selecionado(s)
+            {selectedMembers.size} {t('members.selected')}
           </span>
           <Button
             variant="destructive"
@@ -207,7 +210,7 @@ export const OptimizedMembersTable = memo(({
             onClick={() => setShowDeleteDialog(true)}
           >
             <Trash2 className="w-4 h-4 mr-2" />
-            Eliminar Selecionados
+            {t('members.deleteSelected')}
           </Button>
         </div>
       )}
@@ -223,13 +226,13 @@ export const OptimizedMembersTable = memo(({
                 />
               </th>
               <th className="px-2 py-1 text-center text-sm font-medium text-muted-foreground w-12 border-r border-border/50">
-                Nº.
+                {t('members.number')}
               </th>
               <th className="px-3 py-1 text-center text-sm font-medium text-muted-foreground w-16 border-r border-border/50">
-                Foto
+                {t('members.photo')}
               </th>
               <th className="px-4 py-1 text-left text-sm font-medium text-muted-foreground">
-                Nome Completo
+                {t('members.fullName')}
               </th>
             </tr>
           </thead>
@@ -391,15 +394,15 @@ export const OptimizedMembersTable = memo(({
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Eliminar Membros</AlertDialogTitle>
+            <AlertDialogTitle>{t('common.delete')} {t('members.title')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem a certeza que deseja eliminar {selectedMembers.size} membro(s)? Esta ação não pode ser desfeita.
+              {t('members.confirmDelete').replace('{count}', String(selectedMembers.size))}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteSelected}>
-              Eliminar
+              {t('common.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
