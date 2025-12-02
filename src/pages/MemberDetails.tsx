@@ -9,7 +9,6 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useLanguage } from "@/contexts/LanguageContext";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -80,7 +79,6 @@ export default function MemberDetails() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const permissions = usePermissions();
-  const { t } = useLanguage();
   
   const [showMemberCode, setShowMemberCode] = useState(false);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
@@ -163,16 +161,16 @@ export default function MemberDetails() {
       if (error) throw error;
       
       toast({
-        title: displayMember.is_active ? t('members.deactivated') : t('members.activated'),
-        description: displayMember.is_active ? t('members.deactivatedSuccess') : t('members.activatedSuccess'),
+        title: displayMember.is_active ? "Membro desativado" : "Membro reativado",
+        description: `${displayMember.name} foi ${displayMember.is_active ? 'desativado' : 'reativado'} com sucesso.`,
       });
       
       refetchMember();
     } catch (error) {
       console.error('Erro ao alterar status:', error);
       toast({
-        title: t('error.general'),
-        description: t('error.statusChange'),
+        title: "Erro",
+        description: "Falha ao alterar status do membro",
         variant: "destructive",
       });
     } finally {
@@ -194,12 +192,12 @@ export default function MemberDetails() {
 
   const formatMaritalStatus = (status?: string) => {
     const statusMap: { [key: string]: string } = {
-      'solteiro': t('memberDetails.single'),
-      'casado': t('memberDetails.married'),
-      'divorciado': t('memberDetails.divorced'),
-      'viuvo': t('memberDetails.widowed')
+      'solteiro': 'Solteiro(a)',
+      'casado': 'Casado(a)',
+      'divorciado': 'Divorciado(a)',
+      'viuvo': 'Viúvo(a)'
     };
-    return status ? statusMap[status] || status : t('memberDetails.notInformed');
+    return status ? statusMap[status] || status : 'Não informado';
   };
 
   const getInitials = (name: string) => {
@@ -233,9 +231,9 @@ export default function MemberDetails() {
     return (
       <MainLayout>
         <div className="text-center py-12">
-          <h1 className="text-2xl font-bold text-foreground mb-4">{t('memberDetails.notFound')}</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-4">Membro não encontrado</h1>
           <Button onClick={() => navigate('/groups')}>
-            {t('groups.backToGroups')}
+            Voltar para Grupos
           </Button>
         </div>
       </MainLayout>
@@ -266,14 +264,14 @@ export default function MemberDetails() {
             className="text-muted-foreground hover:text-foreground text-xs"
           >
             <ArrowLeft className="w-3 h-3" />
-            {t('common.back')}
+            Voltar
           </Button>
           <span className="text-muted-foreground">/</span>
-          <span className="text-muted-foreground">{t('nav.groups')}</span>
+          <span className="text-muted-foreground">Grupos</span>
           <span className="text-muted-foreground">/</span>
           <span className="text-muted-foreground">{group.name}</span>
           <span className="text-muted-foreground">/</span>
-          <span className="font-medium text-foreground">{t('header.member')}</span>
+          <span className="font-medium text-foreground">Membro</span>
         </div>
 
         {/* Status Alert */}
@@ -281,7 +279,7 @@ export default function MemberDetails() {
           <Alert className="border-orange-200 bg-orange-50">
             <AlertTriangle className="h-4 w-4 text-orange-600" />
             <AlertDescription className="text-orange-800">
-              {t('memberDetails.inactive')}
+              Este membro está inativo no sistema.
             </AlertDescription>
           </Alert>
         )}
@@ -308,7 +306,7 @@ export default function MemberDetails() {
                   onClick={() => navigate(`/members/${member.id}/edit`)}
                 >
                   <Edit className="w-4 h-4" />
-                  {t('common.edit')}
+                  Editar
                 </Button>
               </PermissionGuard>
               <PermissionGuard require="canToggleMemberStatus">
@@ -316,7 +314,7 @@ export default function MemberDetails() {
                   variant={member.is_active ? "destructive" : "default"}
                   onClick={handleSoftDelete}
                 >
-                  {member.is_active ? t('memberDetails.deactivate') : t('memberDetails.reactivate')}
+                  {member.is_active ? "Desativar" : "Reativar"}
                 </Button>
               </PermissionGuard>
             </div>
@@ -326,9 +324,9 @@ export default function MemberDetails() {
         {/* Member Details Tabs */}
         <Tabs defaultValue="personal" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="personal">{t('memberDetails.personalInfo')}</TabsTrigger>
-            <TabsTrigger value="group">{t('memberDetails.groupInfo')}</TabsTrigger>
-            <TabsTrigger value="observations">{t('memberDetails.observations')}</TabsTrigger>
+            <TabsTrigger value="personal">Info. Pessoais</TabsTrigger>
+            <TabsTrigger value="group">Info. do Grupo</TabsTrigger>
+            <TabsTrigger value="observations">Observações</TabsTrigger>
           </TabsList>
 
           <TabsContent value="personal" className="space-y-6">
@@ -336,7 +334,7 @@ export default function MemberDetails() {
               <div className="p-6">
                 <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center">
                   <User className="w-5 h-5 mr-2" />
-                  {t('memberDetails.personalInfo')}
+                  Informações Pessoais
                 </h3>
                 
                 <div className="space-y-4">
@@ -344,7 +342,7 @@ export default function MemberDetails() {
                     <div className="flex items-center space-x-3">
                       <Calendar className="w-4 h-4 text-muted-foreground" />
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">{t('memberDetails.birthDate')}</label>
+                        <label className="text-sm font-medium text-muted-foreground">Data de Nascimento</label>
                         <p className="text-foreground">
                           {new Date(member.birth_date).toLocaleDateString('pt-BR')}
                         </p>
@@ -356,7 +354,7 @@ export default function MemberDetails() {
                     <div className="flex items-center space-x-3">
                       <MapPin className="w-4 h-4 text-muted-foreground" />
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">{t('memberDetails.birthPlace')}</label>
+                        <label className="text-sm font-medium text-muted-foreground">Local de Nascimento</label>
                         <p className="text-foreground">
                           {[member.birth_municipality, member.birth_province].filter(Boolean).join(', ')}
                         </p>
@@ -368,7 +366,7 @@ export default function MemberDetails() {
                     <div className="flex items-center space-x-3">
                       <MapPin className="w-4 h-4 text-muted-foreground" />
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">{t('memberDetails.neighborhood')}</label>
+                        <label className="text-sm font-medium text-muted-foreground">Bairro</label>
                         <p className="text-foreground">{member.neighborhood}</p>
                       </div>
                     </div>
@@ -378,7 +376,7 @@ export default function MemberDetails() {
                     <div className="flex items-center space-x-3">
                       <Phone className="w-4 h-4 text-muted-foreground" />
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">{t('members.phone')}</label>
+                        <label className="text-sm font-medium text-muted-foreground">Telefone</label>
                         <p className="text-foreground">{member.phone}</p>
                       </div>
                     </div>
@@ -387,7 +385,7 @@ export default function MemberDetails() {
                   <div className="flex items-center space-x-3">
                     <Heart className="w-4 h-4 text-muted-foreground" />
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">{t('memberDetails.maritalStatus')}</label>
+                      <label className="text-sm font-medium text-muted-foreground">Estado Civil</label>
                       <p className="text-foreground">{formatMaritalStatus(member.marital_status)}</p>
                     </div>
                   </div>
@@ -396,7 +394,7 @@ export default function MemberDetails() {
                     <div className="flex items-center space-x-3">
                       <Briefcase className="w-4 h-4 text-muted-foreground" />
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">{t('memberDetails.profession')}</label>
+                        <label className="text-sm font-medium text-muted-foreground">Profissão</label>
                         <p className="text-foreground">{member.profession}</p>
                       </div>
                     </div>
@@ -406,7 +404,7 @@ export default function MemberDetails() {
                     <div className="flex items-center space-x-3">
                       <GraduationCap className="w-4 h-4 text-muted-foreground" />
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">{t('memberDetails.educationLevel')}</label>
+                        <label className="text-sm font-medium text-muted-foreground">Nível de Escolaridade</label>
                         <p className="text-foreground">{member.education_level}</p>
                       </div>
                     </div>
@@ -421,7 +419,7 @@ export default function MemberDetails() {
               <div className="p-6">
                 <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center">
                   <Users className="w-5 h-5 mr-2" />
-                  {t('memberDetails.groupInfo')}
+                  Informações do Grupo
                 </h3>
                 
                 <div className="space-y-4">
@@ -437,7 +435,7 @@ export default function MemberDetails() {
                     <div className="flex items-center space-x-3">
                       {getRoleIcon(member.role)}
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">{t('members.role')}</label>
+                        <label className="text-sm font-medium text-muted-foreground">Função</label>
                         <p className="text-foreground">{member.role.replace('_', ' ')}</p>
                       </div>
                     </div>
@@ -447,7 +445,7 @@ export default function MemberDetails() {
                     <div className="flex items-center space-x-3">
                       <Music className="w-4 h-4 text-muted-foreground" />
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">{t('memberDetails.musicalPartition')}</label>
+                        <label className="text-sm font-medium text-muted-foreground">Partição Musical</label>
                         <p className="text-foreground capitalize">{member.partition}</p>
                       </div>
                     </div>
@@ -457,7 +455,7 @@ export default function MemberDetails() {
                     <div className="flex items-center space-x-3">
                       <Shield className="w-4 h-4 text-muted-foreground" />
                       <div className="flex-1">
-                        <label className="text-sm font-medium text-muted-foreground">{t('members.memberCode')}</label>
+                        <label className="text-sm font-medium text-muted-foreground">Código de Membro</label>
                         <div className="flex items-center space-x-2">
                           {showMemberCode ? (
                             <code className="px-2 py-1 bg-muted rounded text-xs font-mono">

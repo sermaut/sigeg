@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { GroupCard } from "./GroupCard.memo";
@@ -22,13 +22,12 @@ import { useGroups } from "@/hooks/useQueries";
 import { useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useCallback } from "react";
 
 export function GroupsList() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { t } = useLanguage();
   const { data: groups = [], isLoading: loading } = useGroups();
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -111,15 +110,15 @@ export function GroupsList() {
       if (error) throw error;
       
       toast({
-        title: t('common.delete'),
+        title: "Grupo excluído com sucesso!",
       });
       
       queryClient.invalidateQueries({ queryKey: ['groups'] });
     } catch (error) {
       console.error('Erro ao excluir grupo:', error);
       toast({
-        title: t('error.general'),
-        description: t('error.general'),
+        title: "Erro",
+        description: "Falha ao excluir grupo",
         variant: "destructive",
       });
     } finally {
@@ -156,7 +155,7 @@ export function GroupsList() {
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
             <Input
-              placeholder={t('groups.searchPlaceholder')}
+              placeholder="Buscar por nome, município ou província..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pr-12"
@@ -194,10 +193,13 @@ export function GroupsList() {
               <Plus className="w-8 h-8 text-white" />
             </div>
             <h3 className="text-xl font-semibold text-foreground mb-2">
-              {t('groups.noGroups')}
+              {searchTerm ? 'Nenhum grupo encontrado' : 'Nenhum grupo cadastrado'}
             </h3>
             <p className="text-muted-foreground mb-6">
-              {t('common.noResults')}
+              {searchTerm 
+                ? 'Tente ajustar os termos de busca para encontrar grupos'
+                : 'Comece criando seu primeiro grupo musical no sistema'
+              }
             </p>
             {!searchTerm && (
               <Button 
@@ -206,7 +208,7 @@ export function GroupsList() {
                 onClick={() => navigate("/groups/new")}
               >
                 <Plus className="w-5 h-5" />
-                {t('groups.newGroup')}
+                Criar Primeiro Grupo
               </Button>
             )}
           </div>
@@ -222,7 +224,7 @@ export function GroupsList() {
             className="h-9 py-[5px] px-3 text-sm"
           >
             <Plus className="w-4 h-4" />
-            {t('groups.newGroup')}
+            Novo Grupo
           </Button>
         </div>
       </PermissionGuard>
@@ -236,22 +238,22 @@ export function GroupsList() {
                 <Trash2 className="w-6 h-6 text-destructive" />
               </div>
               <AlertDialogTitle>
-                {t('common.delete')}
+                Excluir Grupo
               </AlertDialogTitle>
             </div>
             <AlertDialogDescription>
-              {t('dialog.areYouSure')} {t('dialog.actionCannotBeUndone')}
+              Tem certeza que deseja excluir este grupo? Esta ação não pode ser desfeita e todos os dados relacionados ao grupo serão removidos permanentemente.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setDeleteDialogOpen(false)}>
-              {t('common.cancel')}
+              Cancelar
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
               className="bg-destructive hover:bg-destructive/90"
             >
-              {t('common.delete')}
+              Excluir
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

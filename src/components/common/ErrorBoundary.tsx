@@ -3,6 +3,8 @@ import { ErrorBoundary as ReactErrorBoundary } from 'react-error-boundary';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw, ArrowLeft } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 interface ErrorFallbackProps {
   error: Error;
@@ -10,11 +12,14 @@ interface ErrorFallbackProps {
 }
 
 function ErrorFallback({ error, resetErrorBoundary }: ErrorFallbackProps) {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  
   const handleGoBack = () => {
     if (window.history.length > 1) {
       window.history.back();
     } else {
-      window.location.href = '/';
+      navigate('/');
     }
   };
   

@@ -5,7 +5,6 @@ import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthProvider } from '@/contexts/AuthContext';
-import { LanguageProvider } from '@/contexts/LanguageContext';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { GlobalErrorToast } from '@/components/common/GlobalErrorToast';
@@ -14,6 +13,7 @@ import { GlobalPageLoader } from '@/components/common/GlobalPageLoader';
 import { PWAUpdatePrompt } from '@/components/common/PWAUpdatePrompt';
 import { PWAInstallPrompt } from '@/components/common/PWAInstallPrompt';
 import { OfflineIndicator } from '@/components/common/OfflineIndicator';
+import '@/i18n';
 
 // CRITICAL: Import Index and Auth directly (no lazy loading) for faster login
 import Index from '@/pages/Index';
@@ -61,8 +61,7 @@ function App() {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <LanguageProvider>
-            <AuthProvider>
+          <AuthProvider>
             <PWAUpdatePrompt />
             <PWAInstallPrompt />
             <OfflineIndicator />
@@ -219,8 +218,7 @@ function App() {
                 <Sonner />
               </div>
             </BrowserRouter>
-            </AuthProvider>
-          </LanguageProvider>
+          </AuthProvider>
         </TooltipProvider>
         
       </QueryClientProvider>

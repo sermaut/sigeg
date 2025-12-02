@@ -2,8 +2,11 @@ import { useEffect } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from 'react-i18next';
 
 export function PWAUpdatePrompt() {
+  const { t } = useTranslation();
+  
   const {
     needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,

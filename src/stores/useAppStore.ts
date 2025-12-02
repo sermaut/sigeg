@@ -16,6 +16,7 @@ interface AppState {
   // UI State
   sidebarOpen: boolean;
   theme: 'light' | 'dark';
+  language: 'pt' | 'fr' | 'en';
   
   // Selected entities
   selectedGroup: string | null;
@@ -29,6 +30,7 @@ interface AppState {
   setLoading: (loading: boolean) => void;
   setSidebarOpen: (open: boolean) => void;
   setTheme: (theme: 'light' | 'dark') => void;
+  setLanguage: (language: 'pt' | 'fr' | 'en') => void;
   setSelectedGroup: (groupId: string | null) => void;
   setSelectedMember: (memberId: string | null) => void;
   addError: (error: { message: string; type: 'error' | 'warning' }) => void;
@@ -45,6 +47,7 @@ export const useAppStore = create<AppState>()(
         isLoading: false,
         sidebarOpen: false,
         theme: 'light',
+        language: 'pt',
         selectedGroup: null,
         selectedMember: null,
         errors: [],
@@ -54,6 +57,7 @@ export const useAppStore = create<AppState>()(
         setLoading: (isLoading) => set({ isLoading }),
         setSidebarOpen: (sidebarOpen) => set({ sidebarOpen }),
         setTheme: (theme) => set({ theme }),
+        setLanguage: (language) => set({ language }),
         setSelectedGroup: (selectedGroup) => set({ selectedGroup }),
         setSelectedMember: (selectedMember) => set({ selectedMember }),
         
@@ -79,6 +83,7 @@ export const useAppStore = create<AppState>()(
         name: 'sigeg-app-store',
         partialize: (state) => ({
           theme: state.theme,
+          language: state.language,
           sidebarOpen: state.sidebarOpen,
         }),
       }
