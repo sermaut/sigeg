@@ -11,6 +11,7 @@ import {
   MapPin,
   Users
 } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Service {
   id: string;
@@ -23,6 +24,7 @@ interface Service {
 }
 
 export default function ServicesPage() {
+  const { t } = useLanguage();
   // Sample data for demonstration
   const [services] = useState<Service[]>([
     {
@@ -66,10 +68,10 @@ export default function ServicesPage() {
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'planejado': return 'Planejado';
-      case 'confirmado': return 'Confirmado';
-      case 'realizado': return 'Realizado';
-      case 'cancelado': return 'Cancelado';
+      case 'planejado': return t('services.planned');
+      case 'confirmado': return t('services.confirmed');
+      case 'realizado': return t('services.completed');
+      case 'cancelado': return t('services.cancelled');
       default: return status;
     }
   };
@@ -80,15 +82,15 @@ export default function ServicesPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Serviços Musicais</h1>
+            <h1 className="text-3xl font-bold text-foreground">{t('services.title')}</h1>
             <p className="text-muted-foreground">
-              Agende e gerencie os serviços musicais dos grupos
+              {t('services.subtitle')}
             </p>
           </div>
           
           <Button variant="gradient" disabled>
             <Plus className="w-4 h-4 mr-2" />
-            Novo Serviço
+            {t('services.newService')}
           </Button>
         </div>
 
@@ -97,14 +99,13 @@ export default function ServicesPage() {
           <div className="p-8 text-center">
             <Music className="w-16 h-16 text-primary mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-foreground mb-2">
-              Funcionalidade em Desenvolvimento
+              {t('services.comingSoon')}
             </h3>
             <p className="text-muted-foreground mb-6">
-              O sistema de agendamento de serviços musicais será implementado nas próximas atualizações. 
-              Por enquanto, você pode visualizar alguns exemplos abaixo.
+              {t('services.comingSoonDescription')}
             </p>
             <Badge variant="outline" className="text-primary">
-              Próxima Fase
+              {t('services.nextPhase')}
             </Badge>
           </div>
         </Card>
@@ -126,7 +127,7 @@ export default function ServicesPage() {
                       </div>
                       <div className="flex items-center">
                         <Clock className="w-4 h-4 mr-1" />
-                        {service.time}
+                        {service.time} {t('services.time')}
                       </div>
                     </div>
                     <div className="flex items-center space-x-2 mb-3">
@@ -156,43 +157,43 @@ export default function ServicesPage() {
           <div className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center">
               <CalendarIcon className="w-5 h-5 mr-2" />
-              Funcionalidades Futuras
+              {t('services.futureFeatures')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="p-4 bg-muted/30 rounded-lg">
-                <h4 className="font-medium text-foreground mb-2">Agendamento</h4>
+                <h4 className="font-medium text-foreground mb-2">{t('services.scheduling')}</h4>
                 <p className="text-sm text-muted-foreground">
-                  Criar e agendar serviços musicais com data, hora e local
+                  {t('services.schedulingDescription')}
                 </p>
               </div>
               <div className="p-4 bg-muted/30 rounded-lg">
-                <h4 className="font-medium text-foreground mb-2">Participantes</h4>
+                <h4 className="font-medium text-foreground mb-2">{t('services.participants')}</h4>
                 <p className="text-sm text-muted-foreground">
-                  Definir quais membros e partições participarão
+                  {t('services.participantsDescription')}
                 </p>
               </div>
               <div className="p-4 bg-muted/30 rounded-lg">
-                <h4 className="font-medium text-foreground mb-2">Repertório</h4>
+                <h4 className="font-medium text-foreground mb-2">{t('services.repertoire')}</h4>
                 <p className="text-sm text-muted-foreground">
-                  Anexar músicas e arranjos específicos para cada serviço
+                  {t('services.repertoireDescription')}
                 </p>
               </div>
               <div className="p-4 bg-muted/30 rounded-lg">
-                <h4 className="font-medium text-foreground mb-2">Notificações</h4>
+                <h4 className="font-medium text-foreground mb-2">{t('services.notifications')}</h4>
                 <p className="text-sm text-muted-foreground">
-                  Lembrar membros sobre ensaios e apresentações
+                  {t('services.notificationsDescription')}
                 </p>
               </div>
               <div className="p-4 bg-muted/30 rounded-lg">
-                <h4 className="font-medium text-foreground mb-2">Calendário</h4>
+                <h4 className="font-medium text-foreground mb-2">{t('services.calendar')}</h4>
                 <p className="text-sm text-muted-foreground">
-                  Visualização em calendário de todos os eventos
+                  {t('services.calendarDescription')}
                 </p>
               </div>
               <div className="p-4 bg-muted/30 rounded-lg">
-                <h4 className="font-medium text-foreground mb-2">Relatórios</h4>
+                <h4 className="font-medium text-foreground mb-2">{t('services.reports')}</h4>
                 <p className="text-sm text-muted-foreground">
-                  Estatísticas de participação e frequência
+                  {t('services.reportsDescription')}
                 </p>
               </div>
             </div>
