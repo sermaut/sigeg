@@ -12,10 +12,15 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 const LANGUAGE_STORAGE_KEY = 'sigeg_language';
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState<Language>(() => {
+  const [language, setLanguage] = useState<Language>('pt');
+
+  useEffect(() => {
+    // Load stored language on mount
     const stored = localStorage.getItem(LANGUAGE_STORAGE_KEY);
-    return (stored === 'fr' ? 'fr' : 'pt') as Language;
-  });
+    if (stored === 'fr') {
+      setLanguage('fr');
+    }
+  }, []);
 
   useEffect(() => {
     localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
