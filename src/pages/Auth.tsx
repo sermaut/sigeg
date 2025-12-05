@@ -69,21 +69,27 @@ export default function Auth() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-accent/10 
                     relative overflow-hidden flex items-center justify-center p-4">
-      {/* Decorative elements */}
-      <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl 
-                      animate-pulse" />
-      <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/10 rounded-full blur-3xl 
-                      animate-pulse" style={{ animationDelay: '1s' }} />
+      {/* Simplified decorative elements - removed blur-3xl for performance */}
+      <div className="absolute top-20 left-10 w-72 h-72 bg-primary/5 rounded-full opacity-50" />
+      <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/5 rounded-full opacity-50" />
       
       <div className="relative w-full max-w-md space-y-8 z-10">
-        {/* Logo */}
-        <div className="text-center space-y-4 animate-fade-in">
-          <div className="relative w-24 h-24 mx-auto group">
-            <div className="absolute inset-0 gradient-primary rounded-full blur-xl opacity-50 
-                            group-hover:opacity-100 transition-opacity animate-pulse" />
+        {/* Logo - optimized with fixed dimensions to prevent CLS */}
+        <div className="text-center space-y-4">
+          <div className="relative w-24 h-24 mx-auto">
+            <div className="absolute inset-0 bg-primary/20 rounded-full opacity-50" />
             <div className="relative w-24 h-24 bg-white rounded-full flex items-center 
-                            justify-center shadow-strong hover:scale-110 transition-transform duration-500 p-1">
-              <img src={sigegLogo} alt="SIGEG Logo" className="w-full h-full object-contain" />
+                            justify-center shadow-lg p-1">
+              <img 
+                src={sigegLogo} 
+                alt="SIGEG Logo" 
+                width={88}
+                height={88}
+                className="w-[88px] h-[88px] object-contain"
+                loading="eager"
+                decoding="async"
+                fetchPriority="high"
+              />
             </div>
           </div>
           <div className="space-y-2">

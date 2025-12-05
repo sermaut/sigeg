@@ -20,11 +20,25 @@
     <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     
-    <!-- Preload critical fonts for performance -->
+    <!-- Preconnect to critical origins for faster resource loading -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://udgqabvondahhzqphyzb.supabase.co" crossorigin>
+    
+    <!-- Preload critical assets (LCP optimization) -->
+    <link rel="preload" href="/src/assets/sigeg-logo-seal.png" as="image" type="image/png">
+    
+    <!-- Optimized font loading with font-display: swap -->
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"></noscript>
+    
+    <!-- Inline critical font-display rule -->
+    <style>
+      @font-face {
+        font-family: 'Poppins';
+        font-display: swap;
+      }
+    </style>
 
     <meta property="og:title" content="SIGEG-BV - Sistema de Gestão de Grupos" />
     <meta property="og:description" content="Sistema completo para gestão de grupos musicais e membros em Angola - Boa Vista" />
