@@ -13,15 +13,120 @@ import sigegLogo from "@/assets/sigeg-logo.png";
 const DashboardCharts = lazy(() => import("./DashboardCharts").then(m => ({ default: m.DashboardCharts })));
 const FinancialSummaryWidget = lazy(() => import("./FinancialSummaryWidget").then(m => ({ default: m.FinancialSummaryWidget })));
 
-// Skeleton for lazy loaded sections
-function SectionSkeleton() {
+// Financial Summary Skeleton - mimics the actual widget layout
+function FinancialSummarySkeleton() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Total Balance Card */}
+      <div className="p-6 rounded-lg border bg-card">
+        <div className="flex items-center gap-2 mb-4">
+          <Skeleton className="h-5 w-5 rounded" />
+          <Skeleton className="h-4 w-24" />
+        </div>
+        <Skeleton className="h-8 w-32 mb-2" />
+        <div className="flex items-center gap-1">
+          <Skeleton className="h-4 w-4 rounded" />
+          <Skeleton className="h-3 w-16" />
+        </div>
+      </div>
+      
+      {/* Revenue vs Expenses Chart */}
+      <div className="p-6 rounded-lg border bg-card">
+        <Skeleton className="h-4 w-32 mb-4" />
+        <div className="flex items-end justify-center gap-4 h-32">
+          <Skeleton className="w-12 h-20 rounded" />
+          <Skeleton className="w-12 h-28 rounded" />
+        </div>
+        <div className="flex justify-center gap-4 mt-2">
+          <Skeleton className="h-3 w-16" />
+          <Skeleton className="h-3 w-16" />
+        </div>
+      </div>
+      
+      {/* Negative Categories Alert */}
+      <div className="p-6 rounded-lg border bg-card">
+        <div className="flex items-center gap-2 mb-4">
+          <Skeleton className="h-5 w-5 rounded" />
+          <Skeleton className="h-4 w-28" />
+        </div>
+        <div className="space-y-2">
+          <Skeleton className="h-3 w-full" />
+          <Skeleton className="h-3 w-3/4" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Charts Skeleton - mimics the actual charts layout
+function ChartsSkeleton() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Line Chart - Member Growth */}
+      <div className="p-6 rounded-lg border bg-card">
+        <Skeleton className="h-5 w-40 mb-4" />
+        <div className="h-48 flex items-end gap-2">
+          {[40, 55, 45, 70, 60, 80].map((h, i) => (
+            <div key={i} className="flex-1 flex flex-col justify-end">
+              <Skeleton className={`w-full rounded-t`} style={{ height: `${h}%` }} />
+            </div>
+          ))}
+        </div>
+        <div className="flex justify-between mt-2">
+          {['J', 'F', 'M', 'A', 'M', 'J'].map((_, i) => (
+            <Skeleton key={i} className="h-3 w-4" />
+          ))}
+        </div>
+      </div>
+      
+      {/* Pie Chart - Partition Distribution */}
+      <div className="p-6 rounded-lg border bg-card">
+        <Skeleton className="h-5 w-44 mb-4" />
+        <div className="flex justify-center items-center h-48">
+          <Skeleton className="w-32 h-32 rounded-full" />
+        </div>
+        <div className="flex justify-center gap-3 mt-2">
+          <Skeleton className="h-3 w-12" />
+          <Skeleton className="h-3 w-12" />
+          <Skeleton className="h-3 w-12" />
+          <Skeleton className="h-3 w-12" />
+        </div>
+      </div>
+      
+      {/* Bar Chart - Top Groups */}
+      <div className="p-6 rounded-lg border bg-card">
+        <Skeleton className="h-5 w-36 mb-4" />
+        <div className="space-y-3 h-48">
+          {[90, 75, 60, 45, 30].map((w, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <Skeleton className="h-3 w-16" />
+              <Skeleton className="h-6 rounded" style={{ width: `${w}%` }} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Recent Groups Skeleton
+function RecentGroupsSkeleton() {
   return (
     <div className="space-y-4">
-      <Skeleton className="h-6 w-48" />
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Skeleton className="h-48 rounded-lg" />
-        <Skeleton className="h-48 rounded-lg" />
-        <Skeleton className="h-48 rounded-lg" />
+      <Skeleton className="h-6 w-32" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="p-4 rounded-lg border bg-card">
+            <div className="flex items-center gap-3 mb-3">
+              <Skeleton className="h-10 w-10 rounded-full" />
+              <div className="flex-1">
+                <Skeleton className="h-4 w-32 mb-1" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+            </div>
+            <Skeleton className="h-8 w-full rounded" />
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -151,7 +256,7 @@ export function Dashboard() {
       {/* Financial Summary Widget - Lazy loaded */}
       <section>
         <h2 className="text-2xl font-semibold mb-6">Resumo Financeiro</h2>
-        <Suspense fallback={<SectionSkeleton />}>
+        <Suspense fallback={<FinancialSummarySkeleton />}>
           <FinancialSummaryWidget />
         </Suspense>
       </section>
@@ -159,7 +264,7 @@ export function Dashboard() {
       {/* Interactive Charts - Lazy loaded */}
       <section>
         <h2 className="text-2xl font-semibold mb-6">Estatísticas e Tendências</h2>
-        <Suspense fallback={<SectionSkeleton />}>
+        <Suspense fallback={<ChartsSkeleton />}>
           <DashboardCharts />
         </Suspense>
       </section>
