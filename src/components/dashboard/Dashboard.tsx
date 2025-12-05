@@ -1,16 +1,31 @@
-import { useEffect } from "react";
+import { lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQueryClient } from "@tanstack/react-query";
 import { StatsCard } from "./StatsCard.memo";
 import { RecentGroups } from "./OptimizedDashboard";
-import { DashboardCharts } from "./DashboardCharts";
-import { FinancialSummaryWidget } from "./FinancialSummaryWidget";
 import { Button } from "@/components/ui/button";
 import { Users, Building, UserPlus, Activity, Plus } from "@/lib/icons";
 import { PermissionGuard } from '@/components/common/PermissionGuard';
-import { useDashboardStats, useRecentGroups, useDashboardCharts, useFinancialSummary } from '@/hooks/useOptimizedQueries';
+import { useDashboardStats, useRecentGroups } from '@/hooks/useOptimizedQueries';
 import { Skeleton } from "@/components/ui/skeleton";
 import sigegLogo from "@/assets/sigeg-logo.png";
+
+// Lazy load heavy chart components (below the fold)
+const DashboardCharts = lazy(() => import("./DashboardCharts").then(m => ({ default: m.DashboardCharts })));
+const FinancialSummaryWidget = lazy(() => import("./FinancialSummaryWidget").then(m => ({ default: m.FinancialSummaryWidget })));
+
+// Skeleton for lazy loaded sections
+function SectionSkeleton() {
+  return (
+    <div className="space-y-4">
+      <Skeleton className="h-6 w-48" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Skeleton className="h-48 rounded-lg" />
+        <Skeleton className="h-48 rounded-lg" />
+        <Skeleton className="h-48 rounded-lg" />
+      </div>
+    </div>
+  );
+}
 
 // Skeleton component for stats cards
 function StatsCardSkeleton() {
@@ -28,28 +43,10 @@ function StatsCardSkeleton() {
 
 export function Dashboard() {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  
-  // Prefetch all dashboard data in parallel on mount
-  useEffect(() => {
-    // Prefetch charts and financial data while stats loads
-    queryClient.prefetchQuery({
-      queryKey: ['dashboard', 'charts'],
-      staleTime: 30 * 60 * 1000,
-    });
-    queryClient.prefetchQuery({
-      queryKey: ['dashboard', 'financialSummary'],
-      staleTime: 10 * 60 * 1000,
-    });
-  }, [queryClient]);
   
   // Use React Query hooks for optimized data fetching - all run in parallel
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
   const { data: groups = [], isLoading: groupsLoading } = useRecentGroups(5);
-  
-  // Pre-warm charts and financial hooks (they'll use cached data from prefetch)
-  useDashboardCharts();
-  useFinancialSummary();
 
   const loading = statsLoading && !stats;
 
@@ -84,9 +81,12 @@ export function Dashboard() {
           <img 
             src={sigegLogo} 
             alt="SIGEG Logo" 
+            width={80}
+            height={80}
             className="w-20 h-20 object-contain mb-4"
             loading="eager"
             decoding="async"
+            fetchPriority="high"
           />
           <h1 className="text-xl sm:text-2xl font-bold text-foreground">
             Sistema de Gestão de Grupos
@@ -148,16 +148,20 @@ export function Dashboard() {
         />
       </div>
 
-      {/* Financial Summary Widget */}
+      {/* Financial Summary Widget - Lazy loaded */}
       <section>
         <h2 className="text-2xl font-semibold mb-6">Resumo Financeiro</h2>
-        <FinancialSummaryWidget />
+        <Suspense fallback={<SectionSkeleton />}>
+          <FinancialSummaryWidget />
+        </Suspense>
       </section>
 
-      {/* Interactive Charts */}
+      {/* Interactive Charts - Lazy loaded */}
       <section>
         <h2 className="text-2xl font-semibold mb-6">Estatísticas e Tendências</h2>
-        <DashboardCharts />
+        <Suspense fallback={<SectionSkeleton />}>
+          <DashboardCharts />
+        </Suspense>
       </section>
 
       {/* Recent Groups - Optimized */}

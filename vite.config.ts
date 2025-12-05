@@ -157,6 +157,8 @@ export default defineConfig(({ mode }) => ({
           'vendor-query': ['@tanstack/react-query'],
           'vendor-forms': ['react-hook-form', 'zod', '@hookform/resolvers'],
           'vendor-supabase': ['@supabase/supabase-js'],
+          'vendor-charts': ['recharts'],
+          'vendor-i18n': ['i18next', 'react-i18next'],
         },
       },
     },
