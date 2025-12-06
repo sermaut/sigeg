@@ -17,7 +17,7 @@ export function useCategoryPermissions(
   categoryId: string | undefined,
   memberId: string | undefined,
   groupId: string | undefined,
-  userType?: 'admin' | 'member' | 'group',
+  userType?: 'admin' | 'member' | 'group' | 'anonymous',
   permissionLevel?: string
 ) {
   const [permissions, setPermissions] = useState<CategoryPermission>({

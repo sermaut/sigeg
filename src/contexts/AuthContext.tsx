@@ -39,8 +39,8 @@ export interface Group {
 }
 
 export interface AuthUser {
-  type: 'admin' | 'member' | 'group';
-  data: SystemAdmin | Member | Group;
+  type: 'admin' | 'member' | 'group' | 'anonymous';
+  data: SystemAdmin | Member | Group | null;
   permissions: string[];
 }
 
@@ -48,11 +48,13 @@ interface AuthContextType {
   user: AuthUser | null;
   loading: boolean;
   login: (code: string, type: 'admin' | 'member' | 'group') => Promise<{ success: boolean; error?: string }>;
+  loginAnonymous: () => void;
   logout: () => void;
   hasPermission: (permission: string) => boolean;
   isAdmin: () => boolean;
   isMember: () => boolean;
   isGroup: () => boolean;
+  isAnonymous: () => boolean;
   getPermissionLevel: () => number;
 }
 
@@ -300,6 +302,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const loginAnonymous = () => {
+    const anonymousUser: AuthUser = {
+      type: 'anonymous',
+      data: null,
+      permissions: ['view_groups', 'view_members_list']
+    };
+    setUser(anonymousUser);
+    localStorage.setItem('sigeg_user', JSON.stringify(anonymousUser));
+  };
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem('sigeg_user');
@@ -315,12 +327,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isAdmin = () => user?.type === 'admin';
   const isMember = () => user?.type === 'member';
   const isGroup = () => user?.type === 'group';
+  const isAnonymous = () => user?.type === 'anonymous';
 
   const getPermissionLevel = () => {
     if (!user) return 999;
     
     if (user.type === 'admin') {
       return 0;
+    } else if (user.type === 'anonymous') {
+      return 999; // Lowest level
+    } else if (user.type === 'group') {
+      return 888; // Read-only level for group login
     } else {
       const memberData = user.data as Member;
       return getRoleLevel(memberData.role);
@@ -331,11 +348,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user,
     loading,
     login,
+    loginAnonymous,
     logout,
     hasPermission,
     isAdmin,
     isMember,
     isGroup,
+    isAnonymous,
     getPermissionLevel
   };
 
