@@ -7,6 +7,7 @@ import {
   Music, 
   UserPlus, 
   LogOut,
+  LogIn,
   X,
   Shield,
   FileText,
@@ -29,7 +30,7 @@ interface SidebarProps {
 export function Sidebar({ className, isOpen, onOpenChange }: SidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, user, isAnonymous } = useAuth();
   const permissions = usePermissions();
   const { toast } = useToast();
 
@@ -153,15 +154,30 @@ export function Sidebar({ className, isOpen, onOpenChange }: SidebarProps) {
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-cyan-400/30">
-          <Button
-            variant="ghost"
-            onClick={logout}
-            className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10 px-4 text-base"
-          >
-            <LogOut className="w-6 h-6 flex-shrink-0" />
-            <span className="ml-3 text-base">Sair</span>
-          </Button>
+        <div className="p-4 border-t border-cyan-400/30 space-y-2">
+          {isAnonymous() && (
+            <Button
+              variant="ghost"
+              onClick={() => {
+                logout();
+                navigate('/auth');
+              }}
+              className="w-full justify-start text-primary hover:text-primary hover:bg-primary/10 px-4 text-base"
+            >
+              <LogIn className="w-6 h-6 flex-shrink-0" />
+              <span className="ml-3 text-base">Iniciar Sessão</span>
+            </Button>
+          )}
+          {!isAnonymous() && (
+            <Button
+              variant="ghost"
+              onClick={logout}
+              className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10 px-4 text-base"
+            >
+              <LogOut className="w-6 h-6 flex-shrink-0" />
+              <span className="ml-3 text-base">Sair</span>
+            </Button>
+          )}
         </div>
       </div>
     </>

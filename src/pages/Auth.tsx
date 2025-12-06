@@ -22,7 +22,7 @@ export default function Auth() {
   const [showGroupCode, setShowGroupCode] = useState(false);
   const [showAdminCode, setShowAdminCode] = useState(false);
   
-  const { login, user } = useAuth();
+  const { login, loginAnonymous, user } = useAuth();
   const { toast } = useToast();
   const location = useLocation();
   
@@ -300,6 +300,18 @@ export default function Auth() {
                 </Button>
               </TabsContent>
             </Tabs>
+
+            {/* Skip button for anonymous access */}
+            <div className="pt-4 border-t border-border/50">
+              <Button
+                variant="ghost"
+                size="lg"
+                className="w-full text-muted-foreground hover:text-foreground"
+                onClick={() => loginAnonymous()}
+              >
+                Pular (modo anónimo)
+              </Button>
+            </div>
           </CardContent>
         </Card>
 

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { cn } from "@/lib/utils";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useGroup, useMembers } from "@/hooks/useQueries";
@@ -274,16 +275,22 @@ export default function GroupDetails() {
                                    transition-all duration-300 hover:scale-105">
               Membros
             </TabsTrigger>
-            <TabsTrigger value="financial"
-                         className="rounded-lg data-[state=active]:gradient-primary 
-                                   data-[state=active]:text-white data-[state=active]:shadow-soft
-                                   transition-all duration-300 hover:scale-105">
+            <TabsTrigger 
+              value="financial"
+              disabled={!permissions.canAccessFinancialTab}
+              className={cn(
+                "rounded-lg data-[state=active]:gradient-primary data-[state=active]:text-white data-[state=active]:shadow-soft transition-all duration-300 hover:scale-105",
+                !permissions.canAccessFinancialTab && "opacity-50 cursor-not-allowed"
+              )}>
               Finanças
             </TabsTrigger>
-            <TabsTrigger value="technical"
-                         className="rounded-lg data-[state=active]:gradient-primary 
-                                   data-[state=active]:text-white data-[state=active]:shadow-soft
-                                   transition-all duration-300 hover:scale-105">
+            <TabsTrigger 
+              value="technical"
+              disabled={!permissions.canAccessTechnicalTab}
+              className={cn(
+                "rounded-lg data-[state=active]:gradient-primary data-[state=active]:text-white data-[state=active]:shadow-soft transition-all duration-300 hover:scale-105",
+                !permissions.canAccessTechnicalTab && "opacity-50 cursor-not-allowed"
+              )}>
               Área Técnica
             </TabsTrigger>
           </TabsList>

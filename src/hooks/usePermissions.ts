@@ -28,6 +28,7 @@ export interface PermissionChecks {
   canViewMemberPhone: boolean;
   canViewMemberCode: boolean;
   canViewMemberBirthDate: boolean;
+  canViewMemberDetails: boolean;
   
   // Financial - Registros
   canAccessCategoryModal: boolean;
@@ -48,13 +49,20 @@ export interface PermissionChecks {
   canDeleteWeeklyProgram: boolean;
   canSelectRehearsalDate: boolean;
   
+  // Tabs access
+  canAccessFinancialTab: boolean;
+  canAccessTechnicalTab: boolean;
+  
+  // Group leadership management
+  canEditGroupLeadership: boolean;
+  
   // Permission level
   level: number;
   role?: string;
 }
 
 export function usePermissions(): PermissionChecks {
-  const { user, isMember, isAdmin } = useAuth();
+  const { user, isMember, isAdmin, isGroup, isAnonymous } = useAuth();
   
   // Admin sempre tem todas as permissões
   if (isAdmin()) {
@@ -91,8 +99,100 @@ export function usePermissions(): PermissionChecks {
       canEditWeeklyProgram: true,
       canDeleteWeeklyProgram: true,
       canSelectRehearsalDate: true,
+      canAccessFinancialTab: true,
+      canAccessTechnicalTab: true,
+      canViewMemberDetails: true,
+      canEditGroupLeadership: true,
       level: 0,
       role: 'admin',
+    };
+  }
+  
+  // Login anónimo - permissões muito limitadas
+  if (isAnonymous()) {
+    return {
+      canAccessNewMember: false,
+      canAccessReports: false,
+      canAccessAdmins: false,
+      canAccessSettings: false,
+      canAccessMonthlyPlans: false,
+      canCreateGroup: false,
+      canEditGroup: false,
+      canDeleteGroup: false,
+      canAddMember: false,
+      canViewGroupFinancialInfo: false,
+      canEditGroupDetails: false,
+      canViewMonthlyPlans: false,
+      canViewMonthlyCost: false,
+      canViewAccessCode: false,
+      canEditMember: false,
+      canToggleMemberStatus: false,
+      canViewMemberPhone: false,
+      canViewMemberCode: false,
+      canViewMemberBirthDate: false,
+      canAccessCategoryModal: false,
+      canAddTransaction: false,
+      canDeleteTransaction: false,
+      canManageCategoryLeaders: false,
+      canCreatePaymentEvent: false,
+      canEditPaymentEvent: false,
+      canDeletePaymentEvent: false,
+      canClickMemberNames: false,
+      canAddWeeklyProgram: false,
+      canAddOnlyAccompaniments: false,
+      canEditWeeklyProgram: false,
+      canDeleteWeeklyProgram: false,
+      canSelectRehearsalDate: false,
+      canAccessFinancialTab: false,
+      canAccessTechnicalTab: false,
+      canViewMemberDetails: false,
+      canEditGroupLeadership: false,
+      level: 999,
+      role: 'anonymous',
+    };
+  }
+  
+  // Login de grupo - permissões de apenas leitura
+  if (isGroup()) {
+    return {
+      canAccessNewMember: false,
+      canAccessReports: false,
+      canAccessAdmins: false,
+      canAccessSettings: false,
+      canAccessMonthlyPlans: false,
+      canCreateGroup: false,
+      canEditGroup: false,
+      canDeleteGroup: false,
+      canAddMember: false,
+      canViewGroupFinancialInfo: true,
+      canEditGroupDetails: false,
+      canViewMonthlyPlans: false,
+      canViewMonthlyCost: true,
+      canViewAccessCode: false,
+      canEditMember: false,
+      canToggleMemberStatus: false,
+      canViewMemberPhone: false,
+      canViewMemberCode: false,
+      canViewMemberBirthDate: false,
+      canAccessCategoryModal: false,
+      canAddTransaction: false,
+      canDeleteTransaction: false,
+      canManageCategoryLeaders: false,
+      canCreatePaymentEvent: false,
+      canEditPaymentEvent: false,
+      canDeletePaymentEvent: false,
+      canClickMemberNames: false,
+      canAddWeeklyProgram: false,
+      canAddOnlyAccompaniments: false,
+      canEditWeeklyProgram: false,
+      canDeleteWeeklyProgram: false,
+      canSelectRehearsalDate: false,
+      canAccessFinancialTab: true,
+      canAccessTechnicalTab: true,
+      canViewMemberDetails: false,
+      canEditGroupLeadership: false,
+      level: 888,
+      role: 'group',
     };
   }
   
@@ -131,6 +231,10 @@ export function usePermissions(): PermissionChecks {
       canEditWeeklyProgram: false,
       canDeleteWeeklyProgram: false,
       canSelectRehearsalDate: false,
+      canAccessFinancialTab: true,
+      canAccessTechnicalTab: true,
+      canViewMemberDetails: true,
+      canEditGroupLeadership: false,
       level: 999,
     };
   }
@@ -174,6 +278,10 @@ export function usePermissions(): PermissionChecks {
       canEditWeeklyProgram: true,
       canDeleteWeeklyProgram: true,
       canSelectRehearsalDate: true,
+      canAccessFinancialTab: true,
+      canAccessTechnicalTab: true,
+      canViewMemberDetails: true,
+      canEditGroupLeadership: true,
       level,
       role,
     };
@@ -214,6 +322,10 @@ export function usePermissions(): PermissionChecks {
       canEditWeeklyProgram: true,
       canDeleteWeeklyProgram: true,
       canSelectRehearsalDate: true,
+      canAccessFinancialTab: true,
+      canAccessTechnicalTab: true,
+      canViewMemberDetails: true,
+      canEditGroupLeadership: false,
       level,
       role,
     };
@@ -254,6 +366,10 @@ export function usePermissions(): PermissionChecks {
       canEditWeeklyProgram: true,
       canDeleteWeeklyProgram: true,
       canSelectRehearsalDate: true,
+      canAccessFinancialTab: true,
+      canAccessTechnicalTab: true,
+      canViewMemberDetails: true,
+      canEditGroupLeadership: false,
       level,
       role,
     };
@@ -294,6 +410,10 @@ export function usePermissions(): PermissionChecks {
       canEditWeeklyProgram: false,
       canDeleteWeeklyProgram: false,
       canSelectRehearsalDate: true,
+      canAccessFinancialTab: true,
+      canAccessTechnicalTab: true,
+      canViewMemberDetails: true,
+      canEditGroupLeadership: false,
       level,
       role,
     };
@@ -334,6 +454,10 @@ export function usePermissions(): PermissionChecks {
       canEditWeeklyProgram: false,
       canDeleteWeeklyProgram: false,
       canSelectRehearsalDate: false,
+      canAccessFinancialTab: true,
+      canAccessTechnicalTab: true,
+      canViewMemberDetails: true,
+      canEditGroupLeadership: false,
       level,
       role,
     };
@@ -374,6 +498,10 @@ export function usePermissions(): PermissionChecks {
       canEditWeeklyProgram: false,
       canDeleteWeeklyProgram: false,
       canSelectRehearsalDate: false,
+      canAccessFinancialTab: true,
+      canAccessTechnicalTab: true,
+      canViewMemberDetails: false,
+      canEditGroupLeadership: false,
       level,
       role,
     };
@@ -413,6 +541,10 @@ export function usePermissions(): PermissionChecks {
     canEditWeeklyProgram: false,
     canDeleteWeeklyProgram: false,
     canSelectRehearsalDate: false,
+    canAccessFinancialTab: true,
+    canAccessTechnicalTab: true,
+    canViewMemberDetails: false,
+    canEditGroupLeadership: false,
     level,
     role,
   };
