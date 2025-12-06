@@ -34,6 +34,7 @@ interface OptimizedMembersTableProps {
   onMemberEdit?: (memberId: string) => void;
   showActions?: boolean;
   onMembersDeleted?: () => void;
+  isAnonymousMode?: boolean; // Modo anónimo - só pode ver foto em tela cheia
 }
 
 const MemberRow = memo(({ 
@@ -129,7 +130,8 @@ export const OptimizedMembersTable = memo(({
   onMemberView, 
   onMemberEdit,
   showActions = true,
-  onMembersDeleted
+  onMembersDeleted,
+  isAnonymousMode = false
 }: OptimizedMembersTableProps) => {
   const memoizedMembers = useMemo(() => 
     [...members].sort((a, b) => a.name.localeCompare(b.name, 'pt', { sensitivity: 'base' })), 
@@ -375,12 +377,18 @@ export const OptimizedMembersTable = memo(({
                 </Avatar>
               </td>
               <td className="p-[5px]">
-                <button
-                  className="text-left hover:text-primary transition-colors font-medium"
-                  onClick={() => onMemberView(member.id)}
-                >
-                  {member.name}
-                </button>
+                {isAnonymousMode ? (
+                  <span className="text-left font-medium text-foreground">
+                    {member.name}
+                  </span>
+                ) : (
+                  <button
+                    className="text-left hover:text-primary transition-colors font-medium"
+                    onClick={() => onMemberView(member.id)}
+                  >
+                    {member.name}
+                  </button>
+                )}
               </td>
             </tr>
             ))}
