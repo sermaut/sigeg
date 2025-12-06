@@ -84,8 +84,9 @@ export default function GroupDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, isMember } = useAuth();
+  const { user, isMember, isAnonymous } = useAuth();
   const permissions = usePermissions();
+  const isAnonymousUser = isAnonymous();
   
   const [searchTerm, setSearchTerm] = useState("");
   const [refreshPrograms, setRefreshPrograms] = useState(0);
@@ -327,7 +328,7 @@ export default function GroupDetails() {
                 </div>
               </CardHeader>
               <CardContent className="p-8 space-y-8">
-                {/* Liderança Section */}
+                {/* Liderança Section - Sempre visível */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-3 pb-3 border-b-2 border-primary/10">
                     <div className="p-2 bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg">
@@ -370,7 +371,7 @@ export default function GroupDetails() {
                   </div>
                 </div>
 
-                {/* Informações Gerais Section */}
+                {/* Informações Gerais Section - Restrito para anónimos */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-3 pb-3 border-b-2 border-primary/10">
                     <div className="p-2 bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg">
@@ -380,60 +381,69 @@ export default function GroupDetails() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Direção - Sempre visível */}
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Direção</label>
                       <p className="text-foreground capitalize">{displayGroup.direction}</p>
                     </div>
+                    {/* Província - Sempre visível */}
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Província</label>
                       <p className="text-foreground">{displayGroup.province}</p>
                     </div>
+                    {/* Município - Sempre visível */}
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Município</label>
                       <p className="text-foreground">{displayGroup.municipality}</p>
                     </div>
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Total de Membros</label>
-                      <p className="text-foreground">{displayMembers.length} / {displayGroup.max_members}</p>
-                    </div>
-                    {permissions.canViewGroupFinancialInfo && (
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Mensalidade</label>
-                        <p className="text-foreground">{displayGroup.monthly_fee} Kz</p>
-                      </div>
-                    )}
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Data de Criação</label>
-                      <p className="text-foreground">
-                        {new Date(displayGroup.created_at).toLocaleDateString('pt-BR')}
-                      </p>
-                    </div>
-                    {permissions.canViewGroupFinancialInfo && (
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Código de Acesso</label>
-                        <code className="px-2 py-1 bg-muted rounded text-xs font-mono">
-                          {displayGroup.access_code || 'Não definido'}
-                        </code>
-                      </div>
-                    )}
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Plano Atual</label>
-                      <div className="flex items-center space-x-2">
-                        <p className="text-foreground">
-                          {displayGroup.monthly_plans?.name || 'Nenhum plano definido'}
-                        </p>
-                        {displayGroup.monthly_plans && (
-                          <Badge variant={displayGroup.monthly_plans.is_active ? "default" : "secondary"}>
-                            {displayGroup.monthly_plans.is_active ? "Ativo" : "Inativo"}
-                          </Badge>
-                        )}
-                      </div>
-                      {displayGroup.monthly_plans && (
-                        <div className="mt-1 text-sm text-muted-foreground">
-                          Máx. {displayGroup.monthly_plans.max_members} membros • {displayGroup.monthly_plans.price_per_member} Kz por membro
+                    
+                    {/* Campos restritos - Ocultos para anónimos */}
+                    {!isAnonymousUser && (
+                      <>
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Total de Membros</label>
+                          <p className="text-foreground">{displayMembers.length} / {displayGroup.max_members}</p>
                         </div>
-                      )}
-                    </div>
+                        {permissions.canViewGroupFinancialInfo && (
+                          <div>
+                            <label className="text-sm font-medium text-muted-foreground">Mensalidade</label>
+                            <p className="text-foreground">{displayGroup.monthly_fee} Kz</p>
+                          </div>
+                        )}
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Data de Criação</label>
+                          <p className="text-foreground">
+                            {new Date(displayGroup.created_at).toLocaleDateString('pt-BR')}
+                          </p>
+                        </div>
+                        {permissions.canViewGroupFinancialInfo && (
+                          <div>
+                            <label className="text-sm font-medium text-muted-foreground">Código de Acesso</label>
+                            <code className="px-2 py-1 bg-muted rounded text-xs font-mono">
+                              {displayGroup.access_code || 'Não definido'}
+                            </code>
+                          </div>
+                        )}
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Plano Atual</label>
+                          <div className="flex items-center space-x-2">
+                            <p className="text-foreground">
+                              {displayGroup.monthly_plans?.name || 'Nenhum plano definido'}
+                            </p>
+                            {displayGroup.monthly_plans && (
+                              <Badge variant={displayGroup.monthly_plans.is_active ? "default" : "secondary"}>
+                                {displayGroup.monthly_plans.is_active ? "Ativo" : "Inativo"}
+                              </Badge>
+                            )}
+                          </div>
+                          {displayGroup.monthly_plans && (
+                            <div className="mt-1 text-sm text-muted-foreground">
+                              Máx. {displayGroup.monthly_plans.max_members} membros • {displayGroup.monthly_plans.price_per_member} Kz por membro
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -474,6 +484,7 @@ export default function GroupDetails() {
                   members={filteredMembers}
                   onMemberView={handleMemberView}
                   onMemberEdit={handleMemberEdit}
+                  isAnonymousMode={isAnonymousUser}
                 />
               </CardContent>
             </Card>
