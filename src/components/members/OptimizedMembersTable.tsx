@@ -198,7 +198,7 @@ export const OptimizedMembersTable = memo(({
 
   return (
     <div className="space-y-4">
-      {selectedMembers.size > 0 && (
+      {!isAnonymousMode && selectedMembers.size > 0 && (
         <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
           <span className="text-sm font-medium">
             {selectedMembers.size} membro(s) selecionado(s)
@@ -218,12 +218,14 @@ export const OptimizedMembersTable = memo(({
         <table className="w-full">
           <thead>
             <tr className="border-b border-border bg-muted/50">
-              <th className="px-2 py-1 text-center text-sm font-medium text-muted-foreground w-12 border-r border-border/50">
-                <Checkbox
-                  checked={selectedMembers.size === memoizedMembers.length && memoizedMembers.length > 0}
-                  onCheckedChange={toggleAllMembers}
-                />
-              </th>
+              {!isAnonymousMode && (
+                <th className="px-2 py-1 text-center text-sm font-medium text-muted-foreground w-12 border-r border-border/50">
+                  <Checkbox
+                    checked={selectedMembers.size === memoizedMembers.length && memoizedMembers.length > 0}
+                    onCheckedChange={toggleAllMembers}
+                  />
+                </th>
+              )}
               <th className="px-2 py-1 text-center text-sm font-medium text-muted-foreground w-12 border-r border-border/50">
                 Nº.
               </th>
@@ -238,12 +240,14 @@ export const OptimizedMembersTable = memo(({
           <tbody>
             {memoizedMembers.map((member, index) => (
               <tr key={member.id} className="border-b border-border hover:bg-muted/50 transition-smooth">
-                <td className="p-[5px] text-center border-r border-border/50">
-                  <Checkbox
-                    checked={selectedMembers.has(member.id)}
-                    onCheckedChange={() => toggleMemberSelection(member.id)}
-                  />
-                </td>
+                {!isAnonymousMode && (
+                  <td className="p-[5px] text-center border-r border-border/50">
+                    <Checkbox
+                      checked={selectedMembers.has(member.id)}
+                      onCheckedChange={() => toggleMemberSelection(member.id)}
+                    />
+                  </td>
+                )}
                 <td className="p-[5px] text-center text-sm text-muted-foreground border-r border-border/50">
                   {index + 1}
                 </td>

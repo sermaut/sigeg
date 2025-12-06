@@ -39,7 +39,10 @@ import {
   CreditCard,
   Info,
   UserCheck,
-  UserX
+  UserX,
+  LogIn,
+  EyeOff,
+  Lock
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { MembersTable } from "@/components/members/MembersTable";
@@ -260,6 +263,32 @@ export default function GroupDetails() {
         </div>
 
         {/* Stats Cards - removed as requested */}
+
+        {/* Indicador de modo anónimo */}
+        {isAnonymousUser && (
+          <div className="mb-4 p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center justify-between animate-fade-in">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-amber-500/20 rounded-lg">
+                <EyeOff className="w-5 h-5 text-amber-600" />
+              </div>
+              <div>
+                <p className="font-medium text-amber-700 dark:text-amber-400">Modo de Visualização Limitada</p>
+                <p className="text-sm text-amber-600/80 dark:text-amber-500/80">
+                  Você está navegando como visitante. Algumas funcionalidades estão restritas.
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/auth')}
+              className="border-amber-500/50 text-amber-700 hover:bg-amber-500/10 hover:text-amber-800"
+            >
+              <LogIn className="w-4 h-4 mr-2" />
+              Iniciar Sessão
+            </Button>
+          </div>
+        )}
 
         {/* Tabs modernizadas com persistência */}
         <Tabs value={activeTab} onValueChange={changeTab} className="flex-1">
@@ -491,63 +520,111 @@ export default function GroupDetails() {
           </TabsContent>
 
           <TabsContent value="financial">
-            <FinancialDashboard 
-              groupId={id!} 
-              currentMemberId={currentMemberId}
-              isGroupLeader={isGroupLeader}
-            />
+            {isAnonymousUser ? (
+              <Card className="border-2 border-primary/10 shadow-lg">
+                <CardContent className="p-12 text-center">
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="p-4 bg-amber-500/10 rounded-full">
+                      <Lock className="w-12 h-12 text-amber-600" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-foreground">Acesso Restrito</h3>
+                    <p className="text-muted-foreground max-w-md">
+                      Para acessar as informações financeiras do grupo, você precisa iniciar sessão com as suas credenciais de membro ou código do grupo.
+                    </p>
+                    <Button
+                      variant="gradient"
+                      onClick={() => navigate('/auth')}
+                      className="mt-2"
+                    >
+                      <LogIn className="w-4 h-4 mr-2" />
+                      Iniciar Sessão
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <FinancialDashboard 
+                groupId={id!} 
+                currentMemberId={currentMemberId}
+                isGroupLeader={isGroupLeader}
+              />
+            )}
           </TabsContent>
 
           <TabsContent value="technical">
-            <Tabs defaultValue="programa" className="w-full mt-4">
-              <TabsList className="grid w-full grid-cols-2 h-9 p-0.5 bg-gradient-to-r from-muted/60 to-muted/40 
-                                   rounded-lg border border-primary/10 shadow-sm backdrop-blur-sm">
-                <TabsTrigger 
-                  value="programa"
-                  className="rounded-md h-8 text-xs data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary 
-                             data-[state=active]:to-primary/90 data-[state=active]:text-white 
-                             data-[state=active]:shadow-sm
-                             transition-all duration-200 font-medium
-                             hover:bg-primary/5 flex items-center justify-center gap-1.5"
-                >
-                  Programa Semanal
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="ensaios"
-                  className="rounded-md h-8 text-xs data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary 
-                             data-[state=active]:to-primary/90 data-[state=active]:text-white 
-                             data-[state=active]:shadow-sm
-                             transition-all duration-200 font-medium
-                             hover:bg-primary/5 flex items-center justify-center gap-1.5"
-                >
-                  Participação nos Ensaios
-                </TabsTrigger>
-              </TabsList>
+            {isAnonymousUser ? (
+              <Card className="border-2 border-primary/10 shadow-lg">
+                <CardContent className="p-12 text-center">
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="p-4 bg-amber-500/10 rounded-full">
+                      <Lock className="w-12 h-12 text-amber-600" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-foreground">Acesso Restrito</h3>
+                    <p className="text-muted-foreground max-w-md">
+                      Para acessar a área técnica do grupo (programas semanais e ensaios), você precisa iniciar sessão com as suas credenciais de membro ou código do grupo.
+                    </p>
+                    <Button
+                      variant="gradient"
+                      onClick={() => navigate('/auth')}
+                      className="mt-2"
+                    >
+                      <LogIn className="w-4 h-4 mr-2" />
+                      Iniciar Sessão
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Tabs defaultValue="programa" className="w-full mt-4">
+                <TabsList className="grid w-full grid-cols-2 h-9 p-0.5 bg-gradient-to-r from-muted/60 to-muted/40 
+                                     rounded-lg border border-primary/10 shadow-sm backdrop-blur-sm">
+                  <TabsTrigger 
+                    value="programa"
+                    className="rounded-md h-8 text-xs data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary 
+                               data-[state=active]:to-primary/90 data-[state=active]:text-white 
+                               data-[state=active]:shadow-sm
+                               transition-all duration-200 font-medium
+                               hover:bg-primary/5 flex items-center justify-center gap-1.5"
+                  >
+                    Programa Semanal
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="ensaios"
+                    className="rounded-md h-8 text-xs data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary 
+                               data-[state=active]:to-primary/90 data-[state=active]:text-white 
+                               data-[state=active]:shadow-sm
+                               transition-all duration-200 font-medium
+                               hover:bg-primary/5 flex items-center justify-center gap-1.5"
+                  >
+                    Participação nos Ensaios
+                  </TabsTrigger>
+                </TabsList>
 
-              <TabsContent value="programa" className="space-y-6 mt-6">
-                <WeeklyProgramUpload
-                  groupId={id!}
-                  onUploadComplete={() => {
-                    window.location.reload();
-                  }}
-                />
-                <WeeklyProgramList groupId={id!} refreshTrigger={0} />
-              </TabsContent>
+                <TabsContent value="programa" className="space-y-6 mt-6">
+                  <WeeklyProgramUpload
+                    groupId={id!}
+                    onUploadComplete={() => {
+                      window.location.reload();
+                    }}
+                  />
+                  <WeeklyProgramList groupId={id!} refreshTrigger={0} />
+                </TabsContent>
 
-              <TabsContent value="ensaios" className="space-y-6 mt-6">
-                <RehearsalAttendance 
-                  groupId={id!} 
-                  members={displayMembers}
-                  groupLeaders={{
-                    president_id: displayGroup?.president_id,
-                    vice_president_1_id: displayGroup?.vice_president_1_id,
-                    vice_president_2_id: displayGroup?.vice_president_2_id,
-                    secretary_1_id: displayGroup?.secretary_1_id,
-                    secretary_2_id: displayGroup?.secretary_2_id,
-                  }}
-                />
-              </TabsContent>
-            </Tabs>
+                <TabsContent value="ensaios" className="space-y-6 mt-6">
+                  <RehearsalAttendance 
+                    groupId={id!} 
+                    members={displayMembers}
+                    groupLeaders={{
+                      president_id: displayGroup?.president_id,
+                      vice_president_1_id: displayGroup?.vice_president_1_id,
+                      vice_president_2_id: displayGroup?.vice_president_2_id,
+                      secretary_1_id: displayGroup?.secretary_1_id,
+                      secretary_2_id: displayGroup?.secretary_2_id,
+                    }}
+                  />
+                </TabsContent>
+              </Tabs>
+            )}
           </TabsContent>
         </Tabs>
 
