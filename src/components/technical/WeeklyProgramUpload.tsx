@@ -52,6 +52,10 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
       });
       return;
     }
+    // Se o usuário só pode adicionar acompanhamentos, força essa categoria
+    if (open && permissions.canAddOnlyAccompaniments) {
+      setCategory("acompanhamento");
+    }
     setIsOpen(open);
   };
 
@@ -438,19 +442,27 @@ export function WeeklyProgramUpload({ groupId, onUploadComplete }: WeeklyProgram
             {/* Categoria */}
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-foreground">Categoria *</Label>
-              <Select value={category} onValueChange={(value: "hino" | "acompanhamento") => {
-                setCategory(value);
-                setHymnsItems([]);
-                setAccompanimentItems([]);
-              }}>
-                <SelectTrigger className="border-primary/20">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="hino">Hinos</SelectItem>
-                  <SelectItem value="acompanhamento">Acompanhamentos</SelectItem>
-                </SelectContent>
-              </Select>
+              {permissions.canAddOnlyAccompaniments ? (
+                // Chefe de Partição só pode adicionar acompanhamentos
+                <div className="p-3 bg-muted rounded-md text-sm text-muted-foreground">
+                  <span className="font-medium text-foreground">Acompanhamentos</span>
+                  <p className="text-xs mt-1">Chefes de Partição só podem adicionar acompanhamentos</p>
+                </div>
+              ) : (
+                <Select value={category} onValueChange={(value: "hino" | "acompanhamento") => {
+                  setCategory(value);
+                  setHymnsItems([]);
+                  setAccompanimentItems([]);
+                }}>
+                  <SelectTrigger className="border-primary/20">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hino">Hinos</SelectItem>
+                    <SelectItem value="acompanhamento">Acompanhamentos</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
             </div>
 
             {/* Items - Hinos */}

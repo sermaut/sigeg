@@ -43,6 +43,7 @@ export interface PermissionChecks {
   
   // Technical
   canAddWeeklyProgram: boolean;
+  canAddOnlyAccompaniments: boolean; // Chefe de Partição só pode adicionar acompanhamentos
   canEditWeeklyProgram: boolean;
   canDeleteWeeklyProgram: boolean;
   canSelectRehearsalDate: boolean;
@@ -86,6 +87,7 @@ export function usePermissions(): PermissionChecks {
       canDeletePaymentEvent: true,
       canClickMemberNames: true,
       canAddWeeklyProgram: true,
+      canAddOnlyAccompaniments: false,
       canEditWeeklyProgram: true,
       canDeleteWeeklyProgram: true,
       canSelectRehearsalDate: true,
@@ -125,6 +127,7 @@ export function usePermissions(): PermissionChecks {
       canDeletePaymentEvent: false,
       canClickMemberNames: false,
       canAddWeeklyProgram: false,
+      canAddOnlyAccompaniments: false,
       canEditWeeklyProgram: false,
       canDeleteWeeklyProgram: false,
       canSelectRehearsalDate: false,
@@ -167,6 +170,7 @@ export function usePermissions(): PermissionChecks {
       canDeletePaymentEvent: true,
       canClickMemberNames: true,
       canAddWeeklyProgram: true,
+      canAddOnlyAccompaniments: false,
       canEditWeeklyProgram: true,
       canDeleteWeeklyProgram: true,
       canSelectRehearsalDate: true,
@@ -206,6 +210,7 @@ export function usePermissions(): PermissionChecks {
       canDeletePaymentEvent: false,
       canClickMemberNames: false,
       canAddWeeklyProgram: true,
+      canAddOnlyAccompaniments: false,
       canEditWeeklyProgram: true,
       canDeleteWeeklyProgram: true,
       canSelectRehearsalDate: true,
@@ -245,6 +250,7 @@ export function usePermissions(): PermissionChecks {
       canDeletePaymentEvent: false,
       canClickMemberNames: false,
       canAddWeeklyProgram: true,
+      canAddOnlyAccompaniments: false,
       canEditWeeklyProgram: true,
       canDeleteWeeklyProgram: true,
       canSelectRehearsalDate: true,
@@ -253,7 +259,7 @@ export function usePermissions(): PermissionChecks {
     };
   }
   
-  // Nível 4: Chefe de Partição, Chefe de Categoria
+  // Nível 4: Chefe de Partição, Chefe de Categoria - pode adicionar APENAS acompanhamentos
   if (level === 4) {
     return {
       canAccessNewMember: false,
@@ -283,7 +289,8 @@ export function usePermissions(): PermissionChecks {
       canEditPaymentEvent: false,
       canDeletePaymentEvent: false,
       canClickMemberNames: false,
-      canAddWeeklyProgram: false,
+      canAddWeeklyProgram: true, // Pode adicionar programa
+      canAddOnlyAccompaniments: true, // MAS só acompanhamentos, não hinos
       canEditWeeklyProgram: false,
       canDeleteWeeklyProgram: false,
       canSelectRehearsalDate: true,
@@ -323,6 +330,7 @@ export function usePermissions(): PermissionChecks {
       canDeletePaymentEvent: false,
       canClickMemberNames: false,
       canAddWeeklyProgram: false,
+      canAddOnlyAccompaniments: false,
       canEditWeeklyProgram: false,
       canDeleteWeeklyProgram: false,
       canSelectRehearsalDate: false,
@@ -362,6 +370,7 @@ export function usePermissions(): PermissionChecks {
       canDeletePaymentEvent: true, // Só eventos da sua categoria
       canClickMemberNames: true,
       canAddWeeklyProgram: false,
+      canAddOnlyAccompaniments: false,
       canEditWeeklyProgram: false,
       canDeleteWeeklyProgram: false,
       canSelectRehearsalDate: false,
@@ -400,6 +409,7 @@ export function usePermissions(): PermissionChecks {
     canDeletePaymentEvent: false,
     canClickMemberNames: false,
     canAddWeeklyProgram: false,
+    canAddOnlyAccompaniments: false,
     canEditWeeklyProgram: false,
     canDeleteWeeklyProgram: false,
     canSelectRehearsalDate: false,

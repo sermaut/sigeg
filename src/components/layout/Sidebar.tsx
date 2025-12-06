@@ -11,7 +11,9 @@ import {
   Shield,
   FileText,
   Briefcase,
-  MessageCircle
+  MessageCircle,
+  ExternalLink,
+  Guitar
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -43,7 +45,20 @@ export function Sidebar({ className, isOpen, onOpenChange }: SidebarProps) {
     { icon: Home, label: "Página Inicial", href: "/", show: true },
     { icon: Users, label: "Grupos", href: "/groups", show: true },
     { icon: UserPlus, label: "Novo Membro", href: "/members/new", show: permissions.canAccessNewMember },
-    { icon: Briefcase, label: "Serviços Musicais", href: "/services", show: true },
+    { 
+      icon: Briefcase, 
+      label: "Serviços Musicais", 
+      href: "https://port-bv.lovable.app", 
+      show: true,
+      external: true,
+    },
+    { 
+      icon: Guitar, 
+      label: "Tablatura - FLAUKI", 
+      href: "https://flauki.lovable.app", 
+      show: true,
+      external: true,
+    },
     { 
       icon: FileText, 
       label: "Relatórios", 
@@ -121,6 +136,9 @@ export function Sidebar({ className, isOpen, onOpenChange }: SidebarProps) {
               onClick={() => {
                 if (item.onClick) {
                   item.onClick();
+                } else if (item.external) {
+                  window.open(item.href, '_blank', 'noopener,noreferrer');
+                  onOpenChange(false);
                 } else if (!item.restricted) {
                   navigate(item.href);
                   onOpenChange(false);
@@ -129,6 +147,7 @@ export function Sidebar({ className, isOpen, onOpenChange }: SidebarProps) {
             >
               <item.icon className="w-6 h-6 flex-shrink-0" />
               <span className="ml-3 text-base">{item.label}</span>
+              {item.external && <ExternalLink className="w-4 h-4 ml-auto opacity-60" />}
             </Button>
           ))}
         </nav>
